@@ -21,6 +21,7 @@ namespace Sorolla.PowerUps
             public int quantity;
             public bool isUnlocked;
             public bool hasSeenUnlockNotification;
+            public bool hasSeenUnlockCelebration;
             public bool hasUsedFirstFree;
 
             public PowerUpState()
@@ -28,6 +29,7 @@ namespace Sorolla.PowerUps
                 quantity = 0;
                 isUnlocked = false;
                 hasSeenUnlockNotification = false;
+                hasSeenUnlockCelebration = false;
                 hasUsedFirstFree = false;
             }
 
@@ -36,6 +38,7 @@ namespace Sorolla.PowerUps
                 this.quantity = quantity;
                 this.isUnlocked = isUnlocked;
                 hasSeenUnlockNotification = false;
+                hasSeenUnlockCelebration = false;
                 hasUsedFirstFree = false;
             }
         }
@@ -104,6 +107,22 @@ namespace Sorolla.PowerUps
         public void SetUnlockNotificationSeen(string powerUpId)
         {
             GetState(powerUpId).hasSeenUnlockNotification = true;
+        }
+
+        /// <summary>
+        /// Checks if the unlock celebration has been shown.
+        /// </summary>
+        public bool HasSeenUnlockCelebration(string powerUpId)
+        {
+            return GetState(powerUpId).hasSeenUnlockCelebration;
+        }
+
+        /// <summary>
+        /// Marks the unlock celebration as shown.
+        /// </summary>
+        public void SetUnlockCelebrationSeen(string powerUpId)
+        {
+            GetState(powerUpId).hasSeenUnlockCelebration = true;
         }
 
         /// <summary>

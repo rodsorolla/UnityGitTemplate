@@ -7,7 +7,7 @@ namespace Sorolla.PowerUps
     {
         Undo = 0,
         Shuffle = 1,
-        FreezeTimer = 2,
+        BonusTime = 2,
         AutoMatch = 3
     }
 
@@ -25,7 +25,7 @@ namespace Sorolla.PowerUps
             {
                 PowerUpId.Undo => "undo",
                 PowerUpId.Shuffle => "shuffle",
-                PowerUpId.FreezeTimer => "freeze_timer",
+                PowerUpId.BonusTime => "bonus_time",
                 PowerUpId.AutoMatch => "auto_match",
                 _ => id.ToString().ToLowerInvariant()
             };

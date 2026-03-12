@@ -99,6 +99,22 @@ namespace Sorolla.PowerUps
         void MarkUnlockNotificationSeen(PowerUpId powerUpId);
 
         /// <summary>
+        /// Checks if the unlock celebration has been shown for a power-up.
+        /// </summary>
+        bool HasSeenUnlockCelebration(PowerUpId powerUpId);
+
+        /// <summary>
+        /// Marks the unlock celebration as shown.
+        /// </summary>
+        void MarkUnlockCelebrationSeen(PowerUpId powerUpId);
+
+        /// <summary>
+        /// Returns the next power-up that qualifies for an unlock celebration, or null if none.
+        /// Checks HighestLevelReached against UnlockLevel, independent of formal unlock state.
+        /// </summary>
+        PowerUpDefinitionBase GetNextPendingCelebration();
+
+        /// <summary>
         /// Event fired when a power-up quantity changes.
         /// </summary>
         event Action<PowerUpQuantityChangedEventArgs> OnQuantityChanged;
