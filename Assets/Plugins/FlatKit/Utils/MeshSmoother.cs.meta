@@ -13,6 +13,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 143368
   packageName: 'Flat Kit: Toon Shading and Water'
-  packageVersion: 4.9.8
-  assetPath: Assets/FlatKit/Utils/MeshSmoother.cs
-  uploadId: 854402
+  packageVersion: 4.9.9
+  assetPath: Assets/Plugins/FlatKit/Utils/MeshSmoother.cs
+  uploadId: 864422
