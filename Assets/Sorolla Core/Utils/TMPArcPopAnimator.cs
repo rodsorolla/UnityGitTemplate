@@ -24,6 +24,7 @@ public class TMPArcPopAnimator : MonoBehaviour
     static Dictionary<int, float> sharedProgress = new();
 
     TextMeshProUGUI tmp;
+    public TextMeshProUGUI Tmp => tmp != null ? tmp : (tmp = GetComponent<TextMeshProUGUI>());
 
     void Awake()
     {
@@ -71,7 +72,13 @@ public class TMPArcPopAnimator : MonoBehaviour
         ApplyAnimation(sharedProgress[layerGroupId]);
     }
 
-    void ApplyAnimation(float globalProgress)
+    public void ResetMesh()
+    {
+        if (tmp == null) tmp = GetComponent<TextMeshProUGUI>();
+        tmp.ForceMeshUpdate();
+    }
+
+    public void ApplyAnimation(float globalProgress)
     {
         tmp.ForceMeshUpdate();
 
