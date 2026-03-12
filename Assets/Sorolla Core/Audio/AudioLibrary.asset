@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ce906547eac5447bae3ae012269b38b, type: 3}
+  m_Name: AudioLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::Sorolla.AudioLibrary
+  sfx:
+  - clip: {fileID: 8300000, guid: 77a4500a170214d438183ef7c4f3f35e, type: 3}
+    volume: 1
+    pitchVariation: 0
+  - clip: {fileID: 8300000, guid: 3c6751f96dd344b86b5c9603390150fd, type: 3}
+    volume: 1
+    pitchVariation: 0
+  - clip: {fileID: 8300000, guid: 919044a94448042c5b1ab30af6f57f03, type: 3}
+    volume: 1
+    pitchVariation: 0
+  - clip: {fileID: 8300000, guid: 21c5e10232d2d43ae9f6ebc1c2016a73, type: 3}
+    volume: 1
+    pitchVariation: 0
+  - clip: {fileID: 8300000, guid: f8395b9fc17a94d7782dabb17e86a721, type: 3}
+    volume: 1
+    pitchVariation: 0
+  - clip: {fileID: 8300000, guid: 3545f6ba0aeed4adebb3e3e04742d600, type: 3}
+    volume: 1
+    pitchVariation: 0
+  - clip: {fileID: 8300000, guid: 8af92e73467a84311a53c215206a0229, type: 3}
+    volume: 1
+    pitchVariation: 0
+  music:
+  - clip: {fileID: 8300000, guid: 97bcf968aada140f994f532e9ca07338, type: 3}
+    volume: 0.1
+  ui: []
