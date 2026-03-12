@@ -74,6 +74,18 @@ namespace Sorolla
             _instance?.Clear();
             _instance = null;
         }
+
+        /// <summary>
+        /// Logs all registered services to the console. Only runs in Editor and Development builds.
+        /// </summary>
+        [System.Diagnostics.Conditional("UNITY_EDITOR"), System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        public void DEBUG_LogAll()
+        {
+            var sb = new System.Text.StringBuilder("[ServiceLocator] Registered services:\n");
+            foreach (var kvp in _services)
+                sb.AppendLine($"  {kvp.Key.Name} → {kvp.Value?.GetType().Name}");
+            Debug.Log(sb.ToString());
+        }
     }
 }
 

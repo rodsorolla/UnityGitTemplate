@@ -81,16 +81,7 @@ namespace Sorolla
             }
 
             // Load game scene additively to keep PreInit loading screen visible
-            var async = SceneManager.LoadSceneAsync(_gameSceneName, LoadSceneMode.Additive);
-            if (async == null)
-            {
-                Debug.LogError($"[GameInitializer] Failed to start loading scene '{_gameSceneName}'. Is it in Build Settings?");
-                return;
-            }
-
-            var tcs = new TaskCompletionSource<bool>();
-            async.completed += _ => tcs.TrySetResult(true);
-            await tcs.Task;
+            await SceneLoader.LoadSceneAdditiveAsync(_gameSceneName);
 
             // Set game scene as active
             var gameScene = SceneManager.GetSceneByName(_gameSceneName);

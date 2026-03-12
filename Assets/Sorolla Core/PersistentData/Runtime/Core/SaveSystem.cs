@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -340,6 +341,32 @@ namespace Sorolla.PersistentData
                 _backups.DeleteAllBackups(fileName);
 
             return result;
+        }
+
+        /// <summary>
+        /// Deletes all save files and backups in the specified slot.
+        /// If slot is -1, deletes all slots.
+        /// </summary>
+        public static void DeleteAllData(int slot = -1)
+        {
+            EnsureInitialized();
+
+            if (slot == -1)
+            {
+                var basePath = (_storage as LocalFileStorage)?.BasePath;
+                if (basePath != null && Directory.Exists(basePath))
+                {
+                    Directory.Delete(basePath, true);
+                    Debug.Log("[SaveSystem] All save data deleted.");
+                }
+            }
+            else
+            {
+                var files = GetAllSaveFiles(slot);
+                foreach (var file in files)
+                    Delete(file, slot, deleteBackups: true);
+                Debug.Log($"[SaveSystem] All data in slot {slot} deleted.");
+            }
         }
 
         /// <summary>

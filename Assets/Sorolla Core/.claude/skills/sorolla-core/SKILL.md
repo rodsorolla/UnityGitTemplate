@@ -1,6 +1,6 @@
 ---
 name: sorolla-core
-description: Sorolla Core Unity framework guidance. Use when creating, editing, or reading files under `Assets/Sorolla Core/`, working with any Sorolla or Sorolla.* namespace, or using ServiceLocator, SorollaManager, LevelFlowManager, UIManager, UIPanel, SaveSystem, CurrencyService, Pool, HapticsService, AudioManager, FakeTouchCursor, or TutorialController in Unity C# projects.
+description: Sorolla Core Unity framework guidance. Use when creating, editing, or reading files under `Assets/Sorolla Core/`, working with any Sorolla or Sorolla.* namespace, or using ServiceLocator, SorollaManager, LevelFlowManager, UIManager, UIPanel, SaveSystem, CurrencyService, Pool, HapticsService, AudioManager, FakeTouchCursor, TutorialController, SorollaTimer, SceneLoader, or SafeAreaHandler in Unity C# projects.
 ---
 
 # Sorolla Core Framework
@@ -33,6 +33,9 @@ var levelFlow = ServiceLocator.Instance.Resolve<ILevelFlowManager>();
 
 // TryResolve (optional — returns null if missing)
 var haptics = ServiceLocator.Instance.TryResolve<IHapticsService>();
+
+// Debug (Editor/Dev builds only)
+ServiceLocator.Instance.DEBUG_LogAll();
 ```
 
 ### SorollaManager Base Class
@@ -117,6 +120,8 @@ public class MyData : ISaveData
 // Save/Load (static API)
 SaveSystem.Save(data, "my_data");
 var loaded = SaveSystem.Load<MyData>("my_data");  // Returns new instance if not found
+SaveSystem.DeleteAllData();        // Wipe all slots
+SaveSystem.DeleteAllData(slot: 1); // Wipe specific slot
 
 // Extend GameDataServiceBase for automatic save management
 public class GameDataService : GameDataServiceBase
@@ -174,6 +179,35 @@ audio?.StopMusic();
 // TutorialController manages progression and persistence
 // Events: OnTutorialStepEntered, OnTutorialStepChanged, OnGateTriggered
 ```
+
+### SorollaTimer (`Sorolla`)
+```csharp
+// One-shot timer
+var timer = SorollaTimer.StartTimer(3f, () => Debug.Log("Done!"));
+
+// Looping timer
+var loop = SorollaTimer.StartTimer(1f, () => Tick(), loop: true);
+
+// Countdown with remaining-time tick
+var cd = SorollaTimer.StartCountdown(10f, remaining => UpdateUI(remaining), () => TimeUp());
+
+// Control: Pause(), Resume(), Cancel(), Restart()
+// Properties: Elapsed, Remaining, Progress (0-1), IsRunning, IsComplete
+// Unscaled time: SorollaTimer.StartTimer(1f, cb, useUnscaledTime: true);
+// Cancel all: SorollaTimer.CancelAll();
+```
+
+### SceneLoader (`Sorolla`)
+```csharp
+await SceneLoader.LoadSceneAsync("GameScene");
+await SceneLoader.LoadSceneAdditiveAsync("UI_Scene");
+await SceneLoader.UnloadSceneAsync("UI_Scene");
+await SceneLoader.ReloadCurrentSceneAsync();
+// All accept optional Action<float> onProgress callback
+```
+
+### SafeAreaHandler (`Sorolla.UI`)
+Component for RectTransform. Adjusts anchors to `Screen.safeArea`. Per-edge toggles: `_applyTop`, `_applyBottom`, `_applyLeft`, `_applyRight`. Auto-updates on orientation change.
 
 ### FakeTouchCursor (`Sorolla` — Editor-only)
 Cursor overlay for recording App Store videos. Shows a hand sprite following the mouse with tap animation and optional particle FX. Lives in `Assets/Sorolla Core/Utils/FakeTouchCursor.cs`. Uses Input System (`Mouse.current`). Wrapped in `#if UNITY_EDITOR`.

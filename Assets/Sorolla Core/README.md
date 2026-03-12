@@ -1,749 +1,862 @@
-# Sorolla Core Package
+# Sorolla Core
 
-A reusable Unity framework for common game systems including UI management, level flow, persistence, currency, haptics, tutorials, and audio.
+A reusable Unity framework: UI, level flow, persistence, currency, inventory, power-ups, haptics, tutorials, audio, and pooling.
 
-> **Claude Code Setup** — After importing this package, run from your project root:
-> ```bash
-> mkdir -p .claude/skills && ln -s "../../Assets/Sorolla Core/.claude/skills/sorolla-core" .claude/skills/sorolla-core
-> ```
+> **Claude Code Setup** — After importing, run: `mkdir -p .claude/skills && ln -s "../../Assets/Sorolla Core/.claude/skills/sorolla-core" .claude/skills/sorolla-core`
+
+---
 
 ## Table of Contents
 
 - [Quick Start](#quick-start)
-- [Package Structure](#package-structure)
-- [Core Principles](#core-principles)
-- [Integration Guide](#integration-guide)
-- [What Belongs Where](#what-belongs-where)
-- [Migration Notes](#migration-notes)
-- [Namespace Convention](#namespace-convention)
-- **Module Guides**
-  - [UI Module](#sorollaui-module-guide)
-  - [LevelFlow Module](#sorollalevelflow-module-guide)
-  - [PersistentData Module](#sorollapersistentdata-module-guide)
-  - [Currency Module](#sorollacurrency-module-guide)
-  - [Haptics Module](#sorollahaptics-module-guide)
-  - [Pool Module](#pool-module-guide)
+- [ServiceLocator](#servicelocator)
+- [GameManager](#gamemanager)
+- [LevelFlow](#levelflow)
+- [UI](#ui)
+- [SaveSystem](#savesystem)
+- [Currency](#currency)
+- [Inventory](#inventory)
+- [PowerUps](#powerups)
+- [Haptics](#haptics)
+- [Tutorial & Highlight](#tutorial--highlight)
+- [Audio](#audio)
+- [Pool](#pool)
+- [FTX (First-Time Experience)](#ftx-first-time-experience)
+- [Utils](#utils)
+- [Debug Tools](#debug-tools)
+- [Namespaces](#namespaces)
 
 ---
 
 ## Quick Start
 
-Step-by-step guide to set up a new project with Sorolla Core.
-
-### 1. Create Scenes
+### 1. Scene Setup
 
 ```
 Assets/Scenes/
-├── Bootstrap.unity    # First scene (index 0 in Build Settings)
-└── Game.unity         # Main gameplay scene (index 1)
+├── Bootstrap.unity    # Build index 0
+└── Game.unity         # Build index 1
 ```
 
-### 2. Bootstrap Scene Setup
-
+**Bootstrap scene:**
 ```
-Hierarchy:
-├── GameInitializer (GameObject)
-│   └── GameInitializer.cs
-│       └── _gameSceneName → "Game"
-│
-└── GameManager (GameObject)
-    └── GameManager.cs (or your subclass)
-        ├── _tutorialController → (optional)
-        ├── _audioManager → (optional)
-        └── _gameManagers → (add your managers later)
+├── GameInitializer     → _gameSceneName = "Game"
+└── GameManager         → (or your subclass)
+        ├── _tutorialController (optional)
+        ├── _audioManager (optional)
+        └── _gameManagers[] (your managers)
 ```
 
-> **Note**: GameManager must be in the Bootstrap scene because GameInitializer needs it before loading the Game scene. It auto-persists via DontDestroyOnLoad.
-
-#### GameInitializer Flow
-
+**Game scene:**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  BOOTSTRAP SCENE (index 0)                                  │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  1. Awake()                                                 │
-│     └── Store reference to Bootstrap scene                  │
-│                                                             │
-│  2. Start()                                                 │
-│     ├── Get GameManager.Instance                            │
-│     │   └── MonoSingleton finds it in Bootstrap scene       │
-│     │                                                       │
-│     ├── await GameManager.InitializeAsync()                 │
-│     │   ├── Registers services in ServiceLocator            │
-│     │   ├── Initializes SaveSystem (persistence ready)      │
-│     │   ├── Initializes AudioManager (loads saved prefs)    │
-│     │   ├── Initializes TutorialController (loads progress) │
-│     │   └── Initializes all _gameManagers                   │
-│     │                                                       │
-│     ├── Load Game scene (additive)                          │
-│     │   └── await scene load complete                       │
-│     │                                                       │
-│     ├── Set Game scene as active                            │
-│     │                                                       │
-│     ├── Fire OnSceneLoaded event                            │
-│     │   └── GameManager.HandleSceneLoaded() responds        │
-│     │                                                       │
-│     ├── Notify PreInitLoader (if exists)                    │
-│     │   └── Hides loading screen                            │
-│     │                                                       │
-│     └── Unload Bootstrap scene                              │
-│         └── GameInitializer destroyed                       │
-│             (GameManager persists via DontDestroyOnLoad)    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│  GAME SCENE (now active)                                    │
-├─────────────────────────────────────────────────────────────┤
-│  • UIManager ready                                          │
-│  • Your game managers ready                                 │
-│  • Ready to call levelFlow.StartLevel(1)                    │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### 3. Game Scene Setup
-
-**UIManager**:
-```
-Hierarchy:
-└── UIManager (GameObject)
-    ├── UIManager.cs
-    │   ├── _registry → (drag UIRegistry ScriptableObject)
-    │   ├── _screensParent → ScreensParent
-    │   ├── _panelsParent → PanelsParent
-    │   └── _mainCanvas → Canvas
+└── UIManager
+    ├── _registry → UIRegistry ScriptableObject
+    ├── _mainCanvas → Canvas
     └── Canvas
-        ├── ScreensParent (empty RectTransform)
-        └── PanelsParent (empty RectTransform)
+        ├── ScreensParent
+        └── PanelsParent
 ```
 
-Create UIRegistry: **Right-click > Create > Sorolla > UI > Registry**
+### 2. Initialization Flow
 
-### 4. Create Your LevelFlowManager
+```
+GameInitializer.Start()
+  → GameManager.InitializeAsync()
+    → SaveSystem.Initialize()
+    → AudioManager, TutorialController
+    → _gameManagers[] (LevelFlowManager, CurrencyService, etc.)
+  → Load Game scene (additive)
+  → Set Game scene active
+  → Fire OnSceneLoaded
+  → Unload Bootstrap scene
+```
+
+GameManager persists via `DontDestroyOnLoad`.
+
+### 3. Minimal Game Code
 
 ```csharp
-using Sorolla.LevelFlow;
-using UnityEngine;
-
 public class MyLevelManager : LevelFlowManager
 {
-    [SerializeField] private ScriptableObject[] _levels; // Your level configs
-
+    [SerializeField] private ScriptableObject[] _levels;
     protected override int GetTotalLevelCount() => _levels.Length;
-
-    protected override void OnLevelSetup(int levelIndex)
-    {
-        // Load level data, spawn objects, etc.
-        Debug.Log($"Setting up level {levelIndex}");
-    }
-
-    protected override void OnLevelCleanup()
-    {
-        // Destroy spawned objects, reset state
-        Debug.Log("Cleaning up level");
-    }
+    protected override void OnLevelSetup(int levelIndex) { /* spawn level */ }
+    protected override void OnLevelCleanup() { /* destroy level objects */ }
 }
 ```
 
-### 5. Wire Everything Together
-
-1. Add `MyLevelManager` component to a GameObject in Game scene
-2. Select the **GameManager** GameObject
-3. In the Inspector, expand **Game-Specific Managers**
-4. Drag your `MyLevelManager` GameObject into the `_gameManagers` array
-
-### 6. Create Basic UI Panels
-
-Create prefabs for at minimum:
-- `LevelCompletePanel` (for `UIPanelId.LevelComplete`)
-- `GameOverPanel` (for `UIPanelId.GameOver`)
-
-Register them in your **UIRegistry** ScriptableObject.
-
-### 7. Build Settings
-
-1. **File > Build Settings**
-2. Add scenes in order:
-   - `Bootstrap` (index 0)
-   - `Game` (index 1)
-
-### 8. Test It
+Add to GameManager's `_gameManagers` array. Then:
 
 ```csharp
-// From any script, start a level:
 var levelFlow = ServiceLocator.Instance.Resolve<ILevelFlowManager>();
 levelFlow.StartLevel(1);
-
-// When player wins:
 levelFlow.WinLevel();
-
-// When player loses:
 levelFlow.LoseLevel(LevelEndReason.TimeUp);
 ```
 
-### Quick Checklist
+### 4. Checklist
 
-- [ ] Create Bootstrap + Game scenes
-- [ ] Add `GameInitializer` to Bootstrap scene
-- [ ] Add `GameManager` to Bootstrap scene (persists via DontDestroyOnLoad)
-- [ ] Add `UIManager` with Canvas + UIRegistry to Game scene
-- [ ] Create `UIRegistry` ScriptableObject
-- [ ] Create your `LevelFlowManager` subclass
-- [ ] Add your manager to GameManager's `_gameManagers` array
-- [ ] Create LevelComplete and GameOver panel prefabs
-- [ ] Register panels in UIRegistry
-- [ ] Set Build Settings scene order (Bootstrap = 0, Game = 1)
+- [ ] Bootstrap + Game scenes in Build Settings (0, 1)
+- [ ] GameInitializer + GameManager in Bootstrap
+- [ ] UIManager + Canvas + UIRegistry in Game scene
+- [ ] LevelFlowManager subclass in Game scene, added to `_gameManagers`
+- [ ] LevelComplete + GameOver panel prefabs registered in UIRegistry
 
-### Dependency Order
+---
 
-```
-GameInitializer
-    ↓
-GameManager.InitializeAsync()
-    ↓
-SaveSystem (initialized first - persistence ready)
-    ↓
-AudioManager, TutorialController (can now load saved prefs)
-    ↓
-_gameManagers (LevelFlowManager, CurrencyService, etc.)
-    ↓
-Load Game Scene
-    ↓
-UIManager (in Game scene - needed for panels)
-    ↓
-Ready to play!
+## ServiceLocator
+
+Static dependency injection container. Namespace: `Sorolla`
+
+| Method | Description |
+|--------|-------------|
+| `Register<T>(T service)` | Register a service |
+| `Resolve<T>()` | Get service (logs error if missing) |
+| `TryResolve<T>()` | Get service or null |
+| `Has<T>()` | Check if registered |
+| `Clear()` | Remove all services |
+| `Reset()` | Destroy and recreate instance |
+| `DEBUG_LogAll()` | Log all registered services (Editor/Dev only) |
+
+```csharp
+ServiceLocator.Instance.Register<IMyService>(myService);
+var svc = ServiceLocator.Instance.Resolve<IMyService>();
 ```
 
 ---
 
-## Package Structure
+## GameManager
 
-```
-Sorolla Core/
-├── Managers/           # Core service infrastructure
-│   ├── ServiceLocator.cs        # Dependency injection container
-│   ├── SorollaManager.cs        # Base class for managers
-│   ├── GameManager.cs           # Main game orchestrator
-│   ├── GameInitializer.cs       # Scene initialization
-│   ├── AudioManager.cs          # Audio system
-│   ├── AudioLibrary.cs          # Audio asset registry
-│   └── FXPoolService.cs         # Object pooling for VFX
-│
-├── LevelFlow/          # Level flow management system
-│   ├── ILevelFlowManager.cs     # Level flow interface
-│   ├── LevelFlowManager.cs      # Abstract base class
-│   ├── LevelState.cs            # Level state enum
-│   ├── LevelEndReason.cs        # Win/lose reason enum
-│   ├── LevelProgressData.cs     # Persistence data
-│   └── WorldConfig.cs           # Optional world/chapter config
-│
-├── PersistentData/     # Save/load system
-│   ├── Runtime/
-│   │   ├── Core/
-│   │   │   ├── SaveSystem.cs        # Main static API
-│   │   │   ├── ISaveData.cs         # Data interface
-│   │   │   ├── IStorageProvider.cs  # Storage abstraction
-│   │   │   ├── SaveResult.cs        # Operation result
-│   │   │   └── SaveEvents.cs        # Save/load events
-│   │   ├── Storage/
-│   │   │   └── LocalFileStorage.cs  # File-based storage
-│   │   ├── Migration/
-│   │   │   ├── IMigrator.cs         # Migrator interface
-│   │   │   └── MigrationPipeline.cs # Version migrations
-│   │   ├── Backup/
-│   │   │   └── BackupManager.cs     # Backup management
-│   │   ├── Validation/
-│   │   │   └── SaveValidator.cs     # JSON validation
-│   │   └── Defaults/
-│   │       └── IDefaultsProvider.cs # Default value provider
-│   └── Editor/
-│       ├── SaveDataEditorWindow.cs  # Save file viewer/editor
-│       └── BuildPreprocessor.cs     # Build warnings
-│
-├── Currency/           # Currency management system
-│   ├── Runtime/
-│   │   ├── ICurrencyService.cs      # Service interface
-│   │   ├── CurrencyService.cs       # MonoBehaviour implementation
-│   │   ├── CurrencyData.cs          # Serializable data
-│   │   ├── CurrencyIds.cs           # Pre-defined currency IDs
-│   │   ├── CurrencyChangedEventArgs.cs
-│   │   └── CurrencyChangeType.cs
-│   └── Editor/
-│       └── CurrencyServiceEditor.cs # Inspector with debug tools
-│
-├── Haptics/            # Cross-platform haptic feedback
-│   └── Runtime/
-│       ├── IHapticsService.cs       # Service interface
-│       ├── HapticsService.cs        # iOS/Android implementation
-│       ├── HapticsData.cs           # Persistence data
-│       ├── HapticsIntensity.cs      # Light/Medium/Heavy
-│       └── HapticsType.cs           # Selection/Success/Warning/Error
-│
-├── Pool/               # Object pooling
-│   ├── Pool.cs                  # Generic pool
-│   └── PoolManager.cs           # Pool management
-│
-├── UI/                 # Modular UI management system
-│   ├── UIManager.cs             # Panel/screen management
-│   ├── UIRegistry.cs            # ScriptableObject UI registry
-│   ├── UIScreen.cs              # Base screen/panel classes
-│   ├── UIenums.cs               # Screen/panel ID enums
-│   ├── IGameplayUI.cs           # Gameplay UI abstraction
-│   ├── Core/
-│   │   └── IUITransition.cs     # Transition animation interface
-│   ├── Transitions/             # DOTween-based transitions
-│   │   ├── UITransitionBase.cs
-│   │   ├── FadeTransition.cs
-│   │   ├── ScaleTransition.cs
-│   │   ├── SlideTransition.cs
-│   │   └── UIOverlay.cs
-│   ├── Dialogs/
-│   │   ├── ConfirmDialog.cs
-│   │   ├── AlertDialog.cs
-│   │   ├── ToastPanel.cs
-│   │   └── ToastManager.cs
-│   ├── Celebrations/
-│   │   └── CelebrationPanel.cs
-│   ├── Effects/
-│   │   ├── FloatingTextManager.cs
-│   │   └── FloatingTextPopup.cs
-│   └── Config/
-│       ├── PanelConfigBase.cs
-│       └── ConfigurablePanel.cs
-│
-├── Tutorial/           # Tutorial system framework
-│   ├── TutorialController.cs    # Tutorial orchestrator
-│   ├── TutorialStepBase.cs      # Base class for tutorial steps
-│   └── ... (arrow, gate, hider components)
-│
-├── Utils/              # Utility classes
-│   ├── MonoSingleton.cs         # Singleton pattern
-│   └── FakeTouchCursor.cs       # Editor-only cursor overlay for recording
-│
-└── URP Shaders/        # Shader utilities
-```
+Main orchestrator. Extends `MonoSingleton<GameManager>`. Namespace: `Sorolla`
 
-## Core Principles
+| Member | Type | Description |
+|--------|------|-------------|
+| `IsInitialized` | Property | Init complete |
+| `IsInitializing` | Property | Init in progress |
+| `Audio` | Static property | AudioManager shortcut |
+| `IsPaused` | Static property | Game paused state |
+| `OnPauseStateChanged` | Static event | `Action<bool>` |
+| `Pause()` | Static method | Pause game |
+| `Resume()` | Static method | Resume game |
+| `InitializeAsync(CancellationToken)` | Method | Full init sequence |
 
-### 1. Agnostic Design
-Sorolla Core should **never** reference game-specific code. All game-specific functionality should be accessed through:
-- **Interfaces** defined in Core (e.g., `IGameplayUI`, `ILevelFlowManager`, `IPlayerProvider`)
-- **ServiceLocator** for runtime dependency resolution
-- **Events** for decoupled communication
-
-### 2. Interface-Based Coupling
-Games implement Core interfaces and register them via ServiceLocator:
-
+**Extend:**
 ```csharp
-// Game registers its implementations
-ServiceLocator.Instance.Register<IGameplayUI>(myLevelUI);
-
-// LevelFlowManager auto-registers itself as ILevelFlowManager
-
-// Core resolves them at runtime
-var gameplayUI = ServiceLocator.Instance.TryResolve<IGameplayUI>();
-gameplayUI?.ShowGameplayUI(true);
-
-var levelFlow = ServiceLocator.Instance.Resolve<ILevelFlowManager>();
-levelFlow.StartLevel(1);
-```
-
-### 3. Extensible Enums
-UI enum values are structured:
-- **0-99**: Reserved for Sorolla Core (generic screens/panels)
-- **100+**: Available for game-specific screens/panels
-
-Games can define their own values without modifying Core enums.
-
-## Integration Guide
-
-### Required Implementations
-Games using Sorolla Core should implement:
-
-1. **`IGameplayUI`** - Gameplay HUD management
-   - Register in `Awake()` of your gameplay UI component
-
-2. **`LevelFlowManager`** (recommended) - Level flow management
-   - Extend this abstract class for your game
-   - Handles states (Playing, Paused, Won, Lost), persistence, UI integration
-   - Optional world/chapter system via `GetWorldConfigs()`
-   - Auto-registers as `ILevelFlowManager`
-
-3. **`IPersistenceService`** (optional) - Custom data persistence
-   - Or use the built-in `SaveSystem` from PersistentData module
-
-### Scene Setup
-
-1. Create a **Bootstrap scene** with `GameInitializer` and `GameManager`
-2. Create a **Game scene** with UIManager and your game implementation
-3. GameManager auto-persists via DontDestroyOnLoad when accessed
-
-### Extending GameManager
-
-```csharp
-public class MyGameManager : Sorolla.GameManager
+public class MyGameManager : GameManager
 {
-    protected override void Init()
-    {
-        base.Init();
-        // Register game-specific services
-        RegisterMyServices();
-    }
-
-    protected override async Task HandleSceneLoaded()
-    {
-        // Build your game level
-        await myLevelManager.BuildCurrentLevel();
-
-        // Initialize Core UI (UIManager is a singleton)
-        UIManager.Instance?.BuildGameUI();
-    }
+    protected override void Init() { base.Init(); /* register services */ }
+    protected override async Task HandleSceneLoaded() { /* build level, init UI */ }
 }
 ```
 
-## What Belongs Where
+---
 
-### In Sorolla Core ✅
-- Service infrastructure (ServiceLocator, SorollaManager, GameManager)
-- Level flow base class (LevelFlowManager)
-- Persistence system (SaveSystem, ISaveData)
-- Currency system (CurrencyService)
-- Haptics system (HapticsService)
-- UI infrastructure (UIManager, UIScreen, UIPanel)
-- Tutorial framework
-- Audio system
-- Object pooling
-- Common utilities (MonoSingleton)
+## LevelFlow
 
-### In Game Project ❌
-- Concrete LevelFlowManager subclass
-- Game-specific save data classes
-- Game-specific UI components
-- Game-specific enums and data structures
-- Level configurations
-- Game logic and controllers
+State machine for level progression with optional world/chapter grouping. Namespace: `Sorolla.LevelFlow`
 
-## Migration Notes
+### States
+`Idle → Initializing → Playing ↔ Paused → Won/Lost → Idle`
 
-When extracting Sorolla Core as a standalone package:
+### ILevelFlowManager API
 
-1. Remove all `using HungrySnake.*` statements from Core files
-2. Replace direct type references with interface resolutions
-3. Move game-specific debug tools to game project
-4. Update UIenums to use only generic values (games extend with their own)
-5. Ensure all serialized fields reference only Core types or Unity built-ins
+| Method | Description |
+|--------|-------------|
+| `StartLevel(int index)` | Start a level |
+| `RestartLevel()` | Restart current level |
+| `PauseLevel()` / `ResumeLevel()` | Pause/resume |
+| `WinLevel()` | Mark win, auto-save, show panel |
+| `LoseLevel(LevelEndReason)` | Mark loss, show panel |
+| `QuitLevel()` | Exit to menu |
+| `AdvanceToNextLevel()` | Go to next level |
+| `SaveProgress()` | Manual save |
 
-## Namespace Convention
+| Property | Description |
+|----------|-------------|
+| `CurrentState` | `LevelState` enum |
+| `CurrentLevelIndex` | 1-based level number |
+| `HighestLevelReached` | Max level played |
+| `IsLevelActive` | Playing or Paused |
+| `GetActualLevelIndex()` | Content index (cycles if more levels than content) |
 
-- **`Sorolla`** - Core infrastructure (includes Haptics, Pool)
-- **`Sorolla.LevelFlow`** - Level flow management system
-- **`Sorolla.PersistentData`** - Save/load system
-- **`Sorolla.Currency`** - Currency system
-- **`Sorolla.UI`** - UI system core
-- **`Sorolla.UI.Transitions`** - Transition animations
-- **`Sorolla.UI.Dialogs`** - Common dialogs (Toast, Confirm, Alert)
-- **`Sorolla.UI.Celebrations`** - Celebration/unlock panels
-- **`Sorolla.UI.Effects`** - UI effects (floating text)
-- **`Sorolla.UI.Config`** - Config-driven panels
-- **`Sorolla.Tutorial`** - Tutorial system
-- **`[GameName]`** - Game-specific implementation (e.g., `GrannysAttic`)
+| Event | Signature |
+|-------|-----------|
+| `OnStateChanged` | `Action<LevelState>` |
+| `OnLevelStarted` | `Action<int>` |
+| `OnLevelEnded` | `Action<LevelEndReason>` |
+| `OnLevelSetupRequested` | `Action<int>` |
+| `OnLevelCleanupRequested` | `Action` |
+| `OnWorldCompleted` | `Action<int>` |
+| `OnWorldUnlocked` | `Action<int>` |
 
-## Sorolla.UI Module Guide
+### World System (Optional)
 
-### Core (Required)
-The core UI system with UIManager, UIScreen, UIPanel, and UIRegistry.
-
-### Transitions (Optional)
-DOTween-based panel transitions. Create ScriptableObject assets:
 ```csharp
-// Create transition asset: Right-click > Create > Sorolla > UI > Transitions > Scale
+protected override WorldConfig[] GetWorldConfigs() => _worlds;
+```
+
+| Method | Description |
+|--------|-------------|
+| `UsesWorldSystem` | Whether worlds are configured |
+| `GetWorldForLevel(int)` | World number for a global level |
+| `GetLevelIndexInWorld(int)` | Local level index within world |
+| `IsWorldUnlocked(int)` | Check world availability |
+
+---
+
+## UI
+
+Screen/panel management with stack navigation and transitions. Namespace: `Sorolla.UI`
+
+### UIManager API
+
+| Method | Description |
+|--------|-------------|
+| `PushScreenAsync(UIScreenId, object args, bool clearStack)` | Show full-screen |
+| `PopScreenAsync()` | Go back |
+| `GetTopScreen()` | Current screen |
+| `OpenPanelAsync(UIPanelId, object args)` | Show modal panel |
+| `OpenPanelAsync(UIPanelId, object args, IUITransition)` | With custom transition |
+| `ClosePanelAsync(UIPanel)` | Close panel |
+| `ClosePanelsByIdAsync(UIPanelId)` | Close all matching |
+| `BuildGameUI()` | Initialize gameplay HUD |
+| `ShowGameUI(bool)` | Toggle gameplay HUD |
+| `HandleBackAsync()` | Handle back button |
+
+| Event | Signature |
+|-------|-----------|
+| `OnPanelOpened` | `Action<UIPanel>` |
+| `OnPanelClosed` | `Action<UIPanel>` |
+
+### Enum Ranges
+
+- `UIScreenId`: 0-99 reserved for Core, 100+ for game
+- `UIPanelId`: 0-99 reserved for Core, 100+ for game
+
+### UIRegistry
+
+Create: **Right-click > Create > Sorolla > UI > Registry**. Maps enum IDs to prefabs.
+
+### Transitions
+
+Create: **Right-click > Create > Sorolla > UI > Transitions > [Fade|Scale|Slide]**
+
+```csharp
 var scaleIn = Resources.Load<ScaleTransition>("UI/ScaleIn");
 await uiManager.OpenPanelAsync(panelId, args, scaleIn);
 ```
 
-### Dialogs (Optional)
-Common dialog panels:
+### Dialogs
+
 ```csharp
-// Toast notification
+// Toast
 ToastManager.Instance.ShowToast("Achievement unlocked!");
 
-// Confirm dialog
-await uiManager.OpenPanelAsync(UIPanelId.ConfirmDialog, new ConfirmDialog.Data
-{
-    Title = "Confirm",
-    Message = "Are you sure?",
+// Confirm
+await uiManager.OpenPanelAsync(UIPanelId.ConfirmDialog, new ConfirmDialog.Data {
+    Title = "Confirm", Message = "Are you sure?",
     OnResult = (confirmed) => HandleResult(confirmed)
 });
 ```
 
-### Celebrations (Optional)
-Template for unlock/celebration panels:
+### Config-Driven Panels
+
 ```csharp
-public class MyUnlockPanel : CelebrationPanel<MyUnlockData>
+public class MyPanelConfig : PanelConfigBase<MyReasonEnum, MyVisualConfig> { }
+
+public class MyPanel : ConfigurablePanel<MyReasonEnum, MyVisualConfig>
 {
-    protected override void UpdateUI(MyUnlockData data)
-    {
-        // Update UI with unlock data
-    }
+    protected override MyReasonEnum DefaultKey => MyReasonEnum.Default;
+    protected override void ApplyConfig(MyVisualConfig config) { }
 }
 ```
 
-### Effects (Optional)
-Floating text effects for scores, damage numbers, etc:
+### Celebrations
+
+```csharp
+public class MyUnlockPanel : CelebrationPanel<MyUnlockData>
+{
+    protected override void UpdateUI(MyUnlockData data) { }
+}
+```
+
+### Floating Text
+
 ```csharp
 FloatingTextManager.Instance.ShowNumber(100, worldPosition, "+{0}", Color.gold);
 ```
 
-### Config (Optional)
-Data-driven panel configuration:
-```csharp
-// Define your config ScriptableObject
-public class MyPanelConfig : PanelConfigBase<MyReasonEnum, MyVisualConfig> { }
+### UI Prefab Templates
 
-// Create config-driven panel
-public class MyPanel : ConfigurablePanel<MyReasonEnum, MyVisualConfig>
-{
-    protected override MyReasonEnum DefaultKey => MyReasonEnum.Default;
-    protected override void ApplyConfig(MyVisualConfig config) { /* ... */ }
-}
-```
+Template prefabs in `UI/Templates/`. Duplicate and customize for your game.
+
+| Template | Component | Usage |
+|----------|-----------|-------|
+| BasePanel | - | Panel with background overlay + window |
+| BaseButton | - | Button with optional icon + label |
+| Toast | `ToastPanel` | Bottom notification |
+| ConfirmDialog | `ConfirmDialog` | Two-button confirm |
+| AlertDialog | `AlertDialog` | Single-button alert |
 
 ---
 
-## Sorolla.LevelFlow Module Guide
+## SaveSystem
 
-Abstract base class for level flow management with optional world/chapter grouping.
+JSON-based persistence with versioning, migrations, and backups. Namespace: `Sorolla.PersistentData`
 
-### Setup
-Extend `LevelFlowManager` and implement abstract methods:
+**Requires:** `com.unity.nuget.newtonsoft-json`
 
-```csharp
-public class MyLevelManager : LevelFlowManager
-{
-    [SerializeField] private LevelConfig[] _levels;
+### API
 
-    protected override int GetTotalLevelCount() => _levels.Length;
+| Method | Description |
+|--------|-------------|
+| `Save<T>(data, fileName, slot?, createBackup?)` | Save synchronously |
+| `SaveAsync<T>(...)` | Save asynchronously |
+| `Load<T>(fileName, slot?)` | Load (returns `new T()` if missing) |
+| `Load<T>(fileName, slot?, defaultValue)` | Load with custom default |
+| `LoadAsync<T>(...)` | Load asynchronously |
+| `Exists(fileName, slot?)` | Check if file exists |
+| `Delete(fileName, slot?, deleteBackups?)` | Delete save |
+| `DeleteAllData(slot?)` | Delete all saves (slot=-1 for all) |
+| `GetFilePath(fileName, slot?)` | Full path |
+| `GetAllSaveFiles(slot?)` | List saves in slot |
 
-    protected override void OnLevelSetup(int levelIndex)
-    {
-        var config = _levels[levelIndex - 1];
-        // Spawn items, setup goals, etc.
-    }
-
-    protected override void OnLevelCleanup()
-    {
-        // Destroy spawned objects
-    }
-}
-```
-
-### With World System (Optional)
-```csharp
-public class MyLevelManager : LevelFlowManager
-{
-    [SerializeField] private WorldConfig[] _worlds;  // Create via: Create > Sorolla > Level Flow > World Config
-
-    protected override WorldConfig[] GetWorldConfigs() => _worlds;
-    // ... rest same as above
-}
-```
-
-### Usage
-```csharp
-var levelFlow = ServiceLocator.Instance.Resolve<ILevelFlowManager>();
-
-// Start level
-levelFlow.StartLevel(1);
-
-// Control
-levelFlow.PauseLevel();
-levelFlow.ResumeLevel();
-levelFlow.RestartLevel();
-
-// End level
-levelFlow.WinLevel();  // Auto-saves, shows LevelComplete panel
-levelFlow.LoseLevel(LevelEndReason.TimeUp);  // Shows GameOver panel
-
-// Events
-levelFlow.OnLevelStarted += (levelIndex) => { };
-levelFlow.OnLevelEnded += (reason) => { };
-levelFlow.OnWorldCompleted += (worldIndex) => { };
-
-// World queries (safe to call even without worlds)
-if (levelFlow.UsesWorldSystem)
-{
-    int world = levelFlow.GetWorldForLevel(25);
-    int localLevel = levelFlow.GetLevelIndexInWorld(25);
-}
-```
-
----
-
-## Sorolla.PersistentData Module Guide
-
-JSON-based save/load system with versioning, migrations, and backups.
+| Property | Description |
+|----------|-------------|
+| `Events` | Save lifecycle callbacks |
+| `Migrations` | Version migration pipeline |
+| `Backups` | Backup manager |
+| `Storage` | `IStorageProvider` instance |
 
 ### Define Save Data
+
 ```csharp
 [Serializable]
 public class PlayerData : ISaveData
 {
-    public int Version => 1;  // Increment when making breaking changes
+    public int Version => 1;  // Increment for breaking changes
     public int coins;
-    public int highScore;
-    public List<string> unlockedItems = new();
+    public List<string> inventory = new();
 }
 ```
 
-### Save & Load
+### Save Slots
+
 ```csharp
-// Save
-var data = new PlayerData { coins = 100 };
-SaveSystem.Save(data, "player");
-
-// Load (returns new instance if not found)
-var loaded = SaveSystem.Load<PlayerData>("player");
-
-// Async variants
-await SaveSystem.SaveAsync(data, "player");
-var loaded = await SaveSystem.LoadAsync<PlayerData>("player");
-
-// With save slots
 SaveSystem.Save(data, "player", slot: 1);
-var slot1Data = SaveSystem.Load<PlayerData>("player", slot: 1);
+var data = SaveSystem.Load<PlayerData>("player", slot: 2);
+```
+
+### Defaults via ScriptableObject
+
+```csharp
+[CreateAssetMenu(menuName = "Game/Player Config")]
+public class PlayerConfig : ScriptableObject, IDefaultsProvider<PlayerData>
+{
+    public int startingCoins = 100;
+    public PlayerData CreateDefault() => new() { coins = startingCoins };
+}
+
+var data = SaveSystem.Load("player", 0, _config);
 ```
 
 ### Version Migrations
+
 ```csharp
-// Register migration from v1 to v2
 SaveSystem.Migrations.Register<PlayerData>(1, 2, json => {
     var obj = JObject.Parse(json);
-    obj["gems"] = 0;  // Add new field
+    obj["gems"] = 0;
     obj["version"] = 2;
     return obj.ToString();
 });
 ```
 
-### Events
+Migrations chain automatically: v1 -> v2 -> v3.
+
+### Backups
+
 ```csharp
-SaveSystem.Events.OnAfterSave += (fileName, slot) => Debug.Log($"Saved {fileName}");
-SaveSystem.Events.OnSaveCorrupted += (fileName, slot, ex) => Debug.LogError("Corrupted!");
+SaveSystem.Backups.MaxBackups = 5;
+var backups = SaveSystem.Backups.GetBackups("player");
+SaveSystem.Backups.RestoreLatestBackup("player", SaveSystem.GetFilePath("player"));
+```
+
+### Events
+
+```csharp
+SaveSystem.Events.OnBeforeSave += (file, slot) => { };
+SaveSystem.Events.OnAfterSave += (file, slot) => { };
+SaveSystem.Events.OnBeforeLoad += (file, slot) => { };
+SaveSystem.Events.OnAfterLoad += (file, slot) => { };
+SaveSystem.Events.OnSaveCorrupted += (file, slot, ex) => { };
+SaveSystem.Events.OnMigrationApplied += (file, slot, from, to) => { };
+```
+
+### Custom Storage
+
+```csharp
+public class CloudStorage : IStorageProvider { /* implement methods */ }
+SaveSystem.Initialize(new CloudStorage());
 ```
 
 ### Editor Window
-Open via: **Tools > Sorolla > Save Data Editor**
-- View all save files
-- Edit JSON fields
-- Reset to defaults
-- Delete saves
+
+**Tools > Sorolla > Save Data Editor** - View, edit, delete save files.
+
+### File Layout
+
+```
+Application.persistentDataPath/saves/
+├── default/player.json
+├── slot1/player.json
+└── backups/player_20240115_143022.json
+```
 
 ---
 
-## Sorolla.Currency Module Guide
+## Currency
 
-Self-contained currency system with automatic persistence.
+Self-contained currency system with automatic persistence. Namespace: `Sorolla.Currency`
 
-### Pre-defined Currencies
-- `CurrencyIds.Coins` - Soft currency (default: 0)
-- `CurrencyIds.Gems` - Hard currency (default: 0)
-- `CurrencyIds.Energy` - Regenerating resource (default: 100)
+### Pre-defined IDs
 
-### Usage
+`CurrencyIds.Coins`, `CurrencyIds.Gems`, `CurrencyIds.Energy`
+
+### ICurrencyService API
+
+| Method | Description |
+|--------|-------------|
+| `GetBalance(string id)` | Current amount |
+| `CanAfford(string id, int amount)` | Check funds |
+| `GetAllBalances()` | All currencies |
+| `Add(string id, int amount)` | Add currency |
+| `TrySpend(string id, int amount)` | Spend if affordable (returns bool) |
+| `Set(string id, int amount)` | Set exact balance |
+
+| Event | Signature |
+|-------|-----------|
+| `OnCurrencyChanged` | `Action<CurrencyChangedEventArgs>` |
+
+`CurrencyChangedEventArgs`: `CurrencyId`, `PreviousBalance`, `NewBalance`, `ChangeType`, `Amount`
+
 ```csharp
 var currency = ServiceLocator.Instance.Resolve<ICurrencyService>();
-
-// Query
-int coins = currency.GetBalance(CurrencyIds.Coins);
-bool canBuy = currency.CanAfford(CurrencyIds.Gems, 50);
-
-// Modify
 currency.Add(CurrencyIds.Coins, 100);
-if (currency.TrySpend(CurrencyIds.Gems, 50))
-{
-    // Purchase successful
-}
-
-// Events (for UI binding)
-currency.OnCurrencyChanged += args => {
-    Debug.Log($"{args.CurrencyId}: {args.PreviousBalance} → {args.NewBalance}");
-};
+if (currency.TrySpend(CurrencyIds.Gems, 50)) { /* purchased */ }
 ```
 
-### Debug Tools (Editor/Development)
-```csharp
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-currency.DEBUG_SetBalance(CurrencyIds.Coins, 99999);
-currency.DEBUG_ResetAll();
-#endif
-```
+### UI Binding
+
+Add `CurrencyDisplay` component to a TextMeshProUGUI. Set `_currencyId` in inspector.
+
+### Debug (Editor/Dev builds)
+
+`DEBUG_SetBalance()`, `DEBUG_ResetAll()`
 
 ---
 
-## Sorolla.Haptics Module Guide
+## Inventory
 
-Cross-platform haptic feedback for iOS and Android.
+Generic item inventory with persistence. Namespace: `Sorolla.Inventory`
 
-### Usage
+### IInventoryService API
+
+| Method | Description |
+|--------|-------------|
+| `AddItem(string id, int count)` | Add items |
+| `RemoveItem(string id, int count)` | Remove items |
+| `HasItem(string id)` | Check ownership |
+| `GetItemCount(string id)` | Item quantity |
+
+| Event | Signature |
+|-------|-----------|
+| `OnInventoryChanged` | `Action<InventoryChangedEventArgs>` |
+
+Extend `InventoryService` and override `SaveFileName` for game-specific persistence key.
+
+---
+
+## PowerUps
+
+Power-up management with unlock progression, purchases, and quantity tracking. Namespace: `Sorolla.PowerUps`
+
+### IPowerUpService API
+
+| Method | Description |
+|--------|-------------|
+| `IsUnlocked(PowerUpIds id)` | Check availability |
+| `GetQuantity(PowerUpIds id)` | Current stock |
+| `TryUse(PowerUpIds id)` | Use one (returns bool) |
+| `TryPurchase(PowerUpIds id)` | Buy with currency (returns bool) |
+| `HasFirstUseFree(PowerUpIds id)` | Free use available |
+
+| Event | Signature |
+|-------|-----------|
+| `OnQuantityChanged` | `Action<PowerUpIds, int>` |
+| `OnPowerUpUnlocked` | `Action<PowerUpIds>` |
+| `OnPowerUpUsed` | `Action<PowerUpIds>` |
+
+### Setup
+
+1. Create `PowerUpDefinitionBase` ScriptableObjects for each power-up
+2. Create a `PowerUpRegistry` ScriptableObject, add definitions
+3. Assign registry to `PowerUpService`
+
+Unlocks trigger automatically based on `LevelFlowManager.CurrentLevelIndex`.
+
+---
+
+## Haptics
+
+Cross-platform haptic feedback. Namespace: `Sorolla`
+
+### IHapticsService API
+
+| Member | Description |
+|--------|-------------|
+| `IsEnabled` | Get/set (persisted) |
+| `IsSupported` | Device capability |
+| `PlayImpact(HapticsIntensity)` | Light, Medium, Heavy |
+| `PlaySelection()` | UI selection tap |
+| `PlayNotification(HapticsType)` | Success, Warning, Error |
+
+| Platform | Implementation |
+|----------|----------------|
+| iOS 10+ | UIFeedbackGenerator |
+| Android API 26+ | VibrationEffect |
+| Android < 26 | Basic vibration |
+| Editor | Debug.Log |
+
 ```csharp
 var haptics = ServiceLocator.Instance.Resolve<IHapticsService>();
-
-// Toggle (persisted automatically)
-haptics.IsEnabled = true;
-
-// Impact feedback
-haptics.PlayImpact(HapticsIntensity.Light);   // Soft tap
-haptics.PlayImpact(HapticsIntensity.Medium);  // Standard tap
-haptics.PlayImpact(HapticsIntensity.Heavy);   // Strong tap
-
-// Notification feedback
-haptics.PlaySelection();                       // UI selection
-haptics.PlayNotification(HapticsType.Success); // Win/complete
-haptics.PlayNotification(HapticsType.Warning); // Caution
-haptics.PlayNotification(HapticsType.Error);   // Fail/error
+haptics.PlayImpact(HapticsIntensity.Medium);
+haptics.PlayNotification(HapticsType.Success);
 ```
-
-### Platform Support
-- **iOS**: Native UIFeedbackGenerator (iOS 10+)
-- **Android**: Vibrator API with VibrationEffect (API 26+)
-- **Editor**: Debug logs
 
 ---
 
-## Pool Module Guide
+## Tutorial & Highlight
 
-Generic object pooling for performance.
+Level-grouped tutorial system with camera-based highlighting. Namespace: `Sorolla.Tutorial`
+
+### Setup
+
+1. Create config: **Create > Sorolla > Tutorial > Tutorial Config**
+2. Create steps: **Create > Sorolla > Tutorial > Tutorial Step**
+3. Add Level Groups to config, assign steps
+4. Assign config to TutorialController
+
+### TutorialStepBase Properties
+
+| Property | Description |
+|----------|-------------|
+| `Id` | Unique identifier |
+| `InstructionText` | Player-facing message |
+| `CompletionMode` | Manual, Event, Timed |
+| `EntryMode` | Immediate, Gate |
+| `EntryDelay` | Seconds before showing |
+| `PauseGameplayDuringStep` | Pause game |
+| `FreezePlayer` | Lock movement |
+| `PanelPrefab` | UI to show |
+| `ShowArrow` | Directional arrow |
+
+### TutorialController API
+
+| Method | Description |
+|--------|-------------|
+| `NotifyLevelPlay(int levelIndex)` | Call when level starts |
+| `IsLevelTutorialCompleted(int)` | Check completion |
+| `ResetTutorial()` | Reset all progress |
+| `ConfigureLevelSteps(Dictionary)` | Runtime config |
+
+**Static methods (call from anywhere):**
+
+| Method | Description |
+|--------|-------------|
+| `Complete()` | Complete current step |
+| `CompleteStep(string stepId)` | Complete by event ID |
+| `TriggerGate(string stepId)` | Trigger gate entry |
+
+| Event | Signature |
+|-------|-----------|
+| `OnTutorialStepChanged` | `Action<int level, int step>` |
+| `OnTutorialStepEntered` | `Action<int level, int step, string stepId>` |
+
+**Gameplay hooks:**
+```csharp
+tutorialController.SetGameplayPaused = (bool paused) => { };
+tutorialController.SetFreezePlayer = (bool frozen) => { };
+```
+
+### TutorialObjectsHider
+
+Shows/hides GameObjects by tutorial progress. Add component, configure `HideEntry` list:
+- `Object`: GameObject to control
+- `RevealLevel`: Show at this level or higher
+- `RevealStepInLevel`: Show at this step index
+
+### GateTriggerCollider
+
+Triggers gate-waiting steps on collision. Set `_stepId` to match the step's `Id`.
+
+### Highlight System
+
+Camera-based spotlight effect: objects move to a separate layer rendered by an overlay camera on top of a dark overlay.
+
+**Architecture:**
+```
+Main Camera → scene + dark overlay
+Highlight Camera → URP overlay, highlighted items only
+Tutorial Panel → Screen-space overlay, above everything
+```
+
+**Setup:**
+
+1. Add layer `TutorialHighlight` in Project Settings
+2. Create `HighlightManager` subclass implementing `IHighlightableProvider`:
 
 ```csharp
-// Get from pool
-var bullet = PoolManager.Instance.Get<Bullet>(bulletPrefab);
+public class MyHighlightManager : HighlightManager, IHighlightableProvider
+{
+    [SerializeField] private HighlightConfig[] _configs;
 
-// Return to pool
-PoolManager.Instance.Return(bullet);
+    private void Start()
+    {
+        _highlightableProvider = this;
+        foreach (var c in _configs) RegisterConfig(c.StepId, c);
+    }
 
-// Pre-warm pool
-PoolManager.Instance.Prewarm(bulletPrefab, count: 20);
+    public IEnumerable<IHighlightable> FindHighlightables(string[] typeIds)
+    {
+        var set = new HashSet<string>(typeIds);
+        foreach (var item in FindObjectsByType<MyItem>(FindObjectsSortMode.None))
+            if (item is IHighlightable h && h.CanBeHighlighted && set.Contains(h.HighlightTypeId))
+                yield return h;
+    }
+}
+```
+
+3. Implement `IHighlightable` on target objects:
+```csharp
+public class MyItem : MonoBehaviour, IHighlightable
+{
+    public string HighlightTypeId => "my_item";
+    public bool CanBeHighlighted => gameObject.activeSelf;
+    GameObject IHighlightable.GameObject => gameObject;
+    public void SetHighlighted(bool highlighted) { }
+}
+```
+
+4. Implement `IInputLayerOverride` on your input handler to restrict raycasts during highlights
+
+**Overlay options:** `HighlightOverlay` (world-space quad) or `HighlightOverlayUI` (screen-space Image).
+
+**Extension points:** Override `OnItemHighlighted()`, `OnItemUnhighlighted()`, `ActivateHighlight()`, `ClearHighlights()`.
+
+---
+
+## Audio
+
+Audio mixer management with per-channel control. Namespace: `Sorolla`
+
+### AudioManager API
+
+| Method | Description |
+|--------|-------------|
+| `PlayMusic(string key)` | Play music clip |
+| `PlaySFX(string key)` | Play sound effect |
+| `PlayUI(string key)` | Play UI sound |
+| `SetVolume(Channel, float)` | Set channel volume (0-1) |
+| `SetEnabled(Channel, bool)` | Mute/unmute channel |
+
+| Property | Description |
+|----------|-------------|
+| `MasterVolume` / `MusicVolume` / `SFXVolume` / `UIVolume` | Float 0-1 |
+| `MasterEnabled` / `MusicEnabled` / `SFXEnabled` / `UIEnabled` | Bool |
+
+Channels: `Master`, `Music`, `SFX`, `UI`. Settings auto-persist via SaveSystem.
+
+Setup: Create `AudioLibrary` ScriptableObject, map string keys to AudioClips.
+
+---
+
+## Pool
+
+Generic object pooling. Namespace: `Sorolla`
+
+### PoolManager API (Static)
+
+| Method | Description |
+|--------|-------------|
+| `Register(Pool)` | Register a pool |
+| `HasPool(string name)` | Check existence |
+| `GetPoolByName(string name)` | Get pool |
+| `ReturnAllToPool()` | Return all objects |
+| `ClearAll()` | Destroy all pools |
+| `Unregister(string name)` | Remove pool |
+
+Create `Pool` components on GameObjects with prefab references. They auto-register.
+
+---
+
+## FTX (First-Time Experience)
+
+Track one-time hints and first-use events. Namespace: `Sorolla.FTX`
+
+### IFirstTimeExperienceService API
+
+| Method | Description |
+|--------|-------------|
+| `HasSeen(string key)` | Already shown? |
+| `MarkAsSeen(string key)` | Mark as shown |
+| `CheckFirstTime(string key)` | Returns true on first call, marks seen |
+
+Auto-persists via SaveSystem.
+
+```csharp
+var ftx = ServiceLocator.Instance.Resolve<IFirstTimeExperienceService>();
+if (ftx.CheckFirstTime("shop_intro")) ShowShopTutorial();
 ```
 
 ---
 
 ## Utils
 
+### SorollaTimer
+
+Lightweight, pooling-free timer utility. No MonoBehaviour per-timer — driven by a single auto-created updater.
+
+```csharp
+// Simple timer
+var timer = SorollaTimer.StartTimer(3f, () => Debug.Log("Done!"));
+
+// Looping timer
+var loop = SorollaTimer.StartTimer(1f, () => Debug.Log("Tick"), loop: true);
+
+// Countdown with tick
+var countdown = SorollaTimer.StartCountdown(10f,
+    remaining => Debug.Log($"Time left: {remaining:F1}"),
+    () => Debug.Log("Time's up!")
+);
+
+// Control
+timer.Pause();
+timer.Resume();
+timer.Cancel();
+timer.Restart();
+
+// Properties
+float progress = timer.Progress;  // 0-1
+float remaining = timer.Remaining;
+bool running = timer.IsRunning;
+
+// Unscaled time (ignores Time.timeScale)
+SorollaTimer.StartTimer(1f, callback, useUnscaledTime: true);
+
+// Cancel all timers
+SorollaTimer.CancelAll();
+```
+
+### SceneLoader
+
+Static async wrapper around `SceneManager.LoadSceneAsync` with progress callbacks.
+
+```csharp
+// Load scene (replaces current)
+await SceneLoader.LoadSceneAsync("GameScene");
+
+// Load additively
+await SceneLoader.LoadSceneAdditiveAsync("UI_Scene");
+
+// With progress
+await SceneLoader.LoadSceneAsync("Level1", progress => slider.value = progress);
+
+// Unload
+await SceneLoader.UnloadSceneAsync("UI_Scene");
+
+// Reload current
+await SceneLoader.ReloadCurrentSceneAsync();
+```
+
+### SafeAreaHandler
+
+Component that adjusts a RectTransform to respect the device safe area (notches, status bars). Namespace: `Sorolla.UI`
+
+Attach to any UI RectTransform. Per-edge toggles let you apply only to specific sides.
+
+```
+Inspector:
+├── Apply Top ✓
+├── Apply Bottom ✓
+├── Apply Left ✓
+└── Apply Right ✓
+```
+
+Updates automatically on orientation changes.
+
+### MonoSingleton\<T\>
+
+Generic singleton base for MonoBehaviours. Override `Init()` instead of `Awake()`. Auto-creates instance if needed, marks `DontDestroyOnLoad`.
+
+### SorollaManager
+
+Lightweight non-singleton manager base. Idempotent `Init()`, override `Initialize()` and `PostInitialize()`. Used by all services (Currency, Inventory, PowerUps, Haptics, FTX).
+
 ### FakeTouchCursor (Editor-only)
 
-Displays a hand/finger sprite that follows the mouse cursor during play mode. Used for recording App Store preview videos with Unity Recorder where touch input would otherwise be invisible.
+Finger sprite following the mouse for recording App Store videos. Uses new Input System. Compiles to nothing in builds.
 
-**Features:**
-- Sprite follows cursor with pivot at the fingertip (for hand/arm sprites)
-- Scale-down animation on tap
-- Optional ParticleSystem burst on tap
+Setup: Canvas (overlay, sort 999) > Image with hand sprite > `FakeTouchCursor` component.
 
-**Setup:**
-1. Create a Canvas (Screen Space - Overlay, Sort Order 999)
-2. Add an Image child with your hand sprite — set the pivot to the index fingertip
-3. Add `FakeTouchCursor` component, assign Canvas and Image
-4. (Optional) Add a ParticleSystem (no loop, no play-on-awake), assign to `Tap FX`
-5. Record with Unity Recorder, delete Canvas when done
+### Other Utilities
 
-Uses the new Input System (`Mouse.current`). Compiles to nothing in builds (`#if UNITY_EDITOR`).
+| Script | Description |
+|--------|-------------|
+| `Billboard` | Face camera |
+| `FitToCamera` | Aspect-ratio fitting |
+| `ShapeGenerator` | Procedural shapes |
+| `TMPCurveText` | Curved TextMeshPro |
+| `TMPArcPopAnimator` | Arc pop animations |
+| `TMPTextMirror` | Mirror TMP text |
+| `InfinityMovement` | Wrap-around movement |
+| `LevelObjectsHider` | Show/hide by level |
+| `FlickerLight` | Light flicker effect |
+| `UIGradient` | Gradient on UI elements |
 
+---
+
+## Debug Tools
+
+### SorollaDebugMenu
+
+Tap 4x on screen to open. Provides level selection for testing.
+
+### Editor Tools
+
+| Tool | Location |
+|------|----------|
+| Save Data Editor | Tools > Sorolla > Save Data Editor |
+| Prefab Icon Generator | Tools > Sorolla > Prefab Icon Generator |
+| Play Mode Start Scene | Auto-loads Bootstrap on Play |
+| Texture Import Settings | Bulk texture settings |
+
+---
+
+## Namespaces
+
+| Namespace | Scope |
+|-----------|-------|
+| `Sorolla` | Core (ServiceLocator, GameManager, Audio, Haptics, Pool, Utils) |
+| `Sorolla.LevelFlow` | Level progression |
+| `Sorolla.PersistentData` | Save/load system |
+| `Sorolla.Currency` | Currency system |
+| `Sorolla.Inventory` | Inventory system |
+| `Sorolla.PowerUps` | Power-up system |
+| `Sorolla.UI` | UI core |
+| `Sorolla.UI.Transitions` | Panel transitions |
+| `Sorolla.UI.Dialogs` | Toast, Confirm, Alert |
+| `Sorolla.UI.Celebrations` | Celebration panels |
+| `Sorolla.UI.Effects` | Floating text |
+| `Sorolla.UI.Config` | Config-driven panels |
+| `Sorolla.Tutorial` | Tutorial system |
+| `Sorolla.FTX` | First-time experience |
