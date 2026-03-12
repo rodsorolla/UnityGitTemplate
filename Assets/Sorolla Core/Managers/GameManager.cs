@@ -165,7 +165,7 @@ namespace Sorolla
             InitializeSceneServices();
 
             // Start background music (AudioManager handles disabled state)
-            _audioManager?.PlayMusic("Music1");
+            _audioManager?.PlayMusic("Music");
 
             return Task.CompletedTask;
         }

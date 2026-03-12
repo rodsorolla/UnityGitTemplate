@@ -29,6 +29,9 @@ namespace Sorolla.LevelFlow
         /// <summary>Lose: Player's health/lives depleted.</summary>
         OutOfLives = 24,
 
+        /// <summary>Lose: Player tapped a bomb.</summary>
+        BombExploded = 25,
+
         // Game-specific reasons start at 100
         /// <summary>Game-specific reasons should use values >= 100.</summary>
         Custom = 100

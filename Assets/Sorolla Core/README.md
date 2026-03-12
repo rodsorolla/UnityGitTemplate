@@ -2,6 +2,11 @@
 
 A reusable Unity framework for common game systems including UI management, level flow, persistence, currency, haptics, tutorials, and audio.
 
+> **Claude Code Setup** — After importing this package, run from your project root:
+> ```bash
+> mkdir -p .claude/skills && ln -s "../../Assets/Sorolla Core/.claude/skills/sorolla-core" .claude/skills/sorolla-core
+> ```
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)
@@ -313,7 +318,8 @@ Sorolla Core/
 │   └── ... (arrow, gate, hider components)
 │
 ├── Utils/              # Utility classes
-│   └── MonoSingleton.cs         # Singleton pattern
+│   ├── MonoSingleton.cs         # Singleton pattern
+│   └── FakeTouchCursor.cs       # Editor-only cursor overlay for recording
 │
 └── URP Shaders/        # Shader utilities
 ```
@@ -718,3 +724,26 @@ PoolManager.Instance.Return(bullet);
 // Pre-warm pool
 PoolManager.Instance.Prewarm(bulletPrefab, count: 20);
 ```
+
+---
+
+## Utils
+
+### FakeTouchCursor (Editor-only)
+
+Displays a hand/finger sprite that follows the mouse cursor during play mode. Used for recording App Store preview videos with Unity Recorder where touch input would otherwise be invisible.
+
+**Features:**
+- Sprite follows cursor with pivot at the fingertip (for hand/arm sprites)
+- Scale-down animation on tap
+- Optional ParticleSystem burst on tap
+
+**Setup:**
+1. Create a Canvas (Screen Space - Overlay, Sort Order 999)
+2. Add an Image child with your hand sprite — set the pivot to the index fingertip
+3. Add `FakeTouchCursor` component, assign Canvas and Image
+4. (Optional) Add a ParticleSystem (no loop, no play-on-awake), assign to `Tap FX`
+5. Record with Unity Recorder, delete Canvas when done
+
+Uses the new Input System (`Mouse.current`). Compiles to nothing in builds (`#if UNITY_EDITOR`).
+

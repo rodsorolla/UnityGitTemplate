@@ -19,6 +19,13 @@ namespace Sorolla.LevelFlow
 
         #endregion
 
+        #region Settings
+
+        [Header("End Panel")]
+        [SerializeField] private float _endPanelDelay = 1.5f;
+
+        #endregion
+
         #region State
 
         private LevelState _currentState = LevelState.Idle;
@@ -77,6 +84,7 @@ namespace Sorolla.LevelFlow
         public event Action OnLevelResumed;
         public event Action<int> OnWorldCompleted;
         public event Action<int> OnWorldUnlocked;
+        public event Action OnEndPanelDismissed;
 
         #endregion
 
@@ -434,12 +442,22 @@ namespace Sorolla.LevelFlow
 
             try
             {
-                await uiManager.OpenPanelAsync(panelId);
+                if (_endPanelDelay > 0f)
+                    await System.Threading.Tasks.Task.Delay((int)(_endPanelDelay * 1000));
+                var panel = await uiManager.OpenPanelAsync(panelId);
+                if (panel != null)
+                    panel.OnClosed += HandleEndPanelDismissed;
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[LevelFlowManager] Failed to show panel {panelId}: {ex.Message}");
             }
+        }
+
+        private void HandleEndPanelDismissed(UIPanel panel)
+        {
+            panel.OnClosed -= HandleEndPanelDismissed;
+            OnEndPanelDismissed?.Invoke();
         }
 
         #endregion
