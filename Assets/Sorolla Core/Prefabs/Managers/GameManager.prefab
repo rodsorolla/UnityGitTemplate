@@ -1,5 +1,50 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &943407959255328460
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8924819252433581046}
+  - component: {fileID: 4124551512181378706}
+  m_Layer: 0
+  m_Name: PowerUpService
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8924819252433581046
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943407959255328460}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8425194108189317331}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4124551512181378706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943407959255328460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e10a8bf73af54d84ace824faaef89be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Sorolla.PowerUps.PowerUpService
+  _registry: {fileID: 11400000, guid: c8aa6076c33604e32932dbf8771bb9d5, type: 2}
 --- !u!1 &1950194311363017984
 GameObject:
   m_ObjectHideFlags: 0
@@ -189,6 +234,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8425194108189317331}
   - component: {fileID: 7110648598487701187}
+  - component: {fileID: 1266996527253435556}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -215,6 +261,7 @@ Transform:
   - {fileID: 4258130785747225055}
   - {fileID: 4696132918423540689}
   - {fileID: 5654435904697671952}
+  - {fileID: 8924819252433581046}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7110648598487701187
@@ -236,6 +283,22 @@ MonoBehaviour:
   - {fileID: 7650768610925556587}
   - {fileID: 4739973413094018587}
   - {fileID: 712313189815816508}
+  - {fileID: 1266996527253435556}
+  - {fileID: 4124551512181378706}
+--- !u!114 &1266996527253435556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6139873206821288422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f180e298b6be44b2b97e0296f2270cdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConveyorBelt.GameDataService
+  _saveOnPause: 1
+  _saveOnQuit: 1
 --- !u!1 &7028169341982422308
 GameObject:
   m_ObjectHideFlags: 0
@@ -280,6 +343,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd78febda4db634c8a527c47c98b815, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sorolla.LevelFlow.LevelFlowManager
+  _endPanelDelay: 1.5
 --- !u!1 &7920982639305455312
 GameObject:
   m_ObjectHideFlags: 0
@@ -327,15 +391,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf71915414e6240e6ac08de8d4b634d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sorolla.AudioManager
-  mixer: {fileID: 24100000, guid: 0d268cf14902bd14294b55d9275739de, type: 2}
+  mixer: {fileID: 24100000, guid: b39025230998140958560ccf69f81611, type: 2}
   masterVolumeParam: MasterVolume
   musicVolumeParam: MusicVolume
   sfxVolumeParam: SFXVolume
   uiVolumeParam: UIVolume
-  musicGroup: {fileID: 2435936783649280196, guid: 0d268cf14902bd14294b55d9275739de, type: 2}
-  sfxGroup: {fileID: 6254086554422575262, guid: 0d268cf14902bd14294b55d9275739de, type: 2}
-  uiGroup: {fileID: 24300002, guid: 0d268cf14902bd14294b55d9275739de, type: 2}
-  audioLibrary: {fileID: 11400000, guid: 0fc552887189f6045818a649b3d870f7, type: 2}
+  musicGroup: {fileID: 2435936783649280196, guid: b39025230998140958560ccf69f81611, type: 2}
+  sfxGroup: {fileID: 6254086554422575262, guid: b39025230998140958560ccf69f81611, type: 2}
+  uiGroup: {fileID: 24300002, guid: b39025230998140958560ccf69f81611, type: 2}
+  audioLibrary: {fileID: 11400000, guid: d43454bdaf1ec49a4b9e470be97b38cd, type: 2}
   musicSource: {fileID: 8357133276747536244}
   sfxSource: {fileID: 2342251329903892481}
   uiSource: {fileID: 1929104308849189822}

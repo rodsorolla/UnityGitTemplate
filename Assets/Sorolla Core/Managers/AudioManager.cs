@@ -80,6 +80,10 @@ namespace Sorolla
 
         private void Start()
         {
+            // Ensure saved settings are loaded before applying to mixer
+            // (Init is idempotent — safe even if GameManager already called it)
+            Init();
+
             // Apply all volume settings to mixer after AudioMixer is fully initialized
             ApplyAll();
         }
@@ -441,9 +445,14 @@ namespace Sorolla
         {
             SetEnabled(Channel.Music, enabled);
 
-            // Start pending music when re-enabled
-            if (enabled && !string.IsNullOrEmpty(_pendingMusicKey) && !musicSource.isPlaying)
+            if (!enabled)
             {
+                // Stop playback when music is disabled
+                musicSource.Stop();
+            }
+            else if (!string.IsNullOrEmpty(_pendingMusicKey) && !musicSource.isPlaying)
+            {
+                // Start pending music when re-enabled
                 PlayMusic(_pendingMusicKey);
             }
         }

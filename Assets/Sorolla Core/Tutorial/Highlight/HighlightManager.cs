@@ -26,7 +26,7 @@ namespace Sorolla.Tutorial.Highlight
     public abstract class HighlightManager : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] protected HighlightOverlay _overlay;
+        [SerializeField] protected HighlightOverlayBase _overlay;
         [SerializeField] protected Camera _mainCamera;
         [SerializeField] protected Camera _highlightCamera;
 
@@ -36,7 +36,7 @@ namespace Sorolla.Tutorial.Highlight
 
         // State
         protected Dictionary<string, HighlightConfig> _configByStepId = new();
-        protected Dictionary<IHighlightable, int> _originalLayers = new();
+        protected Dictionary<IHighlightable, List<(GameObject go, int layer)>> _originalLayers = new();
         protected List<IHighlightable> _highlightedItems = new();
         protected int _highlightLayer = -1;
         protected int _originalMainCameraCullingMask;
@@ -143,7 +143,11 @@ namespace Sorolla.Tutorial.Highlight
             // Find items to highlight
             var itemsToHighlight = new List<IHighlightable>(_highlightableProvider.FindHighlightables(config.HighlightTypeIds));
 
-            if (itemsToHighlight.Count == 0) return;
+            if (itemsToHighlight.Count == 0)
+            {
+                Debug.Log("[HighlightManager] No highlightable items found for this step.");
+                return;
+            }
 
             _isHighlightActive = true;
 
@@ -180,8 +184,8 @@ namespace Sorolla.Tutorial.Highlight
             // Move items to highlight layer and enable visual effects
             foreach (var item in itemsToHighlight)
             {
-                // Store original layer
-                _originalLayers[item] = item.GameObject.layer;
+                // Store original layers for all objects in hierarchy
+                _originalLayers[item] = CollectLayers(item.GameObject);
 
                 // Move to highlight layer (including children)
                 SetLayerRecursively(item.GameObject, _highlightLayer);
@@ -212,10 +216,10 @@ namespace Sorolla.Tutorial.Highlight
                 // Check if the underlying Unity object has been destroyed
                 if (item is not UnityEngine.Object unityObj || unityObj == null) continue;
 
-                // Restore original layer
-                if (_originalLayers.TryGetValue(item, out int originalLayer))
+                // Restore original layers per-object
+                if (_originalLayers.TryGetValue(item, out var layers))
                 {
-                    SetLayerRecursively(item.GameObject, originalLayer);
+                    RestoreLayers(layers);
                 }
 
                 // Disable visual highlights
@@ -273,6 +277,29 @@ namespace Sorolla.Tutorial.Highlight
         /// Override in subclass to remove extra visual effects when item is unhighlighted.
         /// </summary>
         protected virtual void OnItemUnhighlighted(IHighlightable item) { }
+
+        protected List<(GameObject go, int layer)> CollectLayers(GameObject root)
+        {
+            var result = new List<(GameObject, int)>();
+            CollectLayersRecursive(root, result);
+            return result;
+        }
+
+        private void CollectLayersRecursive(GameObject obj, List<(GameObject, int)> result)
+        {
+            result.Add((obj, obj.layer));
+            foreach (Transform child in obj.transform)
+                CollectLayersRecursive(child.gameObject, result);
+        }
+
+        protected void RestoreLayers(List<(GameObject go, int layer)> layers)
+        {
+            foreach (var (go, layer) in layers)
+            {
+                if (go != null)
+                    go.layer = layer;
+            }
+        }
 
         protected void SetLayerRecursively(GameObject obj, int layer)
         {

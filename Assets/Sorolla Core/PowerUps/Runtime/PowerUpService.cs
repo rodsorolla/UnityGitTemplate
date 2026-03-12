@@ -37,13 +37,13 @@ namespace Sorolla.PowerUps
             // Register with ServiceLocator
             ServiceLocator.Instance.Register<IPowerUpService>(this);
 
-            // Subscribe to level flow events for unlock checks
-            // LevelFlowManager is guaranteed to be registered because GameManager
-            // initializes managers in order via the _gameManagers array
+            // Subscribe to level start for unlock checks — unlocks should appear
+            // when the new level begins, not at the end of the previous one.
             var levelFlow = ServiceLocator.Instance.TryResolve<ILevelFlowManager>();
             if (levelFlow != null)
             {
-                levelFlow.OnLevelEnded += OnLevelEnded;
+                levelFlow.OnLevelStarted += OnLevelStarted;
+                CheckUnlocks(levelFlow.HighestLevelReached);
             }
         }
 
@@ -52,7 +52,7 @@ namespace Sorolla.PowerUps
             var levelFlow = ServiceLocator.Instance.TryResolve<ILevelFlowManager>();
             if (levelFlow != null)
             {
-                levelFlow.OnLevelEnded -= OnLevelEnded;
+                levelFlow.OnLevelStarted -= OnLevelStarted;
             }
         }
 
@@ -298,6 +298,42 @@ namespace Sorolla.PowerUps
             }
         }
 
+        public bool HasSeenUnlockCelebration(PowerUpId powerUpId)
+        {
+            return _data.HasSeenUnlockCelebration(powerUpId.ToKey());
+        }
+
+        public void MarkUnlockCelebrationSeen(PowerUpId powerUpId)
+        {
+            var key = powerUpId.ToKey();
+            if (!_data.HasSeenUnlockCelebration(key))
+            {
+                _data.SetUnlockCelebrationSeen(key);
+                _isDirty = true;
+            }
+        }
+
+        public PowerUpDefinitionBase GetNextPendingCelebration()
+        {
+            if (_registry == null) return null;
+
+            var levelFlow = ServiceLocator.Instance.TryResolve<ILevelFlowManager>();
+            if (levelFlow == null) return null;
+
+            var highest = levelFlow.HighestLevelReached;
+
+            foreach (var definition in _registry.GetLockablePowerUps())
+            {
+                if (highest >= definition.UnlockLevel
+                    && !_data.HasSeenUnlockCelebration(definition.PowerUpId.ToKey()))
+                {
+                    return definition;
+                }
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Persistence
@@ -365,16 +401,12 @@ namespace Sorolla.PowerUps
             ));
         }
 
-        private void OnLevelEnded(LevelEndReason reason)
+        private void OnLevelStarted(int levelIndex)
         {
-            // Only check unlocks on win
-            if (reason == LevelEndReason.AllGoalsComplete)
+            var levelFlow = ServiceLocator.Instance.TryResolve<ILevelFlowManager>();
+            if (levelFlow != null)
             {
-                var levelFlow = ServiceLocator.Instance.TryResolve<ILevelFlowManager>();
-                if (levelFlow != null)
-                {
-                    CheckUnlocks(levelFlow.HighestLevelReached);
-                }
+                CheckUnlocks(levelFlow.HighestLevelReached);
             }
         }
 

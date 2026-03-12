@@ -38,6 +38,54 @@ namespace Sorolla.PersistentData.Editor
             window.Show();
         }
 
+        [MenuItem("Tools/Sorolla/Delete All Saves %#r")]
+        public static void DeleteAllSavesShortcut()
+        {
+            var savesBasePath = Path.Combine(Application.persistentDataPath, "saves");
+
+            if (!Directory.Exists(savesBasePath))
+            {
+                EditorUtility.DisplayDialog("No Saves", "No save folder found.", "OK");
+                return;
+            }
+
+            var files = Directory.GetFiles(savesBasePath, "*.json", SearchOption.AllDirectories);
+            if (files.Length == 0)
+            {
+                EditorUtility.DisplayDialog("No Saves", "No save files found.", "OK");
+                return;
+            }
+
+            if (!EditorUtility.DisplayDialog("Delete All Saves",
+                $"Are you sure you want to DELETE ALL {files.Length} save file(s)?\n\n⚠️ THIS CANNOT BE UNDONE ⚠️",
+                "Delete All", "Cancel"))
+                return;
+
+            try
+            {
+                foreach (var file in files)
+                {
+                    File.Delete(file);
+                }
+
+                Debug.Log($"[SaveDataEditor] Deleted all {files.Length} save files");
+                EditorUtility.DisplayDialog("Done", $"Deleted {files.Length} save file(s).", "OK");
+
+                // Refresh the editor window if it's open
+                if (HasOpenInstances<SaveDataEditorWindow>())
+                {
+                    var window = GetWindow<SaveDataEditorWindow>();
+                    window._editorModifiedFiles.Clear();
+                    window.SaveMetadata();
+                    window.RefreshFileList();
+                }
+            }
+            catch (Exception ex)
+            {
+                EditorUtility.DisplayDialog("Error", $"Failed to delete saves: {ex.Message}", "OK");
+            }
+        }
+
         private void OnEnable()
         {
             _savesBasePath = Path.Combine(Application.persistentDataPath, "saves");

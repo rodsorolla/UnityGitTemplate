@@ -3,10 +3,10 @@ using UnityEngine;
 namespace Sorolla.Tutorial.Highlight
 {
     /// <summary>
-    /// Creates a world-space dark quad overlay for tutorial highlighting.
-    /// Used with the camera-based highlight system.
+    /// World-space dark quad overlay for tutorial highlighting.
+    /// Best for top-down or fixed-angle cameras where a positioned quad covers the scene.
     /// </summary>
-    public class HighlightOverlay : MonoBehaviour
+    public class HighlightOverlay : HighlightOverlayBase
     {
         [Header("Settings")]
         [SerializeField] private Material _overlayMaterial;
@@ -59,13 +59,13 @@ namespace Sorolla.Tutorial.Highlight
             _overlayQuad.transform.localScale = new Vector3(_quadSize.x, _quadSize.y, 1f);
         }
 
-        public void Show()
+        public override void Show()
         {
             PositionOverlay();
             _overlayQuad.SetActive(true);
         }
 
-        public void Hide()
+        public override void Hide()
         {
             _overlayQuad.SetActive(false);
         }

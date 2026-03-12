@@ -12,7 +12,6 @@
         Gameplay = 3,
         Settings = 4,
         // Game-specific screens should start at 100
-        AtticFindsApp = 100,
     }
 
     /// <summary>
@@ -29,17 +28,9 @@
         GameOver = 5,
         Continue = 13,
         Settings = 14,
+        PowerUpUsed = 15,
         
         // Game-specific panels (100+)
-        PreLevel = 113,
-        BonusUnlocked = 114,
-        BoosterTutorial = 115,
-        WorldUnlocked = 116,
-        PowerUpGlasses = 117,
-        PowerUpTimer = 118,
-        PowerUpUnlocked = 119,
-        SpecialItemCollected = 120,
-        AtticFinds = 121,
-        Revive = 122,
+        
     }
 }

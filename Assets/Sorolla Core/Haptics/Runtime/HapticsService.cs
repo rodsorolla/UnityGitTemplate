@@ -28,8 +28,7 @@ namespace Sorolla
 #endif
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-        private AndroidJavaObject _vibrator;
-        private bool _hasAmplitudeControl;
+        private AndroidJavaObject _unityView;
 #endif
 
         public bool IsEnabled
@@ -50,7 +49,7 @@ namespace Sorolla
 #if UNITY_IOS && !UNITY_EDITOR
                 return true; // iOS 10+ always supports haptics
 #elif UNITY_ANDROID && !UNITY_EDITOR
-                return _vibrator != null;
+                return _unityView != null;
 #else
                 return false;
 #endif
@@ -88,32 +87,17 @@ namespace Sorolla
             {
                 using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
                 using var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-                _vibrator = activity.Call<AndroidJavaObject>("getSystemService", "vibrator");
-
-                // Check for amplitude control (API 26+)
-                if (AndroidApiLevel >= 26)
-                {
-                    _hasAmplitudeControl = _vibrator.Call<bool>("hasAmplitudeControl");
-                }
+                using var window = activity.Call<AndroidJavaObject>("getWindow");
+                _unityView = window.Call<AndroidJavaObject>("getDecorView");
+                _unityView.Call("setHapticFeedbackEnabled", true);
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[HapticsService] Failed to initialize Android vibrator: {e.Message}");
-                _vibrator = null;
+                Debug.LogWarning($"[HapticsService] Failed to initialize Android haptics: {e.Message}");
+                _unityView = null;
             }
 #endif
         }
-
-#if UNITY_ANDROID && !UNITY_EDITOR
-        private static int AndroidApiLevel
-        {
-            get
-            {
-                using var version = new AndroidJavaClass("android.os.Build$VERSION");
-                return version.GetStatic<int>("SDK_INT");
-            }
-        }
-#endif
 
         public void PlayImpact(HapticsIntensity intensity)
         {
@@ -122,7 +106,14 @@ namespace Sorolla
 #if UNITY_IOS && !UNITY_EDITOR
             _HapticsPlayImpact((int)intensity);
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            PlayAndroidVibration(intensity);
+            int constant = intensity switch
+            {
+                HapticsIntensity.Light => KEYBOARD_TAP,
+                HapticsIntensity.Medium => VIRTUAL_KEY,
+                HapticsIntensity.Heavy => LONG_PRESS,
+                _ => KEYBOARD_TAP
+            };
+            PlayAndroidHaptic(constant);
 #else
             Debug.Log($"[HapticsService] PlayImpact({intensity})");
 #endif
@@ -135,7 +126,7 @@ namespace Sorolla
 #if UNITY_IOS && !UNITY_EDITOR
             _HapticsPlaySelection();
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            PlayAndroidVibration(HapticsIntensity.Light);
+            PlayAndroidHaptic(KEYBOARD_TAP);
 #else
             Debug.Log("[HapticsService] PlaySelection()");
 #endif
@@ -156,53 +147,36 @@ namespace Sorolla
             };
             _HapticsPlayNotification(iosType);
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            // Map notification types to intensities
-            var intensity = type switch
+            int notifConstant = type switch
             {
-                HapticsType.Success => HapticsIntensity.Medium,
-                HapticsType.Warning => HapticsIntensity.Medium,
-                HapticsType.Error => HapticsIntensity.Heavy,
-                _ => HapticsIntensity.Light
+                HapticsType.Success => VIRTUAL_KEY,
+                HapticsType.Warning => VIRTUAL_KEY,
+                HapticsType.Error => LONG_PRESS,
+                _ => KEYBOARD_TAP
             };
-            PlayAndroidVibration(intensity);
+            PlayAndroidHaptic(notifConstant);
 #else
             Debug.Log($"[HapticsService] PlayNotification({type})");
 #endif
         }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-        private void PlayAndroidVibration(HapticsIntensity intensity)
-        {
-            if (_vibrator == null) return;
+        // HapticFeedbackConstants
+        private const int LONG_PRESS = 0;
+        private const int VIRTUAL_KEY = 1;
+        private const int KEYBOARD_TAP = 3;
 
-            // Get duration and amplitude based on intensity
-            var (duration, amplitude) = intensity switch
-            {
-                HapticsIntensity.Light => (20L, 50),
-                HapticsIntensity.Medium => (30L, 128),
-                HapticsIntensity.Heavy => (50L, 255),
-                _ => (20L, 50)
-            };
+        private void PlayAndroidHaptic(int feedbackConstant)
+        {
+            if (_unityView == null) return;
 
             try
             {
-                if (AndroidApiLevel >= 26 && _hasAmplitudeControl)
-                {
-                    // Use VibrationEffect for API 26+
-                    using var vibrationEffectClass = new AndroidJavaClass("android.os.VibrationEffect");
-                    using var effect = vibrationEffectClass.CallStatic<AndroidJavaObject>(
-                        "createOneShot", duration, amplitude);
-                    _vibrator.Call("vibrate", effect);
-                }
-                else
-                {
-                    // Fallback for older devices
-                    _vibrator.Call("vibrate", duration);
-                }
+                _unityView.Call<bool>("performHapticFeedback", feedbackConstant);
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[HapticsService] Android vibration failed: {e.Message}");
+                Debug.LogWarning($"[HapticsService] Android haptic feedback failed: {e.Message}");
             }
         }
 #endif

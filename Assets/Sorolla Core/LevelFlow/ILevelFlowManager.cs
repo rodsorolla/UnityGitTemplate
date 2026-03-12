@@ -118,6 +118,9 @@ namespace Sorolla.LevelFlow
         /// <summary>Fired when gameplay resumes from pause.</summary>
         event Action OnLevelResumed;
 
+        /// <summary>Fired when the end-game panel (win/lose) is dismissed by the player.</summary>
+        event Action OnEndPanelDismissed;
+
         #endregion
 
         #region Events - World

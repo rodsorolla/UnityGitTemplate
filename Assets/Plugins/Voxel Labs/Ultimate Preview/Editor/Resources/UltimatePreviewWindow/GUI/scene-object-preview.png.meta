@@ -119,6 +119,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 322974
   packageName: "Ultimate Preview Window \u2013 Pro Edition"
-  packageVersion: 1.3
-  assetPath: Assets/Voxel Labs/Ultimate Preview/Editor/Resources/UltimatePreviewWindow/GUI/scene-object-preview.png
-  uploadId: 833390
+  packageVersion: 1.3.2
+  assetPath: Assets/Plugins/Voxel Labs/Ultimate Preview/Editor/Resources/UltimatePreviewWindow/GUI/scene-object-preview.png
+  uploadId: 875428
