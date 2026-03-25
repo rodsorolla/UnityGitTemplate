@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -80,7 +80,7 @@ namespace Sorolla.UI
                 _sfxVolumeSlider.onValueChanged.RemoveListener(OnSFXVolumeChanged);
         }
 
-        public override Task ShowAsync(object args = null)
+        public override UniTask ShowAsync(object args = null)
         {
             // Pause game if not already paused
             if (!GameManager.IsPaused)
@@ -92,10 +92,10 @@ namespace Sorolla.UI
             RefreshUI();
             gameObject.SetActive(true);
             RaiseOpened();
-            return Task.CompletedTask;
+            return UniTask.CompletedTask;
         }
 
-        public override Task HideAsync()
+        public override UniTask HideAsync()
         {
             // Resume only if we paused
             if (_pausedByPanel)
@@ -106,7 +106,7 @@ namespace Sorolla.UI
 
             gameObject.SetActive(false);
             RaiseClosed();
-            return Task.CompletedTask;
+            return UniTask.CompletedTask;
         }
 
         /// <summary>

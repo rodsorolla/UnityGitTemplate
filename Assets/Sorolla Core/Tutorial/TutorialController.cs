@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using ZLinq;
 using Sorolla.LevelFlow;
 using UnityEngine;
 
@@ -88,7 +88,7 @@ namespace Sorolla.Tutorial
             var service = PersistenceService ?? TryResolvePersistenceService();
             if (service == null) return;
 
-            var csv = string.Join(",", _completedLevels.OrderBy(x => x));
+            var csv = string.Join(",", _completedLevels.AsValueEnumerable().OrderBy(x => x));
             service.SaveString(CompletedLevelsSaveKey, csv);
             service.Save();
         }

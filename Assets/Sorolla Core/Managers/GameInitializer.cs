@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -37,7 +37,7 @@ namespace Sorolla
         private Scene _initScene;
 
         // Event fired after game scene is loaded
-        public static event Func<Task> OnSceneLoaded;
+        public static event Func<UniTask> OnSceneLoaded;
 
         void Awake()
         {

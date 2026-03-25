@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Sorolla.PersistentData
@@ -49,18 +49,18 @@ namespace Sorolla.PersistentData
         /// <summary>
         /// Load all game data. Override to load your specific data.
         /// </summary>
-        public virtual async Task LoadAllAsync()
+        public virtual UniTask LoadAllAsync()
         {
             _isLoaded = true;
-            await Task.CompletedTask;
+            return UniTask.CompletedTask;
         }
 
         /// <summary>
         /// Save all game data asynchronously. Override to save your specific data.
         /// </summary>
-        public virtual async Task SaveAllAsync()
+        public virtual UniTask SaveAllAsync()
         {
-            await Task.CompletedTask;
+            return UniTask.CompletedTask;
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Sorolla.PersistentData
         public virtual void SaveAll()
         {
             // Default implementation runs async save synchronously
-            SaveAllAsync().ConfigureAwait(false);
+            SaveAllAsync().Forget();
         }
 
         /// <summary>

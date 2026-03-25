@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Sorolla;
 
@@ -31,7 +31,7 @@ namespace Sorolla.PersistentData.Samples
             ServiceLocator.Instance.Register<IGameDataService>(this);
         }
 
-        public override async Task LoadAllAsync()
+        public override async UniTask LoadAllAsync()
         {
             // Register any migrations before loading
             RegisterMigrations();
@@ -45,7 +45,7 @@ namespace Sorolla.PersistentData.Samples
             await base.LoadAllAsync();
         }
 
-        public override async Task SaveAllAsync()
+        public override async UniTask SaveAllAsync()
         {
             await SaveSystem.SaveAsync(Player, "player");
             await SaveSystem.SaveAsync(Settings, "settings");

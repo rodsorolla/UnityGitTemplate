@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace Sorolla.PersistentData
 {
@@ -16,12 +16,12 @@ namespace Sorolla.PersistentData
         /// <summary>
         /// Load all game data. Call once at game startup.
         /// </summary>
-        Task LoadAllAsync();
+        UniTask LoadAllAsync();
 
         /// <summary>
         /// Save all game data.
         /// </summary>
-        Task SaveAllAsync();
+        UniTask SaveAllAsync();
 
         /// <summary>
         /// Save all game data synchronously (for OnApplicationQuit).

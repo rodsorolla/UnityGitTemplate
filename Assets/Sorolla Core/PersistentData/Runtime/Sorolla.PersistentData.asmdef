@@ -1,13 +1,16 @@
 {
     "name": "Sorolla.PersistentData",
     "rootNamespace": "Sorolla.PersistentData",
-    "references": [],
+    "references": [
+        "UniTask"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "Newtonsoft.Json.dll"
+        "Newtonsoft.Json.dll",
+        "ZLinq.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

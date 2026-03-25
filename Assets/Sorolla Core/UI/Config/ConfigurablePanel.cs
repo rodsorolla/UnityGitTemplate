@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Sorolla.UI.Config
@@ -25,7 +25,7 @@ namespace Sorolla.UI.Config
         /// </summary>
         protected abstract TKey DefaultKey { get; }
 
-        public override async Task ShowAsync(object args = null)
+        public override async UniTask ShowAsync(object args = null)
         {
             // Determine key from args or use default
             if (args is TKey key)

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Linq;
+using ZLinq;
 using UnityEngine;
 
 namespace Sorolla.PersistentData
@@ -77,6 +77,7 @@ namespace Sorolla.PersistentData
 
             var pattern = $"{fileName}_*";
             var files = Directory.GetFiles(backupDir, pattern)
+                .AsValueEnumerable()
                 .OrderByDescending(f => File.GetCreationTime(f))
                 .ToArray();
 

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -141,7 +141,7 @@ namespace Sorolla.PersistentData
         /// <summary>
         /// Saves data to a file asynchronously.
         /// </summary>
-        public static async Task<SaveResult> SaveAsync<T>(T data, string fileName, int slot = 0, bool createBackup = true) where T : ISaveData
+        public static async UniTask<SaveResult> SaveAsync<T>(T data, string fileName, int slot = 0, bool createBackup = true) where T : ISaveData
         {
             EnsureInitialized();
 
@@ -155,7 +155,7 @@ namespace Sorolla.PersistentData
 
             try
             {
-                var json = await Task.Run(() => JsonConvert.SerializeObject(data, _jsonSettings));
+                var json = await UniTask.RunOnThreadPool(() => JsonConvert.SerializeObject(data, _jsonSettings));
                 var result = await _storage.SaveAsync(json, fileName, slot);
 
                 if (result.Success)
@@ -256,7 +256,7 @@ namespace Sorolla.PersistentData
         /// <summary>
         /// Loads data from a file asynchronously.
         /// </summary>
-        public static async Task<T> LoadAsync<T>(string fileName, int slot = 0) where T : ISaveData, new()
+        public static async UniTask<T> LoadAsync<T>(string fileName, int slot = 0) where T : ISaveData, new()
         {
             return await LoadAsync<T>(fileName, slot, defaultValue: new T());
         }
@@ -264,7 +264,7 @@ namespace Sorolla.PersistentData
         /// <summary>
         /// Loads data from a file asynchronously with a custom default value.
         /// </summary>
-        public static async Task<T> LoadAsync<T>(string fileName, int slot, T defaultValue) where T : ISaveData
+        public static async UniTask<T> LoadAsync<T>(string fileName, int slot, T defaultValue) where T : ISaveData
         {
             EnsureInitialized();
 
@@ -301,7 +301,7 @@ namespace Sorolla.PersistentData
                 }
             }
 
-            var result = await Task.Run(() =>
+            var result = await UniTask.RunOnThreadPool(() =>
             {
                 if (SaveValidator.TryDeserialize<T>(json, out var data, _jsonSettings))
                     return data;

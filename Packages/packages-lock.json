@@ -18,7 +18,7 @@
         "com.unity.inputsystem": "1.1.1",
         "com.unity.cloud.gltfast": "6.12.1"
       },
-      "hash": "c863818ba98b0d30a9623da61593fbb86b99c078"
+      "hash": "7d4ecbd3bf148efbb6c9c07b28fdedd5c44855e8"
     },
     "com.cysharp.unitask": {
       "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",

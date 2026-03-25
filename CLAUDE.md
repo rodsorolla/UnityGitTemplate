@@ -11,13 +11,18 @@
 7. Finally, add a review section to the todo.md file with a summary of the changes you made and any other relevant information.
 8. DO NOT BE LAZY. NEVER BE LAZY. IF THERE IS A BUG FIND THE ROOT CAUSE AND FIX IT. NO TEMPORARY FIXES. YOU ARE A SENIOR DEVELOPER. NEVER BE LAZY
 9. MAKE ALL FIXES AND CODE CHANGES AS SIMPLE AS HUMANLY POSSIBLE. THEY SHOULD ONLY IMPACT NECESSARY CODE RELEVANT TO THE TASK AND NOTHING ELSE. IT SHOULD IMPACT AS LITTLE CODE AS POSSIBLE. YOUR GOAL IS TO NOT INTRODUCE ANY BUGS. IT'S ALL ABOUT SIMPLICITY
+10. ONE THING AT A TIME. When a fix is confirmed working, suggest committing before starting the next task. If the user pivots to a different bug or feature, flag any uncommitted work from the previous task first.
 
 ## Project Overview
 To fill
 
 ## Tech Stack
 - **Engine**: Unity (C#)
-- **Animation**: DOTween
+- **Async**: UniTask (`Cysharp.Threading.Tasks`) — all async code uses UniTask, NOT System.Threading.Tasks
+- **LINQ**: ZLinq (`using ZLinq;`) — zero-allocation LINQ, same API as System.Linq. Use `.AsValueEnumerable()` before LINQ chains on collections.
+- **Animation**: DOTween (use `.AsyncWaitForCompletion()` to await tweens — UniTask can await the returned Task)
+- **Inspector**: NaughtyAttributes (`[ShowIf]`, `[BoxGroup]`, `[Button]`, `[Required]`, etc.)
+- **Serialization**: Newtonsoft.Json (via NuGet)
 - **Version Control**: Git
 
 ## Coding Conventions
@@ -55,11 +60,31 @@ public event System.Action<int> OnSomething;
 OnSomething?.Invoke(itemValue);
 ```
 
-### Async/Await for UI
+### Async/Await (UniTask)
 ```csharp
-await _uiManager.OpenPanelAsync(panelId);
-await Task.Delay(ms);
+using Cysharp.Threading.Tasks;
+
+await _uiManager.OpenPanelAsync(panelId);   // Returns UniTask
+await UniTask.Delay(ms);                     // NOT Task.Delay
+await UniTask.Yield();                       // NOT Task.Yield
+await UniTask.RunOnThreadPool(() => ...);    // NOT Task.Run
+await tween.SetEase(Ease.OutBack)
+    .AsyncWaitForCompletion();               // DOTween await (returns Task, UniTask awaits it)
 ```
+- All async methods return `UniTask` / `UniTask<T>`, never `Task` / `Task<T>`
+- Use `UniTaskCompletionSource<T>` instead of `TaskCompletionSource<T>`
+- Fire-and-forget: use `.Forget()` instead of `.ContinueWith()`
+
+### LINQ (ZLinq)
+```csharp
+using ZLinq;
+
+// Use .AsValueEnumerable() before LINQ chains on collections
+var items = list.AsValueEnumerable().Where(x => x.IsValid).ToArray();
+var first = array.AsValueEnumerable().FirstOrDefault(x => x != null);
+```
+- Same API as System.Linq but zero-allocation
+- Editor-only scripts can still use System.Linq (no runtime perf concern)
 
 ### Component Caching
 Cache component references in `Start()` or `Awake()` to avoid repeated `GetComponent()` calls.
@@ -115,7 +140,21 @@ private static readonly int EatTrigger = Animator.StringToHash("Eat");
 - Recent focus areas: Tutorial system, collision handling, level flow
 
 ## Dependencies
-- **DOTween**: Animation and tweening
+
+### Core (always use these)
+- **UniTask** (`com.cysharp.unitask`) — async/await. Use instead of System.Threading.Tasks
+- **ZLinq** (NuGet `1.5.4`) — zero-alloc LINQ. Use instead of System.Linq in runtime code
+- **DOTween** — animation/tweening. Await tweens directly via UniTask integration
+- **NaughtyAttributes** (`com.dbrizov.naughtyattributes`) — inspector enhancements
+- **Newtonsoft.Json** (NuGet `13.0.4`) — JSON serialization for SaveSystem
+
+### Available (use when needed)
+- **SceneRefAttribute** (`com.kylewbanks.scenerefattribute`) — auto-resolve component refs in editor
+- **Unity-Utils** (`com.gitamend.unityutils`) — extension methods (Transform, Color, etc.)
+- **ParticleEffectForUGUI** (`com.coffee.ui-particle`) — particle systems in UGUI canvas
+- **Cinemachine** 3.1.6 — camera system
+- **Input System** 1.18.0 — new input system
+- **URP** 17.3.0 — rendering pipeline
 - Unity Addressables (configured via ProjectSettings)
 
 ## Notes for Claude

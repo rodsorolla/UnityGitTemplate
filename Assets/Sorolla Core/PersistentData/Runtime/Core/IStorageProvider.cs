@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace Sorolla.PersistentData
 {
@@ -20,7 +20,7 @@ namespace Sorolla.PersistentData
         /// <summary>
         /// Saves JSON string to storage asynchronously.
         /// </summary>
-        Task<SaveResult> SaveAsync(string json, string fileName, int slot = 0);
+        UniTask<SaveResult> SaveAsync(string json, string fileName, int slot = 0);
 
         /// <summary>
         /// Loads JSON string from storage.
@@ -33,7 +33,7 @@ namespace Sorolla.PersistentData
         /// <summary>
         /// Loads JSON string from storage asynchronously.
         /// </summary>
-        Task<string> LoadAsync(string fileName, int slot = 0);
+        UniTask<string> LoadAsync(string fileName, int slot = 0);
 
         /// <summary>
         /// Checks if a save file exists.

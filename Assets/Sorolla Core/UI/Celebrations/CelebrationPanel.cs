@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -44,7 +44,7 @@ namespace Sorolla.UI.Celebrations
                 _confirmButton.onClick.RemoveListener(HandleConfirmClicked);
         }
 
-        public override async Task ShowAsync(object args = null)
+        public override async UniTask ShowAsync(object args = null)
         {
             _uiManager ??= UIManager.Instance;
 
@@ -56,7 +56,7 @@ namespace Sorolla.UI.Celebrations
             RaiseOpened();
         }
 
-        public override async Task HideAsync()
+        public override async UniTask HideAsync()
         {
             StopParticles();
             await PlayHideAnimation();
@@ -88,7 +88,7 @@ namespace Sorolla.UI.Celebrations
         /// <summary>
         /// Play the show animation. Override for custom animations.
         /// </summary>
-        protected virtual async Task PlayShowAnimation()
+        protected virtual async UniTask PlayShowAnimation()
         {
             if (_windowTransform != null)
             {
@@ -105,7 +105,7 @@ namespace Sorolla.UI.Celebrations
         /// <summary>
         /// Play the hide animation. Override for custom animations.
         /// </summary>
-        protected virtual async Task PlayHideAnimation()
+        protected virtual async UniTask PlayHideAnimation()
         {
             if (_windowTransform != null)
             {
