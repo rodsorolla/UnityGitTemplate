@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 
@@ -25,7 +25,7 @@ namespace Sorolla.UI.Transitions
         [SerializeField] private SlideDirection _direction = SlideDirection.Right;
         [SerializeField] private float _offset = 1000f;
 
-        public override async Task PlayEnterAsync(Transform target)
+        public override async UniTask PlayEnterAsync(Transform target)
         {
             KillExistingTweens(target);
 
@@ -46,7 +46,7 @@ namespace Sorolla.UI.Transitions
                 .AsyncWaitForCompletion();
         }
 
-        public override async Task PlayExitAsync(Transform target)
+        public override async UniTask PlayExitAsync(Transform target)
         {
             KillExistingTweens(target);
 

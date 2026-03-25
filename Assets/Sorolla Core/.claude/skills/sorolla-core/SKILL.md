@@ -86,17 +86,17 @@ lf.OnLevelCleanupRequested += () => { };
 // UIPanel — override ShowAsync/HideAsync, call RaiseOpened/RaiseClosed
 public class MyPanel : UIPanel
 {
-    public override Task ShowAsync(object args = null)
+    public override UniTask ShowAsync(object args = null)
     {
         gameObject.SetActive(true);
         RaiseOpened();
-        return Task.CompletedTask;
+        return UniTask.CompletedTask;
     }
-    public override Task HideAsync()
+    public override UniTask HideAsync()
     {
         gameObject.SetActive(false);
         RaiseClosed();
-        return Task.CompletedTask;
+        return UniTask.CompletedTask;
     }
 }
 
@@ -126,7 +126,7 @@ SaveSystem.DeleteAllData(slot: 1); // Wipe specific slot
 // Extend GameDataServiceBase for automatic save management
 public class GameDataService : GameDataServiceBase
 {
-    public override async Task LoadAllAsync() { _data = SaveSystem.Load<MyData>("game"); }
+    public override async UniTask LoadAllAsync() { _data = SaveSystem.Load<MyData>("game"); }
     public override void SaveAll() { SaveSystem.Save(_data, "game"); }
 }
 ```

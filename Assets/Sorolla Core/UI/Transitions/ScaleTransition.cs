@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 
@@ -14,7 +14,7 @@ namespace Sorolla.UI.Transitions
         [SerializeField, Min(0f)] private float _startScale = 0f;
         [SerializeField, Min(0f)] private float _endScale = 1f;
 
-        public override async Task PlayEnterAsync(Transform target)
+        public override async UniTask PlayEnterAsync(Transform target)
         {
             KillExistingTweens(target);
 
@@ -25,7 +25,7 @@ namespace Sorolla.UI.Transitions
                 .AsyncWaitForCompletion();
         }
 
-        public override async Task PlayExitAsync(Transform target)
+        public override async UniTask PlayExitAsync(Transform target)
         {
             KillExistingTweens(target);
 

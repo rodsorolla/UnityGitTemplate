@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using Sorolla.PersistentData;
 using Sorolla.UI;
 using UnityEngine;
@@ -443,7 +444,7 @@ namespace Sorolla.LevelFlow
             try
             {
                 if (_endPanelDelay > 0f)
-                    await System.Threading.Tasks.Task.Delay((int)(_endPanelDelay * 1000));
+                    await UniTask.Delay((int)(_endPanelDelay * 1000));
                 var panel = await uiManager.OpenPanelAsync(panelId);
                 if (panel != null)
                     panel.OnClosed += HandleEndPanelDismissed;

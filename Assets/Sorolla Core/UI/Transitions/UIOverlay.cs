@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 
@@ -26,7 +26,7 @@ namespace Sorolla.UI.Transitions
         /// <summary>
         /// Fade the overlay to fully opaque (blocking).
         /// </summary>
-        public async Task FadeInAsync(float? duration = null)
+        public async UniTask FadeInAsync(float? duration = null)
         {
             _canvasGroup.DOKill();
             _canvasGroup.blocksRaycasts = true;
@@ -41,7 +41,7 @@ namespace Sorolla.UI.Transitions
         /// <summary>
         /// Fade the overlay to fully transparent (non-blocking).
         /// </summary>
-        public async Task FadeOutAsync(float? duration = null)
+        public async UniTask FadeOutAsync(float? duration = null)
         {
             _canvasGroup.DOKill();
 
@@ -57,7 +57,7 @@ namespace Sorolla.UI.Transitions
         /// <summary>
         /// Perform a fade-through transition (fade in, execute action, fade out).
         /// </summary>
-        public async Task FadeThroughAsync(System.Func<Task> action, float? duration = null)
+        public async UniTask FadeThroughAsync(System.Func<UniTask> action, float? duration = null)
         {
             await FadeInAsync(duration);
             if (action != null)

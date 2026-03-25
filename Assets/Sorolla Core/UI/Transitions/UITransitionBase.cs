@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 
@@ -35,12 +35,12 @@ namespace Sorolla.UI.Transitions
         /// <summary>
         /// Play the enter/show transition animation.
         /// </summary>
-        public abstract Task PlayEnterAsync(Transform target);
+        public abstract UniTask PlayEnterAsync(Transform target);
 
         /// <summary>
         /// Play the exit/hide transition animation.
         /// </summary>
-        public abstract Task PlayExitAsync(Transform target);
+        public abstract UniTask PlayExitAsync(Transform target);
 
         /// <summary>
         /// Helper to kill any existing tweens on the target before starting a new one.

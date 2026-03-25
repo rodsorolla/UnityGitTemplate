@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -25,7 +25,7 @@ namespace Sorolla.UI.Dialogs
         [SerializeField] private Ease _hideEase = Ease.InBack;
 
         private Action _onDismissed;
-        private TaskCompletionSource<bool> _tcs;
+        private UniTaskCompletionSource<bool> _tcs;
 
         /// <summary>
         /// Data for configuring the alert dialog.
@@ -52,7 +52,7 @@ namespace Sorolla.UI.Dialogs
                 _okButton.onClick.RemoveListener(OnOkClicked);
         }
 
-        public override async Task ShowAsync(object args = null)
+        public override async UniTask ShowAsync(object args = null)
         {
             if (args is Data data)
             {
@@ -64,7 +64,7 @@ namespace Sorolla.UI.Dialogs
             RaiseOpened();
         }
 
-        public override async Task HideAsync()
+        public override async UniTask HideAsync()
         {
             await PlayExitAnimation();
             gameObject.SetActive(false);
@@ -82,9 +82,9 @@ namespace Sorolla.UI.Dialogs
         /// <summary>
         /// Show the dialog and wait for dismissal.
         /// </summary>
-        public async Task ShowAndWaitAsync(Data data)
+        public async UniTask ShowAndWaitAsync(Data data)
         {
-            _tcs = new TaskCompletionSource<bool>();
+            _tcs = new UniTaskCompletionSource<bool>();
             await ShowAsync(data);
             await _tcs.Task;
         }
@@ -103,7 +103,7 @@ namespace Sorolla.UI.Dialogs
             _onDismissed = data.OnDismissed;
         }
 
-        private async Task PlayEnterAnimation()
+        private async UniTask PlayEnterAnimation()
         {
             if (_windowTransform != null)
             {
@@ -115,7 +115,7 @@ namespace Sorolla.UI.Dialogs
             }
         }
 
-        private async Task PlayExitAnimation()
+        private async UniTask PlayExitAnimation()
         {
             if (_windowTransform != null)
             {

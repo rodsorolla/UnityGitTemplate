@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -51,7 +51,7 @@ namespace Sorolla.UI.Dialogs
             _sequence?.Kill();
         }
 
-        public override async Task ShowAsync(object args = null)
+        public override async UniTask ShowAsync(object args = null)
         {
             if (args is Data data)
             {
@@ -60,12 +60,12 @@ namespace Sorolla.UI.Dialogs
             }
         }
 
-        public override Task HideAsync()
+        public override UniTask HideAsync()
         {
             _sequence?.Kill();
             gameObject.SetActive(false);
             RaiseClosed();
-            return Task.CompletedTask;
+            return UniTask.CompletedTask;
         }
 
         public override bool HandleBack() => false; // Toasts don't block back
@@ -85,7 +85,7 @@ namespace Sorolla.UI.Dialogs
             _onDismissed = data.OnDismissed;
         }
 
-        private async Task PlayToastSequence(float displayDuration)
+        private async UniTask PlayToastSequence(float displayDuration)
         {
             _sequence?.Kill();
             gameObject.SetActive(true);
@@ -99,7 +99,7 @@ namespace Sorolla.UI.Dialogs
             if (rectTransform == null)
             {
                 // Fallback: just wait and hide
-                await Task.Delay((int)(displayDuration * 1000));
+                await UniTask.Delay((int)(displayDuration * 1000));
                 await HideAsync();
                 return;
             }

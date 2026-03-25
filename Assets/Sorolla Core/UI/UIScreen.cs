@@ -1,6 +1,6 @@
 using UnityEngine;
 using System;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace Sorolla.UI
 {
@@ -17,7 +17,7 @@ namespace Sorolla.UI
         /// Called by UIManager when the screen is becoming visible.
         /// Override for custom show behavior, or use PlayEnterTransitionAsync for animations.
         /// </summary>
-        public virtual async Task ShowAsync(object args = null)
+        public virtual async UniTask ShowAsync(object args = null)
         {
             gameObject.SetActive(true);
             await PlayEnterTransitionAsync();
@@ -28,7 +28,7 @@ namespace Sorolla.UI
         /// Called by UIManager when hiding this screen.
         /// Override for custom hide behavior, or use PlayExitTransitionAsync for animations.
         /// </summary>
-        public virtual async Task HideAsync()
+        public virtual async UniTask HideAsync()
         {
             await PlayExitTransitionAsync();
             gameObject.SetActive(false);
@@ -39,13 +39,13 @@ namespace Sorolla.UI
         /// Override to add custom enter transition animation.
         /// Called after SetActive(true), before OnOpened event.
         /// </summary>
-        protected virtual Task PlayEnterTransitionAsync() => Task.CompletedTask;
+        protected virtual UniTask PlayEnterTransitionAsync() => UniTask.CompletedTask;
 
         /// <summary>
         /// Override to add custom exit transition animation.
         /// Called before SetActive(false) and OnClosed event.
         /// </summary>
-        protected virtual Task PlayExitTransitionAsync() => Task.CompletedTask;
+        protected virtual UniTask PlayExitTransitionAsync() => UniTask.CompletedTask;
 
         /// <summary>
         /// Override to handle back button (Android back, top-left back button, etc.).
@@ -67,7 +67,7 @@ namespace Sorolla.UI
         /// Called by UIManager when the panel is being shown.
         /// Override for custom show behavior, or use PlayEnterTransitionAsync for animations.
         /// </summary>
-        public virtual async Task ShowAsync(object args = null)
+        public virtual async UniTask ShowAsync(object args = null)
         {
             gameObject.SetActive(true);
             await PlayEnterTransitionAsync();
@@ -78,7 +78,7 @@ namespace Sorolla.UI
         /// Called by UIManager when the panel is being hidden.
         /// Override for custom hide behavior, or use PlayExitTransitionAsync for animations.
         /// </summary>
-        public virtual async Task HideAsync()
+        public virtual async UniTask HideAsync()
         {
             await PlayExitTransitionAsync();
             gameObject.SetActive(false);
@@ -89,13 +89,13 @@ namespace Sorolla.UI
         /// Override to add custom enter transition animation.
         /// Called after SetActive(true), before OnOpened event.
         /// </summary>
-        protected virtual Task PlayEnterTransitionAsync() => Task.CompletedTask;
+        protected virtual UniTask PlayEnterTransitionAsync() => UniTask.CompletedTask;
 
         /// <summary>
         /// Override to add custom exit transition animation.
         /// Called before SetActive(false) and OnClosed event.
         /// </summary>
-        protected virtual Task PlayExitTransitionAsync() => Task.CompletedTask;
+        protected virtual UniTask PlayExitTransitionAsync() => UniTask.CompletedTask;
 
         /// <summary>
         /// Protected helper so derived types can raise the opened event.

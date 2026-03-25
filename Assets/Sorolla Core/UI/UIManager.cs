@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using ZLinq;
 using Sorolla;
 
 // using UnityEngine.AddressableAssets; // Uncomment if using Addressables
@@ -62,25 +62,19 @@ namespace Sorolla.UI
         // Fire-and-forget wrapper that logs exceptions
         public void HandleBackSafe()
         {
-            HandleBackAsync().ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    Debug.LogException(t.Exception);
-                }
-            }, TaskScheduler.FromCurrentSynchronizationContext());
+            HandleBackAsync().Forget();
         }
 
-        public async Task HandleBackAsync()
+        public async UniTask HandleBackAsync()
         {
             // Panels intercept first by highest BackPriority
             if (_panels.Count > 0)
             {
-                var topPanel = _panels.OrderByDescending(p => p.BackPriority).FirstOrDefault();
+                var topPanel = _panels.AsValueEnumerable().OrderByDescending(p => p.BackPriority).FirstOrDefault();
                 if (topPanel != null && topPanel.HandleBack()) return;
 
                 // Default: close top-most visible panel if it doesn't handle back
-                var last = _panels.LastOrDefault();
+                var last = _panels.AsValueEnumerable().LastOrDefault();
                 if (last != null)
                 {
                     await ClosePanelAsync(last);
@@ -98,12 +92,12 @@ namespace Sorolla.UI
             }
         }
 
-        public Task<UIScreen> PushScreenAsync(UIScreenId id, object args = null, bool clearStack = false)
+        public UniTask<UIScreen> PushScreenAsync(UIScreenId id, object args = null, bool clearStack = false)
         {
             return PushScreenInternalAsync(id, args, clearStack);
         }
 
-        public async Task PopScreenAsync()
+        public async UniTask PopScreenAsync()
         {
             if (_screenStack.Count <= 1)
             {
@@ -118,7 +112,7 @@ namespace Sorolla.UI
             if (next != null) await next.ShowAsync(); // re-show
         }
 
-        public async Task<UIPanel> OpenPanelAsync(UIPanelId id, object args = null)
+        public async UniTask<UIPanel> OpenPanelAsync(UIPanelId id, object args = null)
         {
             var panel = await GetOrCreatePanelInstanceAsync(id);
             if (panel == null) return null;
@@ -135,7 +129,7 @@ namespace Sorolla.UI
         /// <param name="args">Optional arguments to pass to the panel</param>
         /// <param name="transition">Custom transition to play before ShowAsync</param>
         /// <returns>The opened panel, or null if not found</returns>
-        public async Task<UIPanel> OpenPanelAsync(UIPanelId id, object args, IUITransition transition)
+        public async UniTask<UIPanel> OpenPanelAsync(UIPanelId id, object args, IUITransition transition)
         {
             var panel = await GetOrCreatePanelInstanceAsync(id);
             if (panel == null) return null;
@@ -153,7 +147,7 @@ namespace Sorolla.UI
             return panel;
         }
 
-        public async Task ClosePanelAsync(UIPanel panel)
+        public async UniTask ClosePanelAsync(UIPanel panel)
         {
             if (panel == null) return;
             await panel.HideAsync();
@@ -166,7 +160,7 @@ namespace Sorolla.UI
         /// </summary>
         /// <param name="panel">The panel to close</param>
         /// <param name="transition">Custom transition to play before HideAsync</param>
-        public async Task ClosePanelAsync(UIPanel panel, IUITransition transition)
+        public async UniTask ClosePanelAsync(UIPanel panel, IUITransition transition)
         {
             if (panel == null) return;
 
@@ -181,12 +175,12 @@ namespace Sorolla.UI
             OnPanelClosed?.Invoke(panel);
         }
 
-        public async Task ClosePanelsByIdAsync(UIPanelId id)
+        public async UniTask ClosePanelsByIdAsync(UIPanelId id)
         {
             if (_panelCache.TryGetValue(id, out var list))
             {
                 // copy to avoid modification during iteration
-                foreach (var p in list.ToList())
+                foreach (var p in list.AsValueEnumerable().ToList())
                 {
                     if (_panels.Contains(p)) await ClosePanelAsync(p);
                 }
@@ -200,7 +194,7 @@ namespace Sorolla.UI
         #region Internal
 
 
-        private async Task<UIScreen> PushScreenInternalAsync(UIScreenId id, object args, bool clearStack)
+        private async UniTask<UIScreen> PushScreenInternalAsync(UIScreenId id, object args, bool clearStack)
         {
             if (clearStack)
             {
@@ -228,8 +222,9 @@ namespace Sorolla.UI
             return screen;
         }
 
-        private async Task<UIScreen> GetOrCreateScreenInstanceAsync(UIScreenId id)
+        private async UniTask<UIScreen> GetOrCreateScreenInstanceAsync(UIScreenId id)
         {
+            await UniTask.CompletedTask; // Synchronous but keeps async signature for consistency
             if (_screenCache.TryGetValue(id, out var s) && s != null) return s;
 
             if (!_registry.TryGetScreen(id, out var entry))
@@ -264,12 +259,13 @@ namespace Sorolla.UI
             return s;
         }
 
-        private async Task<UIPanel> GetOrCreatePanelInstanceAsync(UIPanelId id)
+        private async UniTask<UIPanel> GetOrCreatePanelInstanceAsync(UIPanelId id)
         {
+            await UniTask.CompletedTask; // Synchronous but keeps async signature for consistency
             // Allow multiple instances per Panel ID if needed; here we reuse a single instance per ID by default
             if (_panelCache.TryGetValue(id, out var list))
             {
-                var existing = list.FirstOrDefault(p => p != null && !p.gameObject.activeSelf);
+                var existing = list.AsValueEnumerable().FirstOrDefault(p => p != null && !p.gameObject.activeSelf);
                 if (existing != null) return existing;
             }
 

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using ZLinq;
 using Sorolla.LevelFlow;
 using Sorolla.PersistentData;
 using Sorolla.Tutorial;
@@ -29,7 +29,7 @@ namespace Sorolla
         [Tooltip("Add game-specific manager references here. They will be auto-registered.")]
         [SerializeField] private MonoBehaviour[] _gameManagers;
 
-        private Task _initializationTask;
+        private UniTask? _initializationTask;
         private bool _initialized;
         private bool _initializing;
 
@@ -105,7 +105,7 @@ namespace Sorolla
         /// <summary>
         /// Safe wrapper for async event handler. Catches exceptions to prevent silent failures.
         /// </summary>
-        private async Task HandleSceneLoadedSafe()
+        private async UniTask HandleSceneLoadedSafe()
         {
             try
             {
@@ -153,12 +153,12 @@ namespace Sorolla
         /// Initializes any SorollaManager components found in the newly loaded scene.
         /// Override in game-specific GameManager subclass for additional behavior.
         /// </summary>
-        protected virtual Task HandleSceneLoaded()
+        protected virtual UniTask HandleSceneLoaded()
         {
             if (!_initialized)
             {
                 Debug.LogWarning("[GameManager] HandleSceneLoaded called but GameManager is not initialized.");
-                return Task.CompletedTask;
+                return UniTask.CompletedTask;
             }
 
             // Initialize any SorollaManager components in the loaded scene
@@ -167,7 +167,7 @@ namespace Sorolla
             // Start background music (AudioManager handles disabled state)
             _audioManager?.PlayMusic("Music");
 
-            return Task.CompletedTask;
+            return UniTask.CompletedTask;
         }
 
         /// <summary>
@@ -177,6 +177,7 @@ namespace Sorolla
         protected virtual void InitializeSceneServices()
         {
             var sceneManagers = FindObjectsByType<SorollaManager>(FindObjectsSortMode.None)
+                .AsValueEnumerable()
                 .Where(m => m != null && !m.IsInitialized)
                 .ToArray();
 
@@ -191,16 +192,16 @@ namespace Sorolla
         /// <summary>
         /// Initializes all subsystems asynchronously. Safe to call multiple times; concurrent callers await the same task.
         /// </summary>
-        public Task InitializeAsync(CancellationToken ct = default)
+        public UniTask InitializeAsync(CancellationToken ct = default)
         {
-            if (_initialized) return Task.CompletedTask;
-            if (_initializationTask != null) return _initializationTask;
+            if (_initialized) return UniTask.CompletedTask;
+            if (_initializationTask.HasValue) return _initializationTask.Value;
 
             _initializationTask = InitializeImplAsync(ct);
-            return _initializationTask;
+            return _initializationTask.Value;
         }
 
-        private async Task InitializeImplAsync(CancellationToken ct)
+        private async UniTask InitializeImplAsync(CancellationToken ct)
         {
             if (_initialized) return;
             _initializing = true;
@@ -210,7 +211,7 @@ namespace Sorolla
                 ct.ThrowIfCancellationRequested();
                 
                 // Minimal yield to avoid Awake/Start race
-                await Task.Yield();
+                await UniTask.Yield();
                 ct.ThrowIfCancellationRequested();
 
                 // Initialize managers that need async (scene loading, asset bundles, etc)
@@ -221,13 +222,13 @@ namespace Sorolla
             }
             catch (OperationCanceledException)
             {
-                _initializationTask = null;
+                _initializationTask = null; // Reset so retry is possible
                 Debug.LogWarning("[GameManager] Initialization canceled.");
                 throw;
             }
             catch (Exception ex)
             {
-                _initializationTask = null;
+                _initializationTask = null; // Reset so retry is possible
                 Debug.LogError($"[GameManager] Initialization failed: {ex}");
                 throw;
             }
@@ -241,11 +242,11 @@ namespace Sorolla
         /// Initialize all registered managers. Override to add custom initialization logic.
         /// Initialization order: SaveSystem → Core managers → Game managers
         /// </summary>
-        protected virtual async Task InitializeManagersAsync(CancellationToken ct)
+        protected virtual async UniTask InitializeManagersAsync(CancellationToken ct)
         {
             // 1. Initialize SaveSystem first - other managers depend on it for persisted data
             SaveSystem.Initialize();
-            await Task.Yield(); // Allow cancellation check
+            await UniTask.Yield(); // Allow cancellation check
             ct.ThrowIfCancellationRequested();
 
             // 2. Initialize core Sorolla managers (can now load saved preferences)
@@ -253,7 +254,7 @@ namespace Sorolla
             _levelFlowManager?.Init();
             _audioManager?.Init();
             _tutorialController?.Init();
-            await Task.Yield();
+            await UniTask.Yield();
             ct.ThrowIfCancellationRequested();
 
             // 3. Initialize game-specific managers (LevelFlowManager, CurrencyService, etc.)

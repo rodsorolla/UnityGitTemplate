@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Sorolla.PersistentData
@@ -49,7 +49,7 @@ namespace Sorolla.PersistentData
             }
         }
 
-        public async Task<SaveResult> SaveAsync(string json, string fileName, int slot = 0)
+        public async UniTask<SaveResult> SaveAsync(string json, string fileName, int slot = 0)
         {
             var filePath = GetFilePath(fileName, slot);
 
@@ -59,7 +59,7 @@ namespace Sorolla.PersistentData
                 if (!Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
 
-                await Task.Run(() => File.WriteAllText(filePath, json));
+                await UniTask.RunOnThreadPool(() => File.WriteAllText(filePath, json));
                 return SaveResult.Ok(filePath);
             }
             catch (Exception ex)
@@ -87,7 +87,7 @@ namespace Sorolla.PersistentData
             }
         }
 
-        public async Task<string> LoadAsync(string fileName, int slot = 0)
+        public async UniTask<string> LoadAsync(string fileName, int slot = 0)
         {
             var filePath = GetFilePath(fileName, slot);
 
@@ -96,7 +96,7 @@ namespace Sorolla.PersistentData
                 if (!File.Exists(filePath))
                     return null;
 
-                return await Task.Run(() => File.ReadAllText(filePath));
+                return await UniTask.RunOnThreadPool(() => File.ReadAllText(filePath));
             }
             catch (Exception ex)
             {

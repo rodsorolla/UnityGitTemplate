@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Sorolla.UI;
 using UnityEngine;
 
@@ -17,7 +17,7 @@ namespace Sorolla.LevelFlow
         protected virtual async void Start()
         {
             // Wait one frame so all Start() methods (LevelController, etc.) subscribe to events
-            await Task.Yield();
+            await UniTask.Yield();
 
             _levelFlow = ServiceLocator.Instance.Resolve<ILevelFlowManager>();
             _levelFlow.OnEndPanelDismissed += HandleEndPanelDismissed;
@@ -30,7 +30,7 @@ namespace Sorolla.LevelFlow
             _ = ShowMainMenuAsync();
         }
 
-        protected virtual async Task ShowMainMenuAsync()
+        protected virtual async UniTask ShowMainMenuAsync()
         {
             UIManager.Instance.ShowGameUI(false);
             await UIManager.Instance.PushScreenAsync(GetMainMenuScreenId(), null, true);
@@ -45,7 +45,7 @@ namespace Sorolla.LevelFlow
             _ = StartLevelAsync();
         }
 
-        private async Task StartLevelAsync()
+        private async UniTask StartLevelAsync()
         {
             // Hide any active screen (main menu)
             var topScreen = UIManager.Instance.GetTopScreen();

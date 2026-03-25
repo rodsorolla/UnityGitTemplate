@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -55,19 +55,19 @@ namespace Sorolla.UI
                 _payToContinueButton.onClick.RemoveListener(OnPayToContinueButtonClicked);
         }
 
-        public override Task ShowAsync(object args = null)
+        public override UniTask ShowAsync(object args = null)
         {
             ConfigurePayToContinue(args as Data);
             gameObject.SetActive(true);
             RaiseOpened();
-            return Task.CompletedTask;
+            return UniTask.CompletedTask;
         }
 
-        public override Task HideAsync()
+        public override UniTask HideAsync()
         {
             gameObject.SetActive(false);
             RaiseClosed();
-            return Task.CompletedTask;
+            return UniTask.CompletedTask;
         }
 
         private void ConfigurePayToContinue(Data data)

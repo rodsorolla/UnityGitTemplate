@@ -1,14 +1,78 @@
-# Sorolla Core QoL Additions
+# Package Audit & Integration
+
+## Summary
+Audit all third-party packages, update CLAUDE.md with usage instructions, and migrate existing scripts to use UniTask (instead of System.Threading.Tasks) and ZLinq (instead of System.Linq).
+
+## Packages Inventory
+
+| Package | ID | Status |
+|---------|---|--------|
+| **UniTask** | `com.cysharp.unitask` | Installed, **NOT used** — all async code uses `System.Threading.Tasks` |
+| **ZLinq** | NuGet `ZLinq 1.5.4` | Installed, **NOT used** — all LINQ uses `System.Linq` |
+| **NaughtyAttributes** | `com.dbrizov.naughtyattributes` | Installed, used in TutorialStepBase |
+| **SceneRefAttribute** | `com.kylewbanks.scenerefattribute` | Installed, unused |
+| **Unity-Utils** | `com.gitamend.unityutils` | Installed, unused |
+| **ParticleEffectForUGUI** | `com.coffee.ui-particle` | Installed, unused (prefab reference only) |
+| **Newtonsoft.Json** | NuGet `13.0.4` | Installed, used in SaveSystem |
+| **DOTween** | Plugin folder | Active, used heavily for UI animations |
+| **Cinemachine** | `com.unity.cinemachine` 3.1.6 | Installed |
+| **Input System** | `com.unity.inputsystem` 1.18.0 | Installed |
+| **URP** | `com.unity.render-pipelines.universal` 17.3.0 | Installed |
+| **NuGetForUnity** | `com.github-glitchenzo.nugetforunity` | Package manager for NuGet |
 
 ## Tasks
-- [x] 1. Create `SorollaTimer.cs` — lightweight timer utility
-- [x] 2. Create `SorollaTimerUpdater.cs` — MonoBehaviour auto-updater
-- [x] 3. Create `SceneLoader.cs` — async scene loading wrapper
-- [x] 4. Refactor `GameInitializer.cs` to use SceneLoader
-- [x] 5. Create `SafeAreaHandler.cs` — safe area RectTransform adjuster
-- [x] 6. Add `DEBUG_LogAll()` to ServiceLocator
-- [x] 7. Add `DeleteAllData()` to SaveSystem
-- [x] 8. Update README.md with new features
+
+### Phase 1: Migrate async Task → UniTask (20 files)
+- [x] 1. Update `IUITransition.cs` — interface returns `UniTask` instead of `Task`
+- [x] 2. Update `UIScreen.cs` + `UIPanel` — base classes return `UniTask`
+- [x] 3. Update `UITransitionBase.cs`, `FadeTransition.cs`, `ScaleTransition.cs`, `SlideTransition.cs` — replace `AsyncWaitForCompletion()` with direct `await` via UniTask DOTween integration
+- [x] 4. Update `UIOverlay.cs` — same DOTween migration
+- [x] 5. Update `UIManager.cs` — all async methods return `UniTask`, replace `System.Linq` with `ZLinq`
+- [x] 6. Update `AlertDialog.cs`, `ConfirmDialog.cs` — UniTask + DOTween await
+- [x] 7. Update `CelebrationPanel.cs` — UniTask + DOTween await
+- [x] 8. Update `ToastPanel.cs` — UniTask + `UniTask.Delay` instead of `Task.Delay`
+- [x] 9. Update `ConfigurablePanel.cs` — UniTask
+- [x] 10. Update `ContinuePanel.cs` — UniTask
+- [x] 11. Update `SaveSystem.cs` — `UniTask.RunOnThreadPool` instead of `Task.Run`
+- [x] 12. Update `LocalFileStorage.cs` + `IStorageProvider.cs` — UniTask
+- [x] 13. Update `GameDataServiceBase.cs` + `IGameDataService.cs` + `ExampleGameDataService.cs` — UniTask
+- [x] 14. Update `SceneLoader.cs` — UniTask + `UniTask.Yield` + `op.ToUniTask()`
+- [x] 15. Update `GameManager.cs` — UniTask + replace `System.Linq` with `ZLinq`
+- [x] 16. Update `LevelSessionController.cs` — UniTask
+- [x] 17. Update `LevelFlowManager.cs` — `UniTask.Delay` instead of `Task.Delay`
+- [x] 18. Update `GameInitializer.cs` — UniTask + `Func<UniTask>` event
+- [x] 19. Update `SettingsPanel.cs` — UniTask
+
+### Phase 2: Migrate System.Linq → ZLinq (4 files)
+- [x] 20. `GameManager.cs` — `.AsValueEnumerable().Where().ToArray()` → ZLinq
+- [x] 21. `UIManager.cs` — `.AsValueEnumerable().OrderByDescending()`, `.FirstOrDefault()`, `.ToList()` → ZLinq
+- [x] 22. `TutorialController.cs` — `.AsValueEnumerable().OrderBy()` → ZLinq
+- [x] 23. `BackupManager.cs` — `.AsValueEnumerable().OrderByDescending().ToArray()` → ZLinq
+
+### Phase 3: Documentation
+- [x] 24. Update `CLAUDE.md` with package info for future sessions
+- [x] 25. Update memory with package knowledge
+- [x] 26. Update Sorolla Core SKILL.md
+
+---
+
+## Migration Cheat Sheet
+
+### UniTask replacements:
+- `using System.Threading.Tasks;` → `using Cysharp.Threading.Tasks;`
+- `async Task` → `async UniTask`
+- `async Task<T>` → `async UniTask<T>`
+- `Task.CompletedTask` → `UniTask.CompletedTask`
+- `Task.Delay(ms)` → `UniTask.Delay(ms)` or `UniTask.Delay(TimeSpan)`
+- `Task.Yield()` → `UniTask.Yield()`
+- `Task.Run(() => ...)` → `UniTask.RunOnThreadPool(() => ...)`
+- `TaskCompletionSource<T>` → `UniTaskCompletionSource<T>`
+- `.AsyncWaitForCompletion()` → just `await tween` (UniTask DOTween integration provides `GetAwaiter()`)
+- `.ContinueWith(...)` → use `try/catch` or `UniTask.Void()`
+
+### ZLinq replacements:
+- `using System.Linq;` → `using ZLinq;`
+- API is the same (`.Where()`, `.OrderBy()`, `.FirstOrDefault()`, etc.) but zero-allocation
 
 ---
 
@@ -16,20 +80,35 @@
 
 ### Changes Made
 
-**New files (4):**
-- `Assets/Sorolla Core/Utils/SorollaTimer.cs` — Static timer with Start/Countdown factory methods, Pause/Resume/Cancel/Restart control, loop support, unscaled time option. No allocations per-timer beyond the instance itself.
-- `Assets/Sorolla Core/Utils/SorollaTimerUpdater.cs` — Auto-created MonoBehaviour singleton that drives `SorollaTimer.UpdateAll()` in Update(). DontDestroyOnLoad.
-- `Assets/Sorolla Core/Managers/SceneLoader.cs` — Static async wrapper: `LoadSceneAsync`, `LoadSceneAdditiveAsync`, `UnloadSceneAsync`, `ReloadCurrentSceneAsync`. All with optional progress callback.
-- `Assets/Sorolla Core/UI/SafeAreaHandler.cs` — RectTransform component with per-edge toggles. Applies on Start() and auto-updates on orientation change.
+**21 files migrated from `System.Threading.Tasks` → `Cysharp.Threading.Tasks` (UniTask):**
+- IUITransition.cs, UIScreen.cs (UIScreen + UIPanel), UITransitionBase.cs
+- FadeTransition.cs, ScaleTransition.cs, SlideTransition.cs, UIOverlay.cs
+- UIManager.cs, AlertDialog.cs, ConfirmDialog.cs, CelebrationPanel.cs
+- ToastPanel.cs, ConfigurablePanel.cs, ContinuePanel.cs, SettingsPanel.cs
+- SaveSystem.cs, LocalFileStorage.cs, IStorageProvider.cs
+- IGameDataService.cs, GameDataServiceBase.cs, ExampleGameDataService.cs
+- SceneLoader.cs, GameManager.cs, GameInitializer.cs
+- LevelSessionController.cs, LevelFlowManager.cs
 
-**Edited files (4):**
-- `ServiceLocator.cs` — Added `DEBUG_LogAll()` with `[Conditional]` attributes (Editor/Dev only).
-- `SaveSystem.cs` — Added `DeleteAllData(int slot = -1)`. Added `System.IO` using.
-- `GameInitializer.cs` — Replaced 10-line manual `LoadSceneAsync` + `TaskCompletionSource` boilerplate with single `await SceneLoader.LoadSceneAdditiveAsync()` call. Behavior unchanged.
-- `README.md` — Added SorollaTimer, SceneLoader, SafeAreaHandler sections to Utils. Added `DEBUG_LogAll` and `DeleteAllData` to existing tables.
+**4 files migrated from `System.Linq` → `ZLinq`:**
+- GameManager.cs, UIManager.cs, TutorialController.cs, BackupManager.cs
+
+**Key changes per pattern:**
+- `async Task` → `async UniTask`, `Task.CompletedTask` → `UniTask.CompletedTask`
+- `Task.Delay(ms)` → `UniTask.Delay(ms)`
+- `Task.Yield()` → `UniTask.Yield()`
+- `Task.Run(...)` → `UniTask.RunOnThreadPool(...)`
+- `TaskCompletionSource<T>` → `UniTaskCompletionSource<T>`
+- `.AsyncWaitForCompletion()` → direct `await` on tween (UniTask DOTween GetAwaiter)
+- `.ContinueWith(...)` → `.Forget()` (fire-and-forget in UIManager)
+- `TaskCompletionSource` for scene ops → `op.ToUniTask()` (SceneLoader)
+- `.Where(...)` → `.AsValueEnumerable().Where(...)` (ZLinq)
+
+**Documentation updated:**
+- CLAUDE.md: Tech Stack, Async/Await patterns, LINQ patterns, Dependencies sections
+- Sorolla Core SKILL.md: UIPanel and GameDataService code examples
+- Memory: Package audit saved for future sessions
 
 ### Notes
-- All new code follows existing conventions: `_camelCase` privates, `Sorolla`/`Sorolla.UI` namespaces, XML doc comments on public API.
-- SorollaTimer uses reverse iteration for safe removal during UpdateAll.
-- SafeAreaHandler checks orientation change each frame (lightweight — just comparing cached values).
-- Could not verify compilation as Unity Editor is not running.
+- Editor-only script `GradientColorEditor.cs` intentionally left with `System.Linq` (no runtime perf concern)
+- Could not verify compilation — Unity Editor not running. All changes are mechanical 1:1 replacements.
