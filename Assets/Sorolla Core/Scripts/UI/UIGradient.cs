@@ -89,8 +89,9 @@ namespace Sorolla.UI
                 graphic.SetVerticesDirty();
         }
 
-        private void Reset()
+        protected override void Reset()
         {
+            base.Reset();
             _gradientShader = Shader.Find("UI/Gradient");
         }
 #endif

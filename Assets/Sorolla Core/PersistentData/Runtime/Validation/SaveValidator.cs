@@ -32,35 +32,6 @@ namespace Sorolla.PersistentData
         }
 
         /// <summary>
-        /// Extracts the Version property from a JSON string.
-        /// </summary>
-        /// <param name="json">The JSON string</param>
-        /// <returns>The version number, or -1 if not found or invalid</returns>
-        public static int GetVersion(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-                return -1;
-
-            try
-            {
-                var obj = JObject.Parse(json);
-
-                // Try common version property names
-                var versionToken = obj["Version"] ?? obj["version"] ?? obj["_version"];
-
-                if (versionToken != null && versionToken.Type == JTokenType.Integer)
-                    return versionToken.Value<int>();
-
-                return -1;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"[SaveSystem] Failed to extract version: {ex.Message}");
-                return -1;
-            }
-        }
-
-        /// <summary>
         /// Attempts to deserialize JSON to the specified type.
         /// </summary>
         /// <typeparam name="T">The type to deserialize to</typeparam>
@@ -89,26 +60,5 @@ namespace Sorolla.PersistentData
             }
         }
 
-        /// <summary>
-        /// Sets a property value in a JSON string.
-        /// </summary>
-        /// <param name="json">The original JSON string</param>
-        /// <param name="propertyName">The property to set</param>
-        /// <param name="value">The new value</param>
-        /// <returns>The modified JSON string</returns>
-        public static string SetProperty(string json, string propertyName, object value)
-        {
-            try
-            {
-                var obj = JObject.Parse(json);
-                obj[propertyName] = JToken.FromObject(value);
-                return obj.ToString(Formatting.Indented);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[SaveSystem] Failed to set property {propertyName}: {ex.Message}");
-                return json;
-            }
-        }
     }
 }

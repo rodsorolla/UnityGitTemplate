@@ -109,12 +109,17 @@ private static readonly int EatTrigger = Animator.StringToHash("Eat");
 4. Use `UIManager.OpenPanelAsync()` to show
 
 ### Adding a Level End Reason
-1. Add to `LevelEndReason` enum in `Assets/_Game/Scripts/Data/LevelEndReason.cs`
+1. Core enum lives at `Assets/Sorolla Core/LevelFlow/LevelEndReason.cs` with values 0–99 reserved for Sorolla Core. Game-specific reasons must use values **>= 100** — either extend the enum in a partial file under `_Game/` or define a parallel game enum that maps onto `LevelEndReason.Custom`.
 2. Update `LevelTransitionController` logic if needed
 3. Add configuration to `EndGamePanelConfig` ScriptableObject:
    - For win scenarios: add to Level Complete Configurations
    - For lose scenarios: add to Game Over Configurations
 4. The dynamic panels (`DynamicLevelCompletePanel`, `DynamicGameOverPanel`) will automatically use the new config
+
+### Adding an Async-Initialized Manager
+1. Implement `IAsyncInitializable` (namespace `Sorolla`) on a MonoBehaviour added to `GameManager._gameManagers`
+2. `GameManager` will await `InitializeAsync(ct)` in array order. The async path is exclusive of `SorollaManager.Init()` — pick one
+3. Use this for boot work that must complete before other systems run: remote-config fetch (LiveConfig), addressables warm-up, file I/O
 
 ## Testing & Debugging
 

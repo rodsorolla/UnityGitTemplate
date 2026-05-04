@@ -22,6 +22,7 @@ namespace Sorolla.PowerUps
         private PowerUpData _data;
         private Dictionary<PowerUpId, PowerUpDefinitionBase> _definitionCache;
         private bool _isDirty;
+        private ILevelFlowManager _cachedLevelFlow;
 
         // Events
         public event Action<PowerUpQuantityChangedEventArgs> OnQuantityChanged;
@@ -39,20 +40,20 @@ namespace Sorolla.PowerUps
 
             // Subscribe to level start for unlock checks — unlocks should appear
             // when the new level begins, not at the end of the previous one.
-            var levelFlow = ServiceLocator.Instance.TryResolve<ILevelFlowManager>();
-            if (levelFlow != null)
+            _cachedLevelFlow = ServiceLocator.Instance.TryResolve<ILevelFlowManager>();
+            if (_cachedLevelFlow != null)
             {
-                levelFlow.OnLevelStarted += OnLevelStarted;
-                CheckUnlocks(levelFlow.HighestLevelReached);
+                _cachedLevelFlow.OnLevelStarted += OnLevelStarted;
+                CheckUnlocks(_cachedLevelFlow.HighestLevelReached);
             }
         }
 
         private void OnDestroy()
         {
-            var levelFlow = ServiceLocator.Instance.TryResolve<ILevelFlowManager>();
-            if (levelFlow != null)
+            if (_cachedLevelFlow != null)
             {
-                levelFlow.OnLevelStarted -= OnLevelStarted;
+                _cachedLevelFlow.OnLevelStarted -= OnLevelStarted;
+                _cachedLevelFlow = null;
             }
         }
 
@@ -391,7 +392,9 @@ namespace Sorolla.PowerUps
             state.quantity = definition.InitialQuantity;
             _isDirty = true;
 
-            // Save immediately to ensure unlock persists across scene transitions
+            // Persist immediately. Unlocks happen at level-start cadence (rare),
+            // and a scene load before the next dirty flush would otherwise lose
+            // the unlock and re-trigger it on the next play.
             Save();
 
             OnPowerUpUnlocked?.Invoke(new PowerUpUnlockedEventArgs(

@@ -13,14 +13,14 @@ namespace Sorolla.UI
         /// Play the enter/show transition animation.
         /// </summary>
         /// <param name="target">The transform to animate</param>
-        /// <returns>UniTask that completes when animation finishes</returns>
+        /// <returns>Task that completes when animation finishes</returns>
         UniTask PlayEnterAsync(Transform target);
 
         /// <summary>
         /// Play the exit/hide transition animation.
         /// </summary>
         /// <param name="target">The transform to animate</param>
-        /// <returns>UniTask that completes when animation finishes</returns>
+        /// <returns>Task that completes when animation finishes</returns>
         UniTask PlayExitAsync(Transform target);
     }
 }

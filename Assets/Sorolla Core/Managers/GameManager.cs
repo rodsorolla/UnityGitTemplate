@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using ZLinq;
 using Sorolla.LevelFlow;
 using Sorolla.PersistentData;
 using Sorolla.Tutorial;
 using UnityEngine;
+using ZLinq;
 
 namespace Sorolla
 {
@@ -25,6 +25,10 @@ namespace Sorolla
         [SerializeField] private TutorialController _tutorialController;
         [SerializeField] private AudioManager _audioManager;
         
+        [Header("Scene Load Settings")]
+        [Tooltip("Music key to play after scene loads. Leave empty to skip.")]
+        [SerializeField] private string _sceneLoadMusicKey;
+
         [Header("Game-Specific Managers (Inject via ServiceLocator)")]
         [Tooltip("Add game-specific manager references here. They will be auto-registered.")]
         [SerializeField] private MonoBehaviour[] _gameManagers;
@@ -135,14 +139,14 @@ namespace Sorolla
                 ServiceLocator.Instance.Register(_audioManager);
             }
             
-            // Register game-specific managers
+            // Register game-specific managers under their concrete types
             if (_gameManagers != null)
             {
                 foreach (var manager in _gameManagers)
                 {
                     if (manager != null)
                     {
-                        ServiceLocator.Instance.Register(manager);
+                        ServiceLocator.Instance.RegisterByConcreteType(manager);
                     }
                 }
             }
@@ -164,8 +168,9 @@ namespace Sorolla
             // Initialize any SorollaManager components in the loaded scene
             InitializeSceneServices();
 
-            // Start background music (AudioManager handles disabled state)
-            _audioManager?.PlayMusic("Music");
+            // Start background music if configured (AudioManager handles disabled state)
+            if (!string.IsNullOrEmpty(_sceneLoadMusicKey))
+                _audioManager?.PlayMusic(_sceneLoadMusicKey);
 
             return UniTask.CompletedTask;
         }
@@ -222,13 +227,13 @@ namespace Sorolla
             }
             catch (OperationCanceledException)
             {
-                _initializationTask = null; // Reset so retry is possible
+                _initializationTask = null;
                 Debug.LogWarning("[GameManager] Initialization canceled.");
                 throw;
             }
             catch (Exception ex)
             {
-                _initializationTask = null; // Reset so retry is possible
+                _initializationTask = null;
                 Debug.LogError($"[GameManager] Initialization failed: {ex}");
                 throw;
             }
@@ -258,6 +263,8 @@ namespace Sorolla
             ct.ThrowIfCancellationRequested();
 
             // 3. Initialize game-specific managers (LevelFlowManager, CurrencyService, etc.)
+            // Managers that implement IAsyncInitializable (e.g. remote-config fetchers)
+            // are awaited in order; everything else uses the sync SorollaManager.Init path.
             if (_gameManagers != null)
             {
                 foreach (var manager in _gameManagers)
@@ -265,7 +272,9 @@ namespace Sorolla
                     if (manager == null) continue;
                     ct.ThrowIfCancellationRequested();
 
-                    if (manager is SorollaManager sorollaManager)
+                    if (manager is IAsyncInitializable asyncInit)
+                        await asyncInit.InitializeAsync(ct);
+                    else if (manager is SorollaManager sorollaManager)
                         sorollaManager.Init();
                 }
             }

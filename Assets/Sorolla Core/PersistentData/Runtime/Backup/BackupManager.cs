@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using ZLinq;
 using UnityEngine;
+using ZLinq;
 
 namespace Sorolla.PersistentData
 {
@@ -82,54 +82,6 @@ namespace Sorolla.PersistentData
                 .ToArray();
 
             return files;
-        }
-
-        /// <summary>
-        /// Restores a save file from a backup.
-        /// </summary>
-        /// <param name="backupPath">Path to the backup file</param>
-        /// <param name="targetPath">Path where to restore the file</param>
-        /// <returns>True if restore succeeded</returns>
-        public bool RestoreFromBackup(string backupPath, string targetPath)
-        {
-            try
-            {
-                if (!File.Exists(backupPath))
-                {
-                    Debug.LogError($"[SaveSystem] Backup file not found: {backupPath}");
-                    return false;
-                }
-
-                var targetDir = Path.GetDirectoryName(targetPath);
-                if (!Directory.Exists(targetDir))
-                    Directory.CreateDirectory(targetDir);
-
-                File.Copy(backupPath, targetPath, overwrite: true);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[SaveSystem] Failed to restore from backup: {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Restores the most recent backup for a save file.
-        /// </summary>
-        /// <param name="fileName">The save file name (without extension)</param>
-        /// <param name="targetPath">Path where to restore the file</param>
-        /// <returns>True if restore succeeded</returns>
-        public bool RestoreLatestBackup(string fileName, string targetPath)
-        {
-            var backups = GetBackups(fileName);
-            if (backups.Length == 0)
-            {
-                Debug.LogWarning($"[SaveSystem] No backups found for {fileName}");
-                return false;
-            }
-
-            return RestoreFromBackup(backups[0], targetPath);
         }
 
         /// <summary>

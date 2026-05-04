@@ -27,7 +27,7 @@ namespace Sorolla.UI.Transitions
             canvasGroup.alpha = _startAlpha;
             await canvasGroup.DOFade(_endAlpha, _duration)
                 .SetEase(_enterEase)
-                .SetUpdate(true)
+                .SetUpdate(true) // Ignore timeScale
                 .AsyncWaitForCompletion();
         }
 

@@ -60,7 +60,7 @@ namespace Sorolla
                 Debug.LogWarning("[GameInitializer] Initialization canceled");
                 return;
             }
-            catch (System.SystemException ex)
+            catch (Exception ex)
             {
                 Debug.LogError($"[GameInitializer] Initialization failed: {ex}");
                 return;
@@ -88,10 +88,13 @@ namespace Sorolla
             if (gameScene.IsValid())
                 SceneManager.SetActiveScene(gameScene);
 
-            // Fire event to notify subscribers that scene is loaded
+            // Fire event to notify all subscribers that scene is loaded
             if (OnSceneLoaded != null)
             {
-                await OnSceneLoaded.Invoke();
+                foreach (var handler in OnSceneLoaded.GetInvocationList())
+                {
+                    await ((Func<UniTask>)handler)();
+                }
             }
 
             // Notify PreInit to hide loading screen and unload
@@ -104,6 +107,9 @@ namespace Sorolla
 
         void OnDestroy()
         {
+            // Clear static event to prevent delegate leaks across scene reloads
+            OnSceneLoaded = null;
+
             if (_cts != null && !_cts.IsCancellationRequested)
             {
                 _cts.Cancel();

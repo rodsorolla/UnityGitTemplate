@@ -43,22 +43,28 @@ namespace Sorolla
             _sfxLookup = new Dictionary<string, SFXEntry>();
             foreach (var entry in sfx)
             {
-                if (entry.clip != null)
-                    _sfxLookup[entry.clip.name] = entry;
+                if (entry.clip == null) continue;
+                if (_sfxLookup.ContainsKey(entry.clip.name))
+                    Debug.LogWarning($"[AudioLibrary] Duplicate SFX key: {entry.clip.name}");
+                _sfxLookup[entry.clip.name] = entry;
             }
 
             _musicLookup = new Dictionary<string, MusicEntry>();
             foreach (var entry in music)
             {
-                if (entry.clip != null)
-                    _musicLookup[entry.clip.name] = entry;
+                if (entry.clip == null) continue;
+                if (_musicLookup.ContainsKey(entry.clip.name))
+                    Debug.LogWarning($"[AudioLibrary] Duplicate Music key: {entry.clip.name}");
+                _musicLookup[entry.clip.name] = entry;
             }
 
             _uiLookup = new Dictionary<string, SFXEntry>();
             foreach (var entry in ui)
             {
-                if (entry.clip != null)
-                    _uiLookup[entry.clip.name] = entry;
+                if (entry.clip == null) continue;
+                if (_uiLookup.ContainsKey(entry.clip.name))
+                    Debug.LogWarning($"[AudioLibrary] Duplicate UI key: {entry.clip.name}");
+                _uiLookup[entry.clip.name] = entry;
             }
 
             _initialized = true;

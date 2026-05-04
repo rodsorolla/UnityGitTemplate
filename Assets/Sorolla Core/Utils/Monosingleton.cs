@@ -1,10 +1,34 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Sorolla
 {
     /// <summary>
+    /// Non-generic helper that holds [RuntimeInitializeOnLoadMethod] for all MonoSingleton types.
+    /// Unity ignores that attribute inside generic classes, so we keep it here.
+    /// </summary>
+    internal static class MonoSingletonResetRegistry
+    {
+        private static readonly List<Action> s_ResetCallbacks = new();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetAll()
+        {
+            foreach (var cb in s_ResetCallbacks)
+                cb();
+        }
+
+        public static void Register(Action resetCallback)
+        {
+            if (!s_ResetCallbacks.Contains(resetCallback))
+                s_ResetCallbacks.Add(resetCallback);
+        }
+    }
+
+    /// <summary>
     /// Mono singleton Class. Extend this class to make singleton component.
-    /// Example: 
+    /// Example:
     /// <code>
     /// public class Foo : MonoSingleton<Foo>
     /// </code>. To get the instance of Foo class, use <code>Foo.instance</code>
@@ -16,6 +40,19 @@ namespace Sorolla
         private static T m_Instance;
         public static bool isTemporaryInstance { private set; get; }
         private static bool s_ShuttingDown;
+
+        // Static constructor registers our reset callback once per concrete type
+        static MonoSingleton()
+        {
+            MonoSingletonResetRegistry.Register(ResetStatics);
+        }
+
+        private static void ResetStatics()
+        {
+            s_ShuttingDown = false;
+            isTemporaryInstance = false;
+            m_Instance = null;
+        }
 
         public static T Instance
         {
@@ -69,8 +106,8 @@ namespace Sorolla
             }
             else if (m_Instance != this)
             {
-                Debug.LogError("Another instance of " + GetType() + " already exists. Destroying this component...");
-                Destroy(this); // safer than DestroyImmediate in Awake
+                Debug.LogWarning("Another instance of " + GetType() + " already exists. Destroying duplicate GameObject...");
+                Destroy(gameObject); // destroy the whole GameObject, not just the component
                 return;
             }
 

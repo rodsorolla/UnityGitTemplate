@@ -44,7 +44,7 @@ namespace Sorolla
                 return;
             }
 
-            await op.ToUniTask();
+            await op;
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Sorolla
                 onProgress.Invoke(1f);
             }
 
-            await op.ToUniTask();
+            await op;
         }
     }
 }

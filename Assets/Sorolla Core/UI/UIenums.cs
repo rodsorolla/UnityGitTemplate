@@ -29,8 +29,6 @@
         Continue = 13,
         Settings = 14,
         PowerUpUsed = 15,
-        
-        // Game-specific panels (100+)
-        
+        // Game-specific panels start at 100
     }
 }

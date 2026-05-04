@@ -32,6 +32,7 @@ namespace Sorolla.LevelFlow
         private LevelState _currentState = LevelState.Idle;
         private LevelEndReason _lastEndReason = LevelEndReason.None;
         private int _currentLevelIndex = 1;
+        private UIPanel _subscribedEndPanel;
 
         public LevelState CurrentState => _currentState;
         public LevelEndReason LastEndReason => _lastEndReason;
@@ -67,7 +68,7 @@ namespace Sorolla.LevelFlow
         private WorldConfig[] _cachedWorlds;
         private int[] _worldStartLevels; // Cache of first level index for each world
 
-        public bool UsesWorldSystem => GetWorldConfigs() != null && GetWorldConfigs().Length > 0;
+        public bool UsesWorldSystem => _cachedWorlds != null && _cachedWorlds.Length > 0;
         public int CurrentWorldIndex => UsesWorldSystem ? GetWorldForLevel(_currentLevelIndex) : 1;
         public int HighestWorldReached => _progressData?.highestWorldReached ?? 1;
         public int WorldCount => UsesWorldSystem ? GetWorldConfigs().Length : 1;
@@ -189,6 +190,7 @@ namespace Sorolla.LevelFlow
             }
 
             // Cleanup previous level if any
+            CleanupEndPanelSubscription();
             if (_currentState != LevelState.Idle)
             {
                 OnLevelCleanupRequested?.Invoke();
@@ -238,16 +240,16 @@ namespace Sorolla.LevelFlow
             // Hook for game-specific logic
             OnLevelWon(reason);
 
-            // Update progress
-            UpdateProgressOnWin();
-
-            // Fire events
+            // Fire while CurrentLevelIndex still points at the completed level.
             OnLevelEnded?.Invoke(reason);
+
+            // Advance progress after end subscribers have observed the completed level.
+            UpdateProgressOnWin();
 
             // Show UI
             if (AutoShowEndPanels)
             {
-                ShowEndPanelAsync(GetWinPanelId());
+                ShowEndPanelAsync(GetWinPanelId()).Forget();
             }
         }
 
@@ -267,7 +269,7 @@ namespace Sorolla.LevelFlow
             // Show UI
             if (AutoShowEndPanels)
             {
-                ShowEndPanelAsync(GetLosePanelId());
+                ShowEndPanelAsync(GetLosePanelId()).Forget();
             }
         }
 
@@ -275,8 +277,11 @@ namespace Sorolla.LevelFlow
         {
             if (_currentState == LevelState.Idle) return;
 
-            OnLevelCleanupRequested?.Invoke();
             _lastEndReason = LevelEndReason.PlayerQuit;
+            OnLevelEnded?.Invoke(_lastEndReason);
+
+            CleanupEndPanelSubscription();
+            OnLevelCleanupRequested?.Invoke();
             SetState(LevelState.Idle);
         }
 
@@ -297,6 +302,14 @@ namespace Sorolla.LevelFlow
 
             _progressData.UpdateLastPlayed();
             SaveSystem.Save(_progressData, SaveFileName);
+        }
+
+        private void SaveProgressAsync()
+        {
+            if (_progressData == null) return;
+
+            _progressData.UpdateLastPlayed();
+            SaveSystem.SaveAsync(_progressData, SaveFileName).Forget();
         }
 
         public LevelProgressData GetProgressData()
@@ -348,7 +361,7 @@ namespace Sorolla.LevelFlow
                 }
             }
 
-            SaveProgress();
+            SaveProgressAsync();
         }
 
         #endregion
@@ -436,7 +449,7 @@ namespace Sorolla.LevelFlow
             OnStateChanged?.Invoke(newState);
         }
 
-        private async void ShowEndPanelAsync(UIPanelId panelId)
+        private async UniTaskVoid ShowEndPanelAsync(UIPanelId panelId)
         {
             var uiManager = UIManager.Instance;
             if (uiManager == null) return;
@@ -444,10 +457,13 @@ namespace Sorolla.LevelFlow
             try
             {
                 if (_endPanelDelay > 0f)
-                    await UniTask.Delay((int)(_endPanelDelay * 1000));
+                    await Cysharp.Threading.Tasks.UniTask.Delay((int)(_endPanelDelay * 1000));
                 var panel = await uiManager.OpenPanelAsync(panelId);
                 if (panel != null)
+                {
+                    _subscribedEndPanel = panel;
                     panel.OnClosed += HandleEndPanelDismissed;
+                }
             }
             catch (Exception ex)
             {
@@ -458,7 +474,17 @@ namespace Sorolla.LevelFlow
         private void HandleEndPanelDismissed(UIPanel panel)
         {
             panel.OnClosed -= HandleEndPanelDismissed;
+            _subscribedEndPanel = null;
             OnEndPanelDismissed?.Invoke();
+        }
+
+        private void CleanupEndPanelSubscription()
+        {
+            if (_subscribedEndPanel != null)
+            {
+                _subscribedEndPanel.OnClosed -= HandleEndPanelDismissed;
+                _subscribedEndPanel = null;
+            }
         }
 
         #endregion

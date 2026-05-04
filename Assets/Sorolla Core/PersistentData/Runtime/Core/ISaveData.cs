@@ -7,8 +7,10 @@ namespace Sorolla.PersistentData
     public interface ISaveData
     {
         /// <summary>
-        /// The version of this data structure.
-        /// Increment when making breaking changes to enable migrations.
+        /// Reserved for future migration support. The current SaveSystem does not
+        /// branch on this value — it is serialized into every save file as a
+        /// forward-compatibility hook. Increment when making breaking changes so a
+        /// future migration pipeline can detect the schema.
         /// </summary>
         int Version { get; }
     }

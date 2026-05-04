@@ -88,7 +88,7 @@ namespace Sorolla.Editor
             public Color DisplayColor;
         }
 
-        [MenuItem("Tools/Sorolla/Gradient Color Editor")]
+        [MenuItem("Tools/Sorolla Core/Gradient Color Editor")]
         public static void ShowWindow()
         {
             var window = GetWindow<GradientColorEditor>("Gradient Color Editor");

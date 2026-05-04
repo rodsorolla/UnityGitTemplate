@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Sorolla
 {
@@ -9,6 +10,34 @@ namespace Sorolla
     public static class PoolManager
     {
         private static readonly Dictionary<string, Pool> _pools = new();
+        private static bool _sceneHooked;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _pools.Clear();
+            _sceneHooked = false;
+        }
+
+        private static void EnsureSceneHook()
+        {
+            if (_sceneHooked) return;
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
+            _sceneHooked = true;
+        }
+
+        private static void OnSceneUnloaded(Scene scene)
+        {
+            // Remove pools whose prefab was destroyed with the unloaded scene
+            var stale = new List<string>();
+            foreach (var kvp in _pools)
+            {
+                if (kvp.Value == null || kvp.Value.Prefab == null)
+                    stale.Add(kvp.Key);
+            }
+            foreach (var key in stale)
+                _pools.Remove(key);
+        }
 
         /// <summary>
         /// Registers a pool with the manager.
@@ -16,6 +45,7 @@ namespace Sorolla
         public static void Register(Pool pool)
         {
             if (pool == null || string.IsNullOrEmpty(pool.Name)) return;
+            EnsureSceneHook();
 
             if (_pools.ContainsKey(pool.Name))
             {

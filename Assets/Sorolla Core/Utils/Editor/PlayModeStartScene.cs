@@ -12,7 +12,7 @@ namespace Sorolla
     public static class PlayModeStartScene
     {
         private const string INIT_SCENE_PATH = "Assets/_Game/Scenes/Init.unity";
-        private const string GAME_SCENE_PATH = "Assets/_Game/Scenes/Game.unity";
+        private const string GAME_SCENE_FOLDER = "Assets/_Game/Scenes/";
 
         static PlayModeStartScene()
         {
@@ -29,7 +29,7 @@ namespace Sorolla
         {
             var currentScenePath = SceneManager.GetActiveScene().path;
 
-            if (currentScenePath == INIT_SCENE_PATH || currentScenePath == GAME_SCENE_PATH)
+            if (currentScenePath.StartsWith(GAME_SCENE_FOLDER))
             {
                 var initScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(INIT_SCENE_PATH);
                 if (initScene != null)
@@ -43,13 +43,13 @@ namespace Sorolla
             }
         }
 
-        [MenuItem("Tools/Clear Play Mode Start Scene")]
+        [MenuItem("Tools/Sorolla Core/Clear Play Mode Start Scene")]
         private static void ClearPlayModeStartScene()
         {
             EditorSceneManager.playModeStartScene = null;
         }
 
-        [MenuItem("Tools/Set Play Mode Start Scene to Init")]
+        [MenuItem("Tools/Sorolla Core/Set Play Mode Start Scene to Init")]
         private static void ResetPlayModeStartScene()
         {
             var initScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(INIT_SCENE_PATH);

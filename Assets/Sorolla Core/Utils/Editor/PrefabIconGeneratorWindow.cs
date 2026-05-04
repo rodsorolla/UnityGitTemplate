@@ -70,7 +70,7 @@ namespace Sorolla
         private static readonly int[] SupersampleFactors = { 1, 2, 4 };
         private static readonly string[] SupersampleLabels = { "1x (None)", "2x", "4x" };
 
-        [MenuItem("Tools/Sorolla/Prefab Icon Generator")]
+        [MenuItem("Tools/Sorolla Core/Prefab Icon Generator")]
         public static void ShowWindow()
         {
             var window = GetWindow<PrefabIconGeneratorWindow>("Prefab Icon Generator");

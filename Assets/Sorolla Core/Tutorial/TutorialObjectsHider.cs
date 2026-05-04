@@ -16,23 +16,52 @@ namespace Sorolla.Tutorial
         public int RevealStepInLevel;
     }
 
+    /// <summary>
+    /// Reveals/hides GameObjects based on tutorial progress. Self-subscribes to
+    /// TutorialController.OnTutorialStepChanged, so it works whether the controller
+    /// lives in the level scene or is loaded from a separate bootstrap scene.
+    /// Initial state is resolved lazily via ServiceLocator to avoid cross-scene
+    /// inspector references and Awake-order races.
+    /// </summary>
     public class TutorialObjectsHider : MonoBehaviour
     {
-        [Header("Reference to Tutorial Controller")]
-        [SerializeField] private TutorialController _tutorialController;
-
         [Header("Objects to Hide/Show")]
         [SerializeField] private HideEntry[] _objectsToHide;
 
-        public void Init()
+        private bool _subscribed;
+
+        private void OnEnable()
         {
-            ApplyStep(_tutorialController.CurrentLevel, _tutorialController.CurrentStepInLevel);
-            TutorialController.OnTutorialStepChanged += ApplyStep;
+            if (!_subscribed)
+            {
+                TutorialController.OnTutorialStepChanged += ApplyStep;
+                _subscribed = true;
+            }
+            ApplyCurrentState();
         }
 
         private void OnDisable()
         {
-            TutorialController.OnTutorialStepChanged -= ApplyStep;
+            if (_subscribed)
+            {
+                TutorialController.OnTutorialStepChanged -= ApplyStep;
+                _subscribed = false;
+            }
+        }
+
+        /// <summary>
+        /// Legacy entry point (still called by TutorialController.BuildTutorial).
+        /// OnEnable already handles subscription — this just re-applies current state.
+        /// </summary>
+        public void Init() => ApplyCurrentState();
+
+        private void ApplyCurrentState()
+        {
+            var controller = ServiceLocator.Instance?.TryResolve<TutorialController>();
+            if (controller != null)
+                ApplyStep(controller.CurrentLevel, controller.CurrentStepInLevel);
+            else
+                ApplyStep(-1, -1); // No controller yet → default to hidden; event will update us on level start.
         }
 
         public void ApplyStep(int level, int stepInLevel)

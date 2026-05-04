@@ -13,21 +13,9 @@ namespace Sorolla.PersistentData
     public static class SaveSystem
     {
         private static IStorageProvider _storage;
-        private static MigrationPipeline _migrations;
         private static BackupManager _backups;
-        private static SaveEvents _events;
         private static JsonSerializerSettings _jsonSettings;
         private static bool _initialized;
-
-        /// <summary>
-        /// Event handlers for save/load operations.
-        /// </summary>
-        public static SaveEvents Events => _events ??= new SaveEvents();
-
-        /// <summary>
-        /// Migration pipeline for version upgrades.
-        /// </summary>
-        public static MigrationPipeline Migrations => _migrations ??= new MigrationPipeline();
 
         /// <summary>
         /// Backup manager for save file backups.
@@ -61,10 +49,9 @@ namespace Sorolla.PersistentData
         {
             if (_initialized) return;
 
-            _storage = new LocalFileStorage();
-            _backups = new BackupManager(((LocalFileStorage)_storage).BasePath);
-            _events ??= new SaveEvents();
-            _migrations ??= new MigrationPipeline();
+            var localStorage = new LocalFileStorage();
+            _storage = localStorage;
+            _backups = new BackupManager(localStorage.BasePath);
 
             _jsonSettings = new JsonSerializerSettings
             {
@@ -85,8 +72,6 @@ namespace Sorolla.PersistentData
         {
             _storage = storageProvider ?? throw new ArgumentNullException(nameof(storageProvider));
             _backups = new BackupManager(backupBasePath ?? Application.persistentDataPath);
-            _events ??= new SaveEvents();
-            _migrations ??= new MigrationPipeline();
 
             _jsonSettings = new JsonSerializerSettings
             {
@@ -113,8 +98,6 @@ namespace Sorolla.PersistentData
         {
             EnsureInitialized();
 
-            Events.InvokeBeforeSave(fileName, slot);
-
             if (createBackup)
             {
                 var filePath = _storage.GetFilePath(fileName, slot);
@@ -124,12 +107,7 @@ namespace Sorolla.PersistentData
             try
             {
                 var json = JsonConvert.SerializeObject(data, _jsonSettings);
-                var result = _storage.Save(json, fileName, slot);
-
-                if (result.Success)
-                    Events.InvokeAfterSave(fileName, slot);
-
-                return result;
+                return _storage.Save(json, fileName, slot);
             }
             catch (Exception ex)
             {
@@ -145,8 +123,6 @@ namespace Sorolla.PersistentData
         {
             EnsureInitialized();
 
-            Events.InvokeBeforeSave(fileName, slot);
-
             if (createBackup)
             {
                 var filePath = _storage.GetFilePath(fileName, slot);
@@ -156,12 +132,7 @@ namespace Sorolla.PersistentData
             try
             {
                 var json = await UniTask.RunOnThreadPool(() => JsonConvert.SerializeObject(data, _jsonSettings));
-                var result = await _storage.SaveAsync(json, fileName, slot);
-
-                if (result.Success)
-                    Events.InvokeAfterSave(fileName, slot);
-
-                return result;
+                return await _storage.SaveAsync(json, fileName, slot);
             }
             catch (Exception ex)
             {
@@ -195,8 +166,6 @@ namespace Sorolla.PersistentData
         {
             EnsureInitialized();
 
-            Events.InvokeBeforeLoad(fileName, slot);
-
             var json = _storage.Load(fileName, slot);
 
             if (string.IsNullOrEmpty(json))
@@ -207,58 +176,24 @@ namespace Sorolla.PersistentData
             if (!SaveValidator.IsValidJson(json))
             {
                 Debug.LogWarning($"[SaveSystem] Invalid JSON in {fileName}, using default");
-                Events.InvokeSaveCorrupted(fileName, slot, new JsonException("Invalid JSON structure"));
                 return defaultValue;
-            }
-
-            // Check version and migrate if needed
-            var savedVersion = SaveValidator.GetVersion(json);
-            var targetVersion = defaultValue.Version;
-
-            if (savedVersion > 0 && savedVersion < targetVersion)
-            {
-                if (_migrations.TryMigrate<T>(json, savedVersion, targetVersion, out var migratedJson))
-                {
-                    json = migratedJson;
-                    Events.InvokeMigrationApplied(fileName, slot, savedVersion, targetVersion);
-                }
-                else
-                {
-                    Debug.LogWarning($"[SaveSystem] Migration failed for {fileName} (v{savedVersion} → v{targetVersion}), using default");
-                    return defaultValue;
-                }
             }
 
             if (!SaveValidator.TryDeserialize<T>(json, out var result, _jsonSettings))
             {
                 Debug.LogWarning($"[SaveSystem] Deserialization failed for {fileName}, using default");
-                Events.InvokeSaveCorrupted(fileName, slot, new JsonException("Deserialization failed"));
                 return defaultValue;
             }
 
-            Events.InvokeAfterLoad(fileName, slot);
             return result;
-        }
-
-        /// <summary>
-        /// Loads data from a file using a defaults provider.
-        /// </summary>
-        /// <typeparam name="T">The data type</typeparam>
-        /// <param name="fileName">Name of the save file</param>
-        /// <param name="slot">Save slot number</param>
-        /// <param name="defaultsProvider">Provider that creates default values</param>
-        /// <returns>The loaded data or defaults from the provider</returns>
-        public static T Load<T>(string fileName, int slot, IDefaultsProvider<T> defaultsProvider) where T : ISaveData
-        {
-            return Load(fileName, slot, defaultsProvider.CreateDefault());
         }
 
         /// <summary>
         /// Loads data from a file asynchronously.
         /// </summary>
-        public static async UniTask<T> LoadAsync<T>(string fileName, int slot = 0) where T : ISaveData, new()
+        public static UniTask<T> LoadAsync<T>(string fileName, int slot = 0) where T : ISaveData, new()
         {
-            return await LoadAsync<T>(fileName, slot, defaultValue: new T());
+            return LoadAsync<T>(fileName, slot, defaultValue: new T());
         }
 
         /// <summary>
@@ -267,8 +202,6 @@ namespace Sorolla.PersistentData
         public static async UniTask<T> LoadAsync<T>(string fileName, int slot, T defaultValue) where T : ISaveData
         {
             EnsureInitialized();
-
-            Events.InvokeBeforeLoad(fileName, slot);
 
             var json = await _storage.LoadAsync(fileName, slot);
 
@@ -280,25 +213,7 @@ namespace Sorolla.PersistentData
             if (!SaveValidator.IsValidJson(json))
             {
                 Debug.LogWarning($"[SaveSystem] Invalid JSON in {fileName}, using default");
-                Events.InvokeSaveCorrupted(fileName, slot, new JsonException("Invalid JSON structure"));
                 return defaultValue;
-            }
-
-            var savedVersion = SaveValidator.GetVersion(json);
-            var targetVersion = defaultValue.Version;
-
-            if (savedVersion > 0 && savedVersion < targetVersion)
-            {
-                if (_migrations.TryMigrate<T>(json, savedVersion, targetVersion, out var migratedJson))
-                {
-                    json = migratedJson;
-                    Events.InvokeMigrationApplied(fileName, slot, savedVersion, targetVersion);
-                }
-                else
-                {
-                    Debug.LogWarning($"[SaveSystem] Migration failed for {fileName}, using default");
-                    return defaultValue;
-                }
             }
 
             var result = await UniTask.RunOnThreadPool(() =>
@@ -311,11 +226,9 @@ namespace Sorolla.PersistentData
             if (result == null)
             {
                 Debug.LogWarning($"[SaveSystem] Deserialization failed for {fileName}, using default");
-                Events.InvokeSaveCorrupted(fileName, slot, new JsonException("Deserialization failed"));
                 return defaultValue;
             }
 
-            Events.InvokeAfterLoad(fileName, slot);
             return result;
         }
 
@@ -354,7 +267,9 @@ namespace Sorolla.PersistentData
             if (slot == -1)
             {
                 var basePath = (_storage as LocalFileStorage)?.BasePath;
-                if (basePath != null && Directory.Exists(basePath))
+                if (basePath != null
+                    && basePath.StartsWith(Application.persistentDataPath)
+                    && Directory.Exists(basePath))
                 {
                     Directory.Delete(basePath, true);
                     Debug.Log("[SaveSystem] All save data deleted.");
@@ -394,8 +309,6 @@ namespace Sorolla.PersistentData
         {
             _storage = null;
             _backups = null;
-            _events = null;
-            _migrations = null;
             _jsonSettings = null;
             _initialized = false;
         }

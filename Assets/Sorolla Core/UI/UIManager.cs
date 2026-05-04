@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using ZLinq;
 using Sorolla;
+using ZLinq;
 
 // using UnityEngine.AddressableAssets; // Uncomment if using Addressables
 
@@ -70,11 +70,20 @@ namespace Sorolla.UI
             // Panels intercept first by highest BackPriority
             if (_panels.Count > 0)
             {
-                var topPanel = _panels.AsValueEnumerable().OrderByDescending(p => p.BackPriority).FirstOrDefault();
+                UIPanel topPanel = null;
+                int highestPriority = int.MinValue;
+                for (int i = 0; i < _panels.Count; i++)
+                {
+                    if (_panels[i] != null && _panels[i].BackPriority > highestPriority)
+                    {
+                        highestPriority = _panels[i].BackPriority;
+                        topPanel = _panels[i];
+                    }
+                }
                 if (topPanel != null && topPanel.HandleBack()) return;
 
                 // Default: close top-most visible panel if it doesn't handle back
-                var last = _panels.AsValueEnumerable().LastOrDefault();
+                var last = _panels.Count > 0 ? _panels[_panels.Count - 1] : null;
                 if (last != null)
                 {
                     await ClosePanelAsync(last);
@@ -180,8 +189,10 @@ namespace Sorolla.UI
             if (_panelCache.TryGetValue(id, out var list))
             {
                 // copy to avoid modification during iteration
-                foreach (var p in list.AsValueEnumerable().ToList())
+                var snapshot = list.AsValueEnumerable().ToArray();
+                for (int i = 0; i < snapshot.Length; i++)
                 {
+                    var p = snapshot[i];
                     if (_panels.Contains(p)) await ClosePanelAsync(p);
                 }
             }
@@ -222,15 +233,15 @@ namespace Sorolla.UI
             return screen;
         }
 
-        private async UniTask<UIScreen> GetOrCreateScreenInstanceAsync(UIScreenId id)
+        private UniTask<UIScreen> GetOrCreateScreenInstanceAsync(UIScreenId id)
         {
-            await UniTask.CompletedTask; // Synchronous but keeps async signature for consistency
-            if (_screenCache.TryGetValue(id, out var s) && s != null) return s;
+            if (_screenCache.TryGetValue(id, out var s) && s != null)
+                return UniTask.FromResult(s);
 
             if (!_registry.TryGetScreen(id, out var entry))
             {
                 Debug.LogError($"UIManager: Screen not found in registry: {id}");
-                return null;
+                return UniTask.FromResult<UIScreen>(null);
             }
 
             GameObject go = null;
@@ -243,7 +254,7 @@ namespace Sorolla.UI
             if (go == null)
             {
                 Debug.LogError($"UIManager: Could not instantiate screen: {id}");
-                return null;
+                return UniTask.FromResult<UIScreen>(null);
             }
 
             s = go.GetComponent<UIScreen>();
@@ -251,28 +262,32 @@ namespace Sorolla.UI
             {
                 Debug.LogError($"UIManager: Prefab for {id} has no UIScreen component.");
                 Object.Destroy(go);
-                return null;
+                return UniTask.FromResult<UIScreen>(null);
             }
 
             go.SetActive(false);
             _screenCache[id] = s;
-            return s;
+            return UniTask.FromResult(s);
         }
 
-        private async UniTask<UIPanel> GetOrCreatePanelInstanceAsync(UIPanelId id)
+        private UniTask<UIPanel> GetOrCreatePanelInstanceAsync(UIPanelId id)
         {
-            await UniTask.CompletedTask; // Synchronous but keeps async signature for consistency
             // Allow multiple instances per Panel ID if needed; here we reuse a single instance per ID by default
             if (_panelCache.TryGetValue(id, out var list))
             {
-                var existing = list.AsValueEnumerable().FirstOrDefault(p => p != null && !p.gameObject.activeSelf);
-                if (existing != null) return existing;
+                UIPanel existing = null;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var cached = list[i];
+                    if (cached != null && !cached.gameObject.activeSelf) { existing = cached; break; }
+                }
+                if (existing != null) return UniTask.FromResult(existing);
             }
 
             if (!_registry.TryGetPanel(id, out var entry))
             {
                 Debug.LogError($"UIManager: Panel not found in registry: {id}");
-                return null;
+                return UniTask.FromResult<UIPanel>(null);
             }
 
             GameObject go = null;
@@ -285,7 +300,7 @@ namespace Sorolla.UI
             if (go == null)
             {
                 Debug.LogError($"UIManager: Could not instantiate panel: {id}");
-                return null;
+                return UniTask.FromResult<UIPanel>(null);
             }
 
             var p = go.GetComponent<UIPanel>();
@@ -293,14 +308,14 @@ namespace Sorolla.UI
             {
                 Debug.LogError($"UIManager: Prefab for {id} has no UIPanel component.");
                 Object.Destroy(go);
-                return null;
+                return UniTask.FromResult<UIPanel>(null);
             }
 
             go.SetActive(false);
 
             if (!_panelCache.ContainsKey(id)) _panelCache[id] = new List<UIPanel>();
             _panelCache[id].Add(p);
-            return p;
+            return UniTask.FromResult(p);
         }
         
         #endregion

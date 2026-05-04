@@ -16,12 +16,22 @@ Reusable Unity framework for mobile games. Provides DI, level flow, UI, persiste
 GameInitializer (Bootstrap scene)
   → GameManager.InitializeAsync()
     → SaveSystem.Initialize()
-    → AudioManager, TutorialController
-    → _gameManagers[] (your managers)
+    → AudioManager, TutorialController, LevelFlowManager
+    → _gameManagers[]:
+        - IAsyncInitializable.InitializeAsync()  (awaited, exclusive of Init)
+        - SorollaManager.Init()                  (sync path)
   → Load Game scene (additive)
+  → GameManager.HandleSceneLoaded():
+        - InitializeSceneServices() — auto-finds and Init()s any
+          uninitialized SorollaManager components in the loaded scene
+        - PlayMusic(_sceneLoadMusicKey) if set
   → UIManager ready
   → Ready to play
 ```
+
+Implement `IAsyncInitializable` (namespace `Sorolla`) on a `_gameManagers` entry
+when its boot needs to await something (network fetch, file I/O, addressables).
+Async path is exclusive — the manager's sync `Init()` is **not** also called.
 
 ### Service Infrastructure
 ```csharp
@@ -113,22 +123,22 @@ await UIManager.Instance.ClosePanelAsync(panel);
 [Serializable]
 public class MyData : ISaveData
 {
-    public int Version => 1;
+    public int Version => 1;  // Reserved for future migration support
     public int score;
 }
 
-// Save/Load (static API)
-SaveSystem.Save(data, "my_data");
-var loaded = SaveSystem.Load<MyData>("my_data");  // Returns new instance if not found
-SaveSystem.DeleteAllData();        // Wipe all slots
-SaveSystem.DeleteAllData(slot: 1); // Wipe specific slot
+// Save/Load (static API). LocalFileStorage uses File.Replace for crash-safe writes.
+SaveSystem.Save(data, "my_data");                     // Sync, creates a backup
+await SaveSystem.SaveAsync(data, "my_data");          // Off main thread
+var loaded = SaveSystem.Load<MyData>("my_data");      // new T() if missing
+var loaded2 = SaveSystem.Load("my_data", 0, defaults); // Custom default
+SaveSystem.DeleteAllData();         // Wipe all slots
+SaveSystem.DeleteAllData(slot: 1);  // Wipe specific slot
 
-// Extend GameDataServiceBase for automatic save management
-public class GameDataService : GameDataServiceBase
-{
-    public override async UniTask LoadAllAsync() { _data = SaveSystem.Load<MyData>("game"); }
-    public override void SaveAll() { SaveSystem.Save(_data, "game"); }
-}
+// Persistence pattern for services that mutate often: flag _isDirty, flush
+// in OnApplicationPause/OnApplicationQuit. Persist immediately for rare,
+// load-bearing events (e.g. PowerUpService.UnlockPowerUp) so a scene change
+// before the next dirty flush doesn't lose them.
 ```
 
 ### Currency (`Sorolla.Currency`)
@@ -171,13 +181,34 @@ var audio = ServiceLocator.Instance.TryResolve<AudioManager>();
 audio?.PlaySFX("Match");
 audio?.PlayMusic("MainTheme");
 audio?.StopMusic();
+
+// Looping SFX — pair Play/Stop, or call StopAllLoopingSFX on scene teardown.
+var loop = audio?.PlayLoopingSFX("Engine");
+audio?.StopLoopingSFX(loop);
+audio?.StopAllLoopingSFX();
+```
+Settings flush to SaveSystem on pause/quit (deferred). Slider drags don't hit
+disk per event — iOS-friendly. `autoSave` field on the prefab gates this.
+
+### Tutorial (`Sorolla.Tutorial` / `Sorolla.Tutorial.Highlight`)
+```csharp
+// Extend TutorialStepBase for custom steps. TutorialController manages
+// progression and persists completed levels via TutorialSaveData ("tutorial" file).
+// Events: OnTutorialStepEntered, OnTutorialStepChanged, OnGateTriggered
+
+// Highlight: drop TutorialHighlightTarget on a UI button or world sprite
+// (adapter is auto-picked: UI vs Sprite). Use the HighlightTutorialStep SO
+// + bundled HighlightTutorialStepPanel prefab to point at it. Run
+// "Tools > Sorolla > Tutorial > Setup Highlight System" once per scene.
 ```
 
-### Tutorial (`Sorolla.Tutorial`)
+### LiveConfig (`Sorolla.LiveConfig`)
 ```csharp
-// Extend TutorialStepBase for custom steps
-// TutorialController manages progression and persistence
-// Events: OnTutorialStepEntered, OnTutorialStepChanged, OnGateTriggered
+// LiveConfigSettings (Resources SO) + LiveConfigFetcher (UWR fetch) +
+// StreamingAssetsReader (baked fallback). Wire into a manager that
+// implements IAsyncInitializable for boot-time fetch + persistent cache
+// + baked-fallback flow. Game-side data shapes live in _Game/.
+// See Assets/Sorolla Core/LiveConfig/README.md.
 ```
 
 ### SorollaTimer (`Sorolla`)
@@ -230,16 +261,16 @@ Cursor overlay for recording App Store videos. Shows a hand sprite following the
 ### New Save Data
 1. Create `[Serializable]` class implementing `ISaveData`
 2. Use `SaveSystem.Save(data, filename)` / `SaveSystem.Load<T>(filename)`
-3. Or extend `GameDataServiceBase` for auto-save on pause/quit
+3. For services that mutate frequently, flag `_isDirty` and flush in
+   `OnApplicationPause`/`OnApplicationQuit` (see `AudioManager`, `PowerUpService`)
 
 ## Gotchas
 
 - **Level index semantics**: `OnLevelSetupRequested` passes the **actual** level index (after modulo wrapping). `OnLevelStarted` passes the **progressive** level number. These differ once players loop past the last level.
 - **Always unsubscribe** events in `OnDestroy()` to prevent null reference errors
-- **iOS disk I/O**: Never call `Save()`/`PlayerPrefs.Save()` per-frame or per-item. Batch saves at level end. iOS stutters severely from hot-path disk writes that Android handles fine.
-- **Initialization order**: SaveSystem → Core managers → Game managers → Scene load → UIManager. Don't resolve services before they're registered.
+- **iOS disk I/O**: Never call `Save()`/`PlayerPrefs.Save()` per-frame or per-item. Batch saves at level end or use the dirty-flag pattern. iOS stutters severely from hot-path disk writes that Android handles fine.
+- **Initialization order**: SaveSystem → Core managers → Game managers (`IAsyncInitializable` awaited in order, others use sync `Init()`) → Scene load → `InitializeSceneServices` (auto-discovers in-scene SorollaManagers). Don't resolve services before they're registered.
 - **UI enum ranges**: 0-99 reserved for Sorolla Core. Game-specific panels/screens use 100+.
-- **GameDataService registers in Awake()**, not Initialize() — it must be available before other managers init.
 - **Pool return**: Deactivate the GameObject (`SetActive(false)`) to return it to the pool. No explicit Return() call needed.
 
 ## Namespaces
@@ -256,6 +287,9 @@ Cursor overlay for recording App Store videos. Shows a hand sprite following the
 | `Sorolla.UI.Effects` | Floating text |
 | `Sorolla.UI.Config` | Config-driven panels |
 | `Sorolla.Tutorial` | Tutorial system |
+| `Sorolla.Tutorial.Highlight` | Adapter-based highlight panels |
+| `Sorolla.LiveConfig` | Server-pushed JSON tuning with fallback chain |
+| `Sorolla.GoogleSheets` | `[SheetColumn]` attribute (runtime only) |
 
 ## Maintenance
 

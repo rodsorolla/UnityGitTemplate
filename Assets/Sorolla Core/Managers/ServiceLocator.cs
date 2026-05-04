@@ -35,6 +35,21 @@ namespace Sorolla
             _services[type] = service;
         }
 
+        /// <summary>
+        /// Register a service under its concrete runtime type (non-generic).
+        /// Useful when the compile-time type is a base class (e.g. MonoBehaviour).
+        /// </summary>
+        public void RegisterByConcreteType(object service)
+        {
+            if (service == null) return;
+            var type = service.GetType();
+            if (_services.ContainsKey(type))
+            {
+                Debug.LogWarning($"[ServiceLocator] Service {type.Name} is already registered. Overwriting.");
+            }
+            _services[type] = service;
+        }
+
         public T Resolve<T>() where T : class
         {
             var type = typeof(T);
@@ -54,6 +69,11 @@ namespace Sorolla
                 return service as T;
             }
             return null;
+        }
+
+        public void Unregister<T>() where T : class
+        {
+            _services.Remove(typeof(T));
         }
 
         public bool Has<T>() where T : class

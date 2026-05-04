@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using Sorolla.PersistentData;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -33,8 +35,11 @@ namespace Sorolla
         [SerializeField] private AudioSource uiSource;
 
         [Header("Settings")]
+        [Tooltip("If true, audio settings are flushed to disk on application pause/quit. Disable to take full manual control via SaveSettings().")]
         [SerializeField] private bool autoSave = true;
-        [SerializeField] private string saveKey = "sorolla_audio";
+
+        private const string SaveFileName = "audio_settings";
+        private const string LegacyPlayerPrefsKey = "sorolla_audio";
 
         // Volume state (0-1)
         private float _masterVolume = 1f;
@@ -50,8 +55,22 @@ namespace Sorolla
 
         private const float MuteDb = -80f;
 
+        // Tracks whether settings need saving to disk
+        private bool _isDirty;
+
         // Pending music track (for when music is disabled at start)
         private string _pendingMusicKey;
+
+        // The volume set by the AudioLibrary entry when music started playing
+        private float _musicBaseVolume = 1f;
+        private Coroutine _musicFadeCoroutine;
+
+        // Cached set of exposed mixer parameter names
+        private HashSet<string> _exposedParams;
+
+        // Tracks GameObjects spawned by PlayLoopingSFX so we can clean up callers'
+        // forgotten StopLoopingSFX pairings (and free them when the manager dies).
+        private readonly List<AudioSource> _activeLoopingSources = new();
 
         // Public read-only access to current values
         public float MasterVolume => _masterVolume;
@@ -83,6 +102,9 @@ namespace Sorolla
             // Ensure saved settings are loaded before applying to mixer
             // (Init is idempotent — safe even if GameManager already called it)
             Init();
+
+            // Cache which mixer parameters are actually exposed (avoids repeated warnings)
+            CacheExposedParams();
 
             // Apply all volume settings to mixer after AudioMixer is fully initialized
             ApplyAll();
@@ -121,6 +143,19 @@ namespace Sorolla
             if (uiGroup != null) uiSource.outputAudioMixerGroup = uiGroup;
         }
 
+        private void CacheExposedParams()
+        {
+            _exposedParams = new HashSet<string>();
+            if (mixer == null) return;
+
+            string[] paramNames = { masterVolumeParam, musicVolumeParam, sfxVolumeParam, uiVolumeParam };
+            foreach (var param in paramNames)
+            {
+                if (!string.IsNullOrEmpty(param) && mixer.GetFloat(param, out _))
+                    _exposedParams.Add(param);
+            }
+        }
+
         #region Mixer Volume Control
 
         public void SetVolume(Channel channel, float volume)
@@ -134,7 +169,9 @@ namespace Sorolla
                 case Channel.UI: _uiVolume = volume; break;
             }
             ApplyChannel(channel);
-            if (autoSave) SaveSettings();
+            // Slider drags fire this many times per second; persistence is deferred to
+            // OnApplicationPause/Quit to avoid per-event disk I/O (iOS stutter hazard).
+            _isDirty = true;
         }
 
         public void SetEnabled(Channel channel, bool enabled)
@@ -147,7 +184,7 @@ namespace Sorolla
                 case Channel.UI: _uiEnabled = enabled; break;
             }
             ApplyChannel(channel);
-            if (autoSave) SaveSettings();
+            _isDirty = true;
         }
 
         public float GetVolume(Channel channel)
@@ -188,6 +225,9 @@ namespace Sorolla
 
             string param = GetParamName(channel);
             if (string.IsNullOrEmpty(param)) return;
+
+            // Skip if the parameter isn't exposed in the AudioMixer
+            if (_exposedParams != null && !_exposedParams.Contains(param)) return;
 
             float volume = GetVolume(channel);
             bool enabled = GetEnabled(channel);
@@ -230,39 +270,60 @@ namespace Sorolla
                 sfxEnabled = _sfxEnabled,
                 uiEnabled = _uiEnabled
             };
-            PlayerPrefs.SetString(saveKey, JsonUtility.ToJson(data));
-            PlayerPrefs.Save();
+            SaveSystem.Save(data, SaveFileName);
+            _isDirty = false;
         }
 
         private void LoadSettings()
         {
-            if (!PlayerPrefs.HasKey(saveKey)) return;
+            // Migrate from legacy PlayerPrefs if SaveSystem file doesn't exist yet
+            if (!SaveSystem.Exists(SaveFileName) && PlayerPrefs.HasKey(LegacyPlayerPrefsKey))
+            {
+                MigrateFromPlayerPrefs();
+                return;
+            }
 
+            var data = SaveSystem.Load<AudioSaveData>(SaveFileName);
+            ApplyLoadedData(data);
+        }
+
+        private void MigrateFromPlayerPrefs()
+        {
             try
             {
-                var json = PlayerPrefs.GetString(saveKey);
-                var data = JsonUtility.FromJson<AudioSaveData>(json);
-                if (data != null)
+                var json = PlayerPrefs.GetString(LegacyPlayerPrefsKey);
+                var legacy = JsonUtility.FromJson<AudioSaveData>(json);
+                if (legacy != null)
                 {
-                    _masterVolume = Mathf.Clamp01(data.masterVolume);
-                    _musicVolume = Mathf.Clamp01(data.musicVolume);
-                    _sfxVolume = Mathf.Clamp01(data.sfxVolume);
-                    _uiVolume = Mathf.Clamp01(data.uiVolume);
-                    _masterEnabled = data.masterEnabled;
-                    _musicEnabled = data.musicEnabled;
-                    _sfxEnabled = data.sfxEnabled;
-                    _uiEnabled = data.uiEnabled;
+                    ApplyLoadedData(legacy);
+                    SaveSettings(); // Persist to SaveSystem
+                    PlayerPrefs.DeleteKey(LegacyPlayerPrefsKey);
+                    Debug.Log("[AudioManager] Migrated settings from PlayerPrefs to SaveSystem.");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[AudioManager] Failed to load settings: {e.Message}");
+                Debug.LogWarning($"[AudioManager] Failed to migrate from PlayerPrefs: {e.Message}");
             }
         }
 
-        [Serializable]
-        private class AudioSaveData
+        private void ApplyLoadedData(AudioSaveData data)
         {
+            if (data == null) return;
+            _masterVolume = Mathf.Clamp01(data.masterVolume);
+            _musicVolume = Mathf.Clamp01(data.musicVolume);
+            _sfxVolume = Mathf.Clamp01(data.sfxVolume);
+            _uiVolume = Mathf.Clamp01(data.uiVolume);
+            _masterEnabled = data.masterEnabled;
+            _musicEnabled = data.musicEnabled;
+            _sfxEnabled = data.sfxEnabled;
+            _uiEnabled = data.uiEnabled;
+        }
+
+        [Serializable]
+        private class AudioSaveData : ISaveData
+        {
+            public int Version => 1;
             public float masterVolume = 1f;
             public float musicVolume = 1f;
             public float sfxVolume = 1f;
@@ -293,6 +354,8 @@ namespace Sorolla
         public void PlayMusic(AudioClip clip, bool loop = true, float volume = 1f)
         {
             if (clip == null) return;
+            if (_musicFadeCoroutine != null) StopCoroutine(_musicFadeCoroutine);
+            _musicBaseVolume = volume;
             musicSource.clip = clip;
             musicSource.loop = loop;
             musicSource.volume = volume;
@@ -340,6 +403,46 @@ namespace Sorolla
 
             musicSource.Stop();
             musicSource.volume = startVolume; // Restore original volume for next playback
+        }
+
+        /// <summary>
+        /// Fades the music source volume to a target over duration (uses unscaled time).
+        /// </summary>
+        public void FadeMusicVolume(float targetVolume, float duration)
+        {
+            if (_musicFadeCoroutine != null) StopCoroutine(_musicFadeCoroutine);
+
+            if (duration <= 0f)
+            {
+                musicSource.volume = targetVolume;
+                return;
+            }
+
+            _musicFadeCoroutine = StartCoroutine(FadeMusicVolumeCoroutine(targetVolume, duration));
+        }
+
+        /// <summary>
+        /// Fades the music source volume back to the base volume set by the AudioLibrary entry.
+        /// </summary>
+        public void RestoreMusicVolume(float duration)
+        {
+            FadeMusicVolume(_musicBaseVolume, duration);
+        }
+
+        private IEnumerator FadeMusicVolumeCoroutine(float targetVolume, float duration)
+        {
+            float startVolume = musicSource.volume;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                musicSource.volume = Mathf.Lerp(startVolume, targetVolume, elapsed / duration);
+                yield return null;
+            }
+
+            musicSource.volume = targetVolume;
+            _musicFadeCoroutine = null;
         }
 
         public void PauseMusic()
@@ -409,6 +512,63 @@ namespace Sorolla
                 Debug.LogWarning($"[AudioManager] SFX key not found: {key}");
         }
 
+        /// <summary>
+        /// Plays a looping SFX by library key. Returns the AudioSource so it can be stopped later.
+        /// The instance is tracked and auto-destroyed if the AudioManager goes away,
+        /// but callers should still pair this with <see cref="StopLoopingSFX"/>.
+        /// </summary>
+        public AudioSource PlayLoopingSFX(string key)
+        {
+            if (!_masterEnabled || !_sfxEnabled) return null;
+
+            var entry = audioLibrary?.GetSFX(key);
+            if (entry?.clip == null)
+            {
+                Debug.LogWarning($"[AudioManager] SFX key not found: {key}");
+                return null;
+            }
+
+            var go = new GameObject($"LoopingSFX_{key}");
+            go.transform.SetParent(transform);
+            var source = go.AddComponent<AudioSource>();
+            source.clip = entry.clip;
+            source.volume = entry.volume;
+            source.loop = true;
+            if (sfxGroup != null) source.outputAudioMixerGroup = sfxGroup;
+            source.Play();
+            _activeLoopingSources.Add(source);
+            return source;
+        }
+
+        /// <summary>
+        /// Stops a looping SFX and destroys its AudioSource.
+        /// </summary>
+        public void StopLoopingSFX(AudioSource source)
+        {
+            if (source == null) return;
+            _activeLoopingSources.Remove(source);
+            source.Stop();
+            Destroy(source.gameObject);
+        }
+
+        /// <summary>
+        /// Stops every looping SFX started via PlayLoopingSFX. Useful on scene
+        /// teardown when callers can't be relied on to pair their Stop calls.
+        /// </summary>
+        public void StopAllLoopingSFX()
+        {
+            for (int i = _activeLoopingSources.Count - 1; i >= 0; i--)
+            {
+                var source = _activeLoopingSources[i];
+                if (source != null)
+                {
+                    source.Stop();
+                    Destroy(source.gameObject);
+                }
+            }
+            _activeLoopingSources.Clear();
+        }
+
         #endregion
 
         #region UI Sounds
@@ -473,9 +633,8 @@ namespace Sorolla
             _sfxEnabled = true;
             _uiEnabled = true;
             
-            PlayerPrefs.DeleteKey(saveKey);
-            PlayerPrefs.Save();
-            
+            SaveSystem.Delete(SaveFileName);
+
             ApplyAll();
             Debug.Log("[AudioManager] Reset to defaults.");
         }
@@ -491,7 +650,49 @@ namespace Sorolla
             Debug.Log($"[AudioManager] SFX: {_sfxVolume:F2} (enabled: {_sfxEnabled})");
             Debug.Log($"[AudioManager] UI: {_uiVolume:F2} (enabled: {_uiEnabled})");
             Debug.Log($"[AudioManager] SFX Source: {(sfxSource != null ? $"volume={sfxSource.volume}, mute={sfxSource.mute}" : "NULL")}");
+            Debug.Log($"[AudioManager] Music Source: {(musicSource != null ? $"volume={musicSource.volume}, mute={musicSource.mute}, isPlaying={musicSource.isPlaying}, clip={(musicSource.clip != null ? musicSource.clip.name : "null")}" : "NULL")}");
             Debug.Log($"[AudioManager] Mixer: {(mixer != null ? mixer.name : "NULL")}");
+
+            if (mixer != null)
+            {
+                LogMixerParam(masterVolumeParam);
+                LogMixerParam(musicVolumeParam);
+                LogMixerParam(sfxVolumeParam);
+                LogMixerParam(uiVolumeParam);
+            }
+
+            var listeners = FindObjectsByType<AudioListener>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            int enabledListeners = 0;
+            foreach (var l in listeners) if (l.isActiveAndEnabled) enabledListeners++;
+            Debug.Log($"[AudioManager] AudioListeners in scenes: total={listeners.Length}, enabled={enabledListeners}");
+            Debug.Log($"[AudioManager] AudioListener.volume (global)={AudioListener.volume}, pause={AudioListener.pause}");
+        }
+
+        private void LogMixerParam(string param)
+        {
+            if (string.IsNullOrEmpty(param)) { Debug.Log($"[AudioManager] Mixer param <empty name>"); return; }
+            bool exposed = mixer.GetFloat(param, out float db);
+            Debug.Log($"[AudioManager] Mixer param '{param}': exposed={exposed}, dB={(exposed ? db.ToString("F2") : "N/A")}");
+        }
+
+        #endregion
+
+        #region Lifecycle
+
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            if (pauseStatus && autoSave && _isDirty)
+            {
+                SaveSettings();
+            }
+        }
+
+        private void OnApplicationQuit()
+        {
+            if (autoSave && _isDirty)
+            {
+                SaveSettings();
+            }
         }
 
         #endregion

@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e10a8bf73af54d84ace824faaef89be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sorolla.PowerUps.PowerUpService
-  _registry: {fileID: 11400000, guid: c8aa6076c33604e32932dbf8771bb9d5, type: 2}
+  _registry: {fileID: 0}
 --- !u!1 &1950194311363017984
 GameObject:
   m_ObjectHideFlags: 0
@@ -221,7 +221,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 571c163e04a746dc98c53bd9510012bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sorolla.Tutorial.TutorialController
-  _config: {fileID: 11400000, guid: 091cbc611dc9445a381fdea15c2222e1, type: 2}
+  _config: {fileID: 0}
   _runOnStart: 1
   _arrow: {fileID: 0}
 --- !u!1 &6139873206821288422
@@ -234,7 +234,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8425194108189317331}
   - component: {fileID: 7110648598487701187}
-  - component: {fileID: 1266996527253435556}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -278,27 +277,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Sorolla.GameManager
   _levelFlowManager: {fileID: 3019650708380744287}
   _tutorialController: {fileID: 2544373968483240983}
+  _sceneLoadMusicKey: Music-Action_1
   _audioManager: {fileID: 5530479446401006207}
   _gameManagers:
   - {fileID: 7650768610925556587}
   - {fileID: 4739973413094018587}
   - {fileID: 712313189815816508}
-  - {fileID: 1266996527253435556}
   - {fileID: 4124551512181378706}
---- !u!114 &1266996527253435556
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6139873206821288422}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f180e298b6be44b2b97e0296f2270cdd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ConveyorBelt.GameDataService
-  _saveOnPause: 1
-  _saveOnQuit: 1
 --- !u!1 &7028169341982422308
 GameObject:
   m_ObjectHideFlags: 0

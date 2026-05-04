@@ -22,6 +22,7 @@ A reusable Unity framework: UI, level flow, persistence, currency, inventory, po
 - [Audio](#audio)
 - [Pool](#pool)
 - [FTX (First-Time Experience)](#ftx-first-time-experience)
+- [LiveConfig](#liveconfig)
 - [Utils](#utils)
 - [Debug Tools](#debug-tools)
 - [Namespaces](#namespaces)
@@ -138,14 +139,32 @@ Main orchestrator. Extends `MonoSingleton<GameManager>`. Namespace: `Sorolla`
 | `OnPauseStateChanged` | Static event | `Action<bool>` |
 | `Pause()` | Static method | Pause game |
 | `Resume()` | Static method | Resume game |
-| `InitializeAsync(CancellationToken)` | Method | Full init sequence |
+| `InitializeAsync(CancellationToken)` | Method | Full init sequence (returns `UniTask`) |
 
 **Extend:**
 ```csharp
 public class MyGameManager : GameManager
 {
     protected override void Init() { base.Init(); /* register services */ }
-    protected override async Task HandleSceneLoaded() { /* build level, init UI */ }
+    protected override async UniTask HandleSceneLoaded() { /* build level, init UI */ }
+}
+```
+
+### Async manager initialization
+
+Managers added to `_gameManagers` are normally initialized synchronously via
+`SorollaManager.Init()`. Implement `IAsyncInitializable` (namespace: `Sorolla`)
+on managers that need to await something at boot (remote-config fetch, file
+I/O, addressable warm-up). `GameManager` will await each in order, exclusively
+of `Init()`.
+
+```csharp
+public class RemoteConfigManager : MonoBehaviour, IAsyncInitializable
+{
+    public async UniTask InitializeAsync(CancellationToken ct)
+    {
+        await FetchRemoteConfig(ct);
+    }
 }
 ```
 
@@ -302,7 +321,8 @@ Template prefabs in `UI/Templates/`. Duplicate and customize for your game.
 
 ## SaveSystem
 
-JSON-based persistence with versioning, migrations, and backups. Namespace: `Sorolla.PersistentData`
+JSON-based persistence with crash-safe atomic writes and timestamped backups.
+Namespace: `Sorolla.PersistentData`
 
 **Requires:** `com.unity.nuget.newtonsoft-json`
 
@@ -311,9 +331,9 @@ JSON-based persistence with versioning, migrations, and backups. Namespace: `Sor
 | Method | Description |
 |--------|-------------|
 | `Save<T>(data, fileName, slot?, createBackup?)` | Save synchronously |
-| `SaveAsync<T>(...)` | Save asynchronously |
+| `SaveAsync<T>(...)` | Save asynchronously (returns `UniTask<SaveResult>`) |
 | `Load<T>(fileName, slot?)` | Load (returns `new T()` if missing) |
-| `Load<T>(fileName, slot?, defaultValue)` | Load with custom default |
+| `Load<T>(fileName, slot, defaultValue)` | Load with custom default |
 | `LoadAsync<T>(...)` | Load asynchronously |
 | `Exists(fileName, slot?)` | Check if file exists |
 | `Delete(fileName, slot?, deleteBackups?)` | Delete save |
@@ -323,9 +343,7 @@ JSON-based persistence with versioning, migrations, and backups. Namespace: `Sor
 
 | Property | Description |
 |----------|-------------|
-| `Events` | Save lifecycle callbacks |
-| `Migrations` | Version migration pipeline |
-| `Backups` | Backup manager |
+| `Backups` | Backup manager (max count, list, delete) |
 | `Storage` | `IStorageProvider` instance |
 
 ### Define Save Data
@@ -334,7 +352,7 @@ JSON-based persistence with versioning, migrations, and backups. Namespace: `Sor
 [Serializable]
 public class PlayerData : ISaveData
 {
-    public int Version => 1;  // Increment for breaking changes
+    public int Version => 1;  // Reserved for future migration support
     public int coins;
     public List<string> inventory = new();
 }
@@ -347,50 +365,32 @@ SaveSystem.Save(data, "player", slot: 1);
 var data = SaveSystem.Load<PlayerData>("player", slot: 2);
 ```
 
-### Defaults via ScriptableObject
+### Custom Defaults
+
+For data shapes whose default isn't `new T()`, pass the default explicitly:
 
 ```csharp
-[CreateAssetMenu(menuName = "Game/Player Config")]
-public class PlayerConfig : ScriptableObject, IDefaultsProvider<PlayerData>
-{
-    public int startingCoins = 100;
-    public PlayerData CreateDefault() => new() { coins = startingCoins };
-}
-
-var data = SaveSystem.Load("player", 0, _config);
+var defaults = new PlayerData { coins = 100 };
+var data = SaveSystem.Load("player", slot: 0, defaultValue: defaults);
 ```
-
-### Version Migrations
-
-```csharp
-SaveSystem.Migrations.Register<PlayerData>(1, 2, json => {
-    var obj = JObject.Parse(json);
-    obj["gems"] = 0;
-    obj["version"] = 2;
-    return obj.ToString();
-});
-```
-
-Migrations chain automatically: v1 -> v2 -> v3.
 
 ### Backups
 
 ```csharp
 SaveSystem.Backups.MaxBackups = 5;
-var backups = SaveSystem.Backups.GetBackups("player");
-SaveSystem.Backups.RestoreLatestBackup("player", SaveSystem.GetFilePath("player"));
+var backups = SaveSystem.Backups.GetBackups("player"); // newest first
+SaveSystem.Backups.DeleteAllBackups("player");
 ```
 
-### Events
+Backups are created automatically before each `Save` (unless `createBackup: false`)
+and pruned to `MaxBackups`. Restore by reading a backup path with your own
+deserializer or by replacing the live file via the Save Data Editor window.
 
-```csharp
-SaveSystem.Events.OnBeforeSave += (file, slot) => { };
-SaveSystem.Events.OnAfterSave += (file, slot) => { };
-SaveSystem.Events.OnBeforeLoad += (file, slot) => { };
-SaveSystem.Events.OnAfterLoad += (file, slot) => { };
-SaveSystem.Events.OnSaveCorrupted += (file, slot, ex) => { };
-SaveSystem.Events.OnMigrationApplied += (file, slot, from, to) => { };
-```
+### Atomic Writes
+
+`LocalFileStorage` writes to `<file>.tmp` then promotes via `File.Replace` (or
+`File.Move` when no prior file exists) so a crash mid-write never leaves the
+user with neither the old save nor the new one.
 
 ### Custom Storage
 
@@ -401,7 +401,7 @@ SaveSystem.Initialize(new CloudStorage());
 
 ### Editor Window
 
-**Tools > Sorolla > Save Data Editor** - View, edit, delete save files.
+**Tools > Sorolla Core > Save Data Editor** — view, edit, delete save files.
 
 ### File Layout
 
@@ -601,57 +601,56 @@ Triggers gate-waiting steps on collision. Set `_stepId` to match the step's `Id`
 
 ### Highlight System
 
-Camera-based spotlight effect: objects move to a separate layer rendered by an overlay camera on top of a dark overlay.
+Adapter-based highlight: dim the screen, elevate one or more targets above the
+dim, draw a ring per target, show a message and optional pointer animation.
+Works for both UI (Canvas + GraphicRaycaster) and world sprites
+(SortingGroup / SpriteRenderer) — the right adapter is picked automatically.
+Namespace: `Sorolla.Tutorial.Highlight`
 
 **Architecture:**
+
 ```
-Main Camera → scene + dark overlay
-Highlight Camera → URP overlay, highlighted items only
-Tutorial Panel → Screen-space overlay, above everything
-```
-
-**Setup:**
-
-1. Add layer `TutorialHighlight` in Project Settings
-2. Create `HighlightManager` subclass implementing `IHighlightableProvider`:
-
-```csharp
-public class MyHighlightManager : HighlightManager, IHighlightableProvider
-{
-    [SerializeField] private HighlightConfig[] _configs;
-
-    private void Start()
-    {
-        _highlightableProvider = this;
-        foreach (var c in _configs) RegisterConfig(c.StepId, c);
-    }
-
-    public IEnumerable<IHighlightable> FindHighlightables(string[] typeIds)
-    {
-        var set = new HashSet<string>(typeIds);
-        foreach (var item in FindObjectsByType<MyItem>(FindObjectsSortMode.None))
-            if (item is IHighlightable h && h.CanBeHighlighted && set.Contains(h.HighlightTypeId))
-                yield return h;
-    }
-}
+HighlightTutorialStep (SO)  ──── PanelPrefab ────▶  HighlightTutorialStepPanel
+        │                                                    │
+        │ TargetIds[]                                         │ reparents to
+        ▼                                                    ▼
+TutorialHighlightTarget ── Awake picks adapter        TutorialOverlayHost
+   (UIHighlightAdapter | SpriteHighlightAdapter)      (scene-level Canvas)
 ```
 
-3. Implement `IHighlightable` on target objects:
-```csharp
-public class MyItem : MonoBehaviour, IHighlightable
-{
-    public string HighlightTypeId => "my_item";
-    public bool CanBeHighlighted => gameObject.activeSelf;
-    GameObject IHighlightable.GameObject => gameObject;
-    public void SetHighlighted(bool highlighted) { }
-}
+**Setup (one-time):**
+
+1. **Tools > Sorolla > Tutorial > Setup Highlight System** — adds the
+   `TutorialHighlight` sorting layer and a default `TutorialOverlayHost` Canvas
+   to the active scene.
+2. Place a `TutorialHighlightTarget` on each thing you want to point at (UI
+   button, world sprite, etc.) and assign a unique `Id`.
+
+**Authoring a step:**
+
+```
+Right-click > Create > Sorolla > Tutorial > Highlight Step
 ```
 
-4. Implement `IInputLayerOverride` on your input handler to restrict raycasts during highlights
+| Field | Description |
+|-------|-------------|
+| `TargetIds[]` | Ids of `TutorialHighlightTarget`s to focus on (1..N) |
+| `Message` | Text displayed near the group centroid |
+| `MessageOffset` / `ArrowOffset` | Per-step offsets from the centroid |
+| `PointerMode` | `None` / `PulseAll` / `DragBetweenPair` / `DragAlongPath` |
+| `PointerDuration` / `PointerHoldDuration` / `PointerStartDelay` | Animation timing |
+| `ShowRingOnTargets` | Spawn a ring graphic on each target |
+| `RingSize` | Override ring sizeDelta (zero = use prefab template) |
+| `ShowPanelArrow` | Show the panel's own arrow graphic |
 
-**Overlay options:** `HighlightOverlay` (world-space quad) or `HighlightOverlayUI` (screen-space Image).
+Assign the `HighlightTutorialStepPanel` prefab (Sorolla Core ships one under
+`Tutorial/Highlight/Prefabs/`) as the step's `PanelPrefab`, then add the step
+to your `TutorialConfig` like any other step.
 
-**Extension points:** Override `OnItemHighlighted()`, `OnItemUnhighlighted()`, `ActivateHighlight()`, `ClearHighlights()`.
+**Dynamic targets** — call `target.SetId(newId)` at runtime. If a panel is
+already waiting for that id, it attaches immediately. Late registrations are
+tolerated for the first second after the panel spawns
+(`_lateRegistrationGrace`).
 
 ---
 
@@ -663,18 +662,32 @@ Audio mixer management with per-channel control. Namespace: `Sorolla`
 
 | Method | Description |
 |--------|-------------|
-| `PlayMusic(string key)` | Play music clip |
-| `PlaySFX(string key)` | Play sound effect |
-| `PlayUI(string key)` | Play UI sound |
+| `PlayMusic(string key, bool loop = true)` | Play music clip |
+| `StopMusic()` / `StopMusic(float fadeOutDuration)` | Stop music (optionally fade out) |
+| `FadeMusicVolume(target, duration)` / `RestoreMusicVolume(duration)` | Animate music volume |
+| `PauseMusic()` / `ResumeMusic()` | Music pause/resume |
+| `PlaySFX(string key)` / `PlaySFX(AudioClip)` / `PlaySFXRandom(string[] keys)` | Play SFX |
+| `PlaySFXAtPosition(...)` | 3D one-shot |
+| `PlayLoopingSFX(string key)` | Play looping SFX, returns `AudioSource` for later stop |
+| `StopLoopingSFX(AudioSource)` | Stop a single loop |
+| `StopAllLoopingSFX()` | Stop every loop spawned by `PlayLoopingSFX` (scene teardown) |
+| `PlayUISound(string key)` / `PlayUISound(AudioClip)` | Play UI sound |
 | `SetVolume(Channel, float)` | Set channel volume (0-1) |
 | `SetEnabled(Channel, bool)` | Mute/unmute channel |
+| `ResetToDefaults()` | Restore default volumes + clear save |
 
 | Property | Description |
 |----------|-------------|
 | `MasterVolume` / `MusicVolume` / `SFXVolume` / `UIVolume` | Float 0-1 |
 | `MasterEnabled` / `MusicEnabled` / `SFXEnabled` / `UIEnabled` | Bool |
+| `IsMusicPlaying` | Music source playing state |
 
-Channels: `Master`, `Music`, `SFX`, `UI`. Settings auto-persist via SaveSystem.
+Channels: `Master`, `Music`, `SFX`, `UI`.
+
+**Persistence (iOS-friendly):** volume / enable changes flag a dirty bit and
+flush to `SaveSystem` on `OnApplicationPause` and `OnApplicationQuit` — slider
+drags do **not** hit disk per event. Disable the inspector `autoSave` flag to
+take full manual control via your own `SaveSettings` call.
 
 Setup: Create `AudioLibrary` ScriptableObject, map string keys to AudioClips.
 
@@ -717,6 +730,50 @@ Auto-persists via SaveSystem.
 var ftx = ServiceLocator.Instance.Resolve<IFirstTimeExperienceService>();
 if (ftx.CheckFirstTime("shop_intro")) ShowShopTutorial();
 ```
+
+---
+
+## LiveConfig
+
+Tiny runtime for fetching server-pushed JSON tuning at boot, with a three-layer
+fallback (network → cached copy in `persistentDataPath` → baked
+`StreamingAssets`). Game-side data shapes and bootstrappers live in `_Game/`;
+Sorolla Core only ships the plumbing. Namespace: `Sorolla.LiveConfig`
+
+### Pieces
+
+| File | Role |
+|------|------|
+| `LiveConfigSettings` | Resources-loaded SO with URL, timeout, schema cap |
+| `LiveConfigFetcher` | Static UWR fetch, throws on failure, caller decides fallback |
+| `StreamingAssetsReader` | Platform-aware read of baked JSON (Android/WebGL via UWR, others via `File.ReadAllTextAsync`) |
+
+### Typical bootstrap
+
+```csharp
+public class LiveConfigBootstrap : MonoBehaviour, IAsyncInitializable
+{
+    public async UniTask InitializeAsync(CancellationToken ct)
+    {
+        var settings = LiveConfigSettings.Load();
+        try
+        {
+            var json = await LiveConfigFetcher.FetchAsync(settings.Url, settings.TimeoutSeconds, ct);
+            await WriteCacheAsync(json, ct);
+            ApplyJson(json);
+            return;
+        }
+        catch { /* network failed — fall through */ }
+
+        if (TryReadCache(out var cached)) { ApplyJson(cached); return; }
+
+        var baked = await StreamingAssetsReader.ReadAsync("liveconfig_baked.json", ct);
+        ApplyJson(baked); // last-resort, ships with the build
+    }
+}
+```
+
+See `Assets/Sorolla Core/LiveConfig/README.md` for the full architecture.
 
 ---
 
@@ -835,9 +892,11 @@ Tap 4x on screen to open. Provides level selection for testing.
 
 | Tool | Location |
 |------|----------|
-| Save Data Editor | Tools > Sorolla > Save Data Editor |
-| Prefab Icon Generator | Tools > Sorolla > Prefab Icon Generator |
-| Play Mode Start Scene | Auto-loads Bootstrap on Play |
+| Save Data Editor | Tools > Sorolla Core > Save Data Editor |
+| Prefab Icon Generator | Tools > Sorolla Core > Prefab Icon Generator |
+| Highlight System Setup | Tools > Sorolla > Tutorial > Setup Highlight System |
+| DataSync (Google Sheets) | Tools > Sorolla Core > Data Sync |
+| Play Mode Start Scene | Auto-loads Bootstrap when entering Play from any `_Game/Scenes/` scene |
 | Texture Import Settings | Bulk texture settings |
 
 ---
@@ -859,4 +918,7 @@ Tap 4x on screen to open. Provides level selection for testing.
 | `Sorolla.UI.Effects` | Floating text |
 | `Sorolla.UI.Config` | Config-driven panels |
 | `Sorolla.Tutorial` | Tutorial system |
+| `Sorolla.Tutorial.Highlight` | Highlight panels, targets, adapters |
 | `Sorolla.FTX` | First-time experience |
+| `Sorolla.LiveConfig` | Server-pushed JSON tuning with fallback chain |
+| `Sorolla.GoogleSheets` | `[SheetColumn]` attribute (runtime; editor sync lives in `Sorolla.Editor.GoogleSheets`) |

@@ -30,7 +30,7 @@ namespace Sorolla.PersistentData.Editor
         private string _savesBasePath;
         private HashSet<string> _editorModifiedFiles = new();
 
-        [MenuItem("Tools/Sorolla/Save Data Editor")]
+        [MenuItem("Tools/Sorolla Core/Save Data Editor")]
         public static void ShowWindow()
         {
             var window = GetWindow<SaveDataEditorWindow>("Save Data Editor");
@@ -38,7 +38,7 @@ namespace Sorolla.PersistentData.Editor
             window.Show();
         }
 
-        [MenuItem("Tools/Sorolla/Delete All Saves %#r")]
+        [MenuItem("Tools/Sorolla Core/Delete All Saves %#r")]
         public static void DeleteAllSavesShortcut()
         {
             var savesBasePath = Path.Combine(Application.persistentDataPath, "saves");

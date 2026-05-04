@@ -1,18 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using ZLinq;
 using Sorolla.LevelFlow;
+using Sorolla.PersistentData;
 using UnityEngine;
+using ZLinq;
 
 namespace Sorolla.Tutorial
 {
     public class TutorialController : SorollaManager
     {
-        /// <summary>
-        /// Persistence service for storing tutorial progress. Resolved from ServiceLocator if not set.
-        /// </summary>
-        public IPersistenceService PersistenceService { get; set; }
+        private const string SaveFileName = "tutorial";
 
         // Completion events
         public static event Action<string> OnCompleteStepRequested;
@@ -34,6 +32,18 @@ namespace Sorolla.Tutorial
         public static void Complete() => OnCompleteManualRequested?.Invoke();
         public static void TriggerGate(string stepId) => OnGateTriggered?.Invoke(stepId);
 
+        // Clear every static event on domain load so "Reload Domain = off" sessions
+        // don't leak subscribers from the previous play into the new one.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticEvents()
+        {
+            OnCompleteStepRequested = null;
+            OnCompleteManualRequested = null;
+            OnGateTriggered = null;
+            OnTutorialStepChanged = null;
+            OnTutorialStepEntered = null;
+        }
+
         [Header("Configuration")]
         [SerializeField] private TutorialConfig _config;
         [SerializeField] private bool _runOnStart = true;
@@ -48,7 +58,20 @@ namespace Sorolla.Tutorial
         public int CurrentLevel => _currentLevel;
         public int CurrentStepInLevel => _currentStepInLevel;
 
-        public const string CompletedLevelsSaveKey = "tutorial_completed_levels";
+        /// <summary>
+        /// The step currently being shown (or null if no step is active). Lets panels
+        /// read step-specific config (subclass fields) without re-walking TutorialConfig.
+        /// </summary>
+        public TutorialStepBase CurrentStep
+        {
+            get
+            {
+                if (_currentLevel < 0) return null;
+                if (!_levelSteps.TryGetValue(_currentLevel, out var steps)) return null;
+                if (_currentStepInLevel < 0 || _currentStepInLevel >= steps.Count) return null;
+                return steps[_currentStepInLevel];
+            }
+        }
 
         private Dictionary<int, List<TutorialStepBase>> _levelSteps = new();
         private HashSet<int> _completedLevels = new();
@@ -69,34 +92,21 @@ namespace Sorolla.Tutorial
 
         private HashSet<int> LoadCompletedLevels()
         {
-            var service = PersistenceService ?? TryResolvePersistenceService();
-            var saved = service?.LoadString(CompletedLevelsSaveKey, "") ?? "";
-
-            var result = new HashSet<int>();
-            if (string.IsNullOrEmpty(saved)) return result;
-
-            foreach (var part in saved.Split(','))
-            {
-                if (int.TryParse(part.Trim(), out int level))
-                    result.Add(level);
-            }
-            return result;
+            var data = SaveSystem.Load<TutorialSaveData>(SaveFileName);
+            return data?.CompletedLevels != null
+                ? new HashSet<int>(data.CompletedLevels)
+                : new HashSet<int>();
         }
 
         private void SaveCompletedLevels()
         {
-            var service = PersistenceService ?? TryResolvePersistenceService();
-            if (service == null) return;
-
-            var csv = string.Join(",", _completedLevels.AsValueEnumerable().OrderBy(x => x));
-            service.SaveString(CompletedLevelsSaveKey, csv);
-            service.Save();
-        }
-
-        private IPersistenceService TryResolvePersistenceService()
-        {
-            PersistenceService = ServiceLocator.Instance?.TryResolve<IPersistenceService>();
-            return PersistenceService;
+            var data = new TutorialSaveData
+            {
+                CompletedLevels = _completedLevels.AsValueEnumerable().OrderBy(x => x).ToList(),
+            };
+            var result = SaveSystem.Save(data, SaveFileName);
+            if (!result.Success)
+                Debug.LogError($"[TutorialController] Save failed: {result.ErrorMessage}");
         }
 
         #endregion
@@ -109,7 +119,14 @@ namespace Sorolla.Tutorial
                 _arrow.gameObject.SetActive(false);
 
             if (_config != null)
+            {
                 _levelSteps = _config.ToDictionary();
+                Debug.Log($"[TutorialController] Loaded config '{_config.name}' — {_levelSteps.Count} level groups, keys=[{string.Join(",", _levelSteps.Keys)}]");
+            }
+            else
+            {
+                Debug.LogWarning("[TutorialController] _config is null at Initialize — no tutorials will run.");
+            }
 
             _completedLevels = LoadCompletedLevels();
 
@@ -140,11 +157,18 @@ namespace Sorolla.Tutorial
             }
         }
 
-        void Awake()
+        void OnEnable()
         {
             OnCompleteStepRequested += HandleCompleteStepRequested;
             OnCompleteManualRequested += HandleCompleteManualRequested;
             OnGateTriggered += HandleGateTriggered;
+
+            // Re-subscribe to level flow if we were previously subscribed
+            if (_levelFlowManager != null && !_subscribedToLevelFlow)
+            {
+                _levelFlowManager.OnLevelStarted += NotifyLevelPlay;
+                _subscribedToLevelFlow = true;
+            }
         }
 
         void OnDisable()
@@ -154,8 +178,17 @@ namespace Sorolla.Tutorial
             OnCompleteManualRequested -= HandleCompleteManualRequested;
             OnGateTriggered -= HandleGateTriggered;
 
+            // Outbound events (OnTutorialStepChanged / OnTutorialStepEntered) are NOT
+            // cleared here. Subscribers like TutorialObjectsHider subscribe in their
+            // own OnEnable; nulling on this controller's OnDisable would silently drop
+            // them whenever the controller is briefly disabled. Cross-domain leaks are
+            // already handled by ResetStaticEvents above.
+
             if (_levelFlowManager != null)
+            {
                 _levelFlowManager.OnLevelStarted -= NotifyLevelPlay;
+                _subscribedToLevelFlow = false;
+            }
         }
 
         public override void Teardown()
@@ -171,23 +204,34 @@ namespace Sorolla.Tutorial
         /// <summary>
         /// Call this when a level starts. Starts the tutorial for that level if not already completed.
         /// </summary>
-        public void NotifyLevelPlay(int levelIndex)
+        public void NotifyLevelPlay(int progressiveLevelIndex)
         {
-            Debug.Log($"[TutorialController] NotifyLevelPlay called for level {levelIndex}");
+            // OnLevelStarted delivers the progressive (lifetime) level index. For tutorial
+            // matching we want the actual content-level index so configs key off
+            // the level's identity, not how many times the player has looped the list.
+            int levelIndex = _levelFlowManager != null
+                ? _levelFlowManager.GetActualLevelIndex(progressiveLevelIndex)
+                : progressiveLevelIndex;
 
-            // Always update current level and fire event (for TutorialObjectsHider)
+            Debug.Log($"[TutorialController] NotifyLevelPlay — progressive {progressiveLevelIndex} → actual {levelIndex}");
+
+            bool hasSteps = _levelSteps.TryGetValue(levelIndex, out var steps) && steps.Count > 0;
+            bool alreadyCompleted = _completedLevels.Contains(levelIndex);
+
+            // Always update current level and fire event (for TutorialObjectsHider).
+            // If the level has no tutorial or it's already completed, treat the step as
+            // "past all steps" so step-gated reveals (RevealStepInLevel > 0) pass.
             _currentLevel = levelIndex;
-            _currentStepInLevel = 0;
+            _currentStepInLevel = (!hasSteps || alreadyCompleted) ? int.MaxValue : 0;
             OnTutorialStepChanged?.Invoke(_currentLevel, _currentStepInLevel);
 
-            // Check if this level has a tutorial and hasn't been completed
-            if (!_levelSteps.TryGetValue(levelIndex, out var steps) || steps.Count == 0)
+            if (!hasSteps)
             {
                 Debug.Log($"[TutorialController] No steps found for level {levelIndex}");
                 return;
             }
 
-            if (_completedLevels.Contains(levelIndex))
+            if (alreadyCompleted)
             {
                 Debug.Log($"[TutorialController] Level {levelIndex} tutorial already completed");
                 return;
@@ -277,6 +321,7 @@ namespace Sorolla.Tutorial
         private void CompleteLevelTutorial()
         {
             _completedLevels.Add(_currentLevel);
+            Debug.Log($"[TutorialController] Level {_currentLevel} tutorial completed — saving ({_completedLevels.Count} levels tracked).");
             SaveCompletedLevels();
             StopLevelTutorial();
         }

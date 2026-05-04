@@ -39,7 +39,9 @@ namespace Sorolla.PersistentData
                 if (!Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
 
-                File.WriteAllText(filePath, json);
+                var tmpPath = filePath + ".tmp";
+                File.WriteAllText(tmpPath, json);
+                ReplaceFile(tmpPath, filePath);
                 return SaveResult.Ok(filePath);
             }
             catch (Exception ex)
@@ -59,7 +61,12 @@ namespace Sorolla.PersistentData
                 if (!Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
 
-                await UniTask.RunOnThreadPool(() => File.WriteAllText(filePath, json));
+                var tmpPath = filePath + ".tmp";
+                await UniTask.RunOnThreadPool(() =>
+                {
+                    File.WriteAllText(tmpPath, json);
+                    ReplaceFile(tmpPath, filePath);
+                });
                 return SaveResult.Ok(filePath);
             }
             catch (Exception ex)
@@ -154,5 +161,18 @@ namespace Sorolla.PersistentData
         /// Gets the base saves directory path.
         /// </summary>
         public string BasePath => _basePath;
+
+        /// <summary>
+        /// Replaces the target file with the source. Uses File.Replace when the
+        /// target exists so a crash between operations cannot leave the user with
+        /// neither the old save nor the new one (delete-then-move would).
+        /// </summary>
+        private static void ReplaceFile(string sourcePath, string targetPath)
+        {
+            if (File.Exists(targetPath))
+                File.Replace(sourcePath, targetPath, destinationBackupFileName: null);
+            else
+                File.Move(sourcePath, targetPath);
+        }
     }
 }

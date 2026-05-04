@@ -17,7 +17,7 @@ namespace Sorolla.Currency
         /// </summary>
         public Dictionary<string, int> balances = new()
         {
-            [CurrencyIds.Coins] = 2000,
+            [CurrencyIds.Coins] = 1000,
             [CurrencyIds.Gems] = 0,
             [CurrencyIds.Energy] = 100
         };
