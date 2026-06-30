@@ -1,0 +1,9 @@
+{
+    "name": "Sorolla.DataSheet.Editor",
+    "rootNamespace": "Sorolla.DataSheet.Editor",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": true
+}

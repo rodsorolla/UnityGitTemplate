@@ -1,0 +1,12 @@
+{
+    "name": "Sorolla.PersistentData.Tests",
+    "references": [
+        "Sorolla.PersistentData",
+        "UniTask",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": ["Editor"],
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "precompiledReferences": [],
+    "autoReferenced": false
+}

@@ -1,0 +1,13 @@
+{
+    "name": "Sorolla.Core.Profile.Tests",
+    "references": [
+        "Sorolla.Core",
+        "Sorolla.PersistentData",
+        "UniTask",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": ["Editor"],
+    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "precompiledReferences": [],
+    "autoReferenced": false
+}
