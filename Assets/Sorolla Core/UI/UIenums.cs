@@ -33,6 +33,7 @@
         PowerUpUsed = 15,
         OutOfLives = 16,
         TournamentResults = 17,
+        NotEnoughCoins = 18,
         // Game-specific panels should start at 100
     }
 }

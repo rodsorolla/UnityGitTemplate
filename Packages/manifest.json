@@ -51,6 +51,14 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
-  }
+    "com.unity.modules.xr": "1.0.0",
+    "com.google.external-dependency-manager": "1.2.187",
+    "com.gameanalytics.sdk": "8.0.1",
+    "com.lacrearthur.facebook-sdk-for-unity": "https://github.com/LaCreArthur/facebook-unity-sdk-upm.git"
+  },
+  "scopedRegistries": [ {
+    "name": "package.openupm.com",
+    "url": "https://package.openupm.com",
+    "scopes": [ "com.google.external-dependency-manager", "com.gameanalytics" ]
+  } ]
 }

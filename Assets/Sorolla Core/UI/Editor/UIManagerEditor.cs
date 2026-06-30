@@ -13,7 +13,7 @@ namespace Sorolla.UI.Editor
     [CustomEditor(typeof(UIManager))]
     public class UIManagerEditor : UnityEditor.Editor
     {
-        private UIPanelId _selected = UIPanelId.RateGame;
+        private UIPanelId _selected = UIPanelId.None;
 
         public override void OnInspectorGUI()
         {
