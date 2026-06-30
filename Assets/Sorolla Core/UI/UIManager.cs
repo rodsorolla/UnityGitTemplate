@@ -38,6 +38,27 @@ namespace Sorolla.UI
         public void BuildGameUI()
         {
             var gameplayUI = ServiceLocator.Instance.TryResolve<IGameplayUI>();
+
+            // Fallback: a scene-resident IGameplayUI may have been disabled in the editor,
+            // so its Awake never fired and self-registration didn't happen. Find it via a
+            // scene scan (includes inactive objects), activate it (which triggers Awake →
+            // registration), then re-resolve.
+            if (gameplayUI == null)
+            {
+                var allBehaviours = Object.FindObjectsByType<MonoBehaviour>(
+                    FindObjectsInactive.Include);
+                for (int i = 0; i < allBehaviours.Length; i++)
+                {
+                    if (allBehaviours[i] is IGameplayUI candidate)
+                    {
+                        if (!allBehaviours[i].gameObject.activeSelf)
+                            allBehaviours[i].gameObject.SetActive(true);
+                        gameplayUI = ServiceLocator.Instance.TryResolve<IGameplayUI>() ?? candidate;
+                        break;
+                    }
+                }
+            }
+
             if (gameplayUI != null)
             {
                 gameplayUI.Init();

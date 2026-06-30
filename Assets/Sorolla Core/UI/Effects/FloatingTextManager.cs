@@ -21,7 +21,7 @@ namespace Sorolla.UI.Effects
             {
                 if (_instance == null)
                 {
-                    _instance = FindFirstObjectByType<FloatingTextManager>();
+                    _instance = FindAnyObjectByType<FloatingTextManager>();
                 }
                 return _instance;
             }

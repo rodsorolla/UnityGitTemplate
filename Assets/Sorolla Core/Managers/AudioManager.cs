@@ -38,6 +38,9 @@ namespace Sorolla
         [Tooltip("If true, audio settings are flushed to disk on application pause/quit. Disable to take full manual control via SaveSettings().")]
         [SerializeField] private bool autoSave = true;
 
+        [Tooltip("Minimum seconds between consecutive plays of the same SFX clip. Prevents amplitude stacking and audible artifacts when the same sound triggers many times per frame. Set to 0 to disable.")]
+        [SerializeField, Min(0f)] private float sfxMinInterval = 0.03f;
+
         private const string SaveFileName = "audio_settings";
         private const string LegacyPlayerPrefsKey = "sorolla_audio";
 
@@ -71,6 +74,9 @@ namespace Sorolla
         // Tracks GameObjects spawned by PlayLoopingSFX so we can clean up callers'
         // forgotten StopLoopingSFX pairings (and free them when the manager dies).
         private readonly List<AudioSource> _activeLoopingSources = new();
+
+        // Per-clip last-play timestamp for the SFX min-interval gate (key = AudioClip instance ID).
+        private readonly Dictionary<AudioClip, float> _sfxLastPlayTime = new();
 
         // Public read-only access to current values
         public float MasterVolume => _masterVolume;
@@ -476,6 +482,7 @@ namespace Sorolla
         {
             if (!_sfxEnabled) return;
             if (clip == null) return;
+            if (IsGatedSfx(clip)) return;
             sfxSource.PlayOneShot(clip);
         }
 
@@ -491,6 +498,7 @@ namespace Sorolla
         {
             if (!_sfxEnabled) return;
             if (clip == null) return;
+            if (IsGatedSfx(clip)) return;
             sfxSource.PlayOneShot(clip, volumeScale);
         }
 
@@ -498,6 +506,7 @@ namespace Sorolla
         {
             if (!_sfxEnabled) return;
             if (clip == null) return;
+            if (IsGatedSfx(clip)) return;
             AudioSource.PlayClipAtPoint(clip, position);
         }
 
@@ -506,10 +515,26 @@ namespace Sorolla
             if (!_sfxEnabled) return;
 
             var entry = audioLibrary?.GetSFX(key);
-            if (entry?.clip != null)
-                AudioSource.PlayClipAtPoint(entry.clip, position, entry.volume);
-            else
+            if (entry?.clip == null)
+            {
                 Debug.LogWarning($"[AudioManager] SFX key not found: {key}");
+                return;
+            }
+            if (IsGatedSfx(entry.clip)) return;
+            AudioSource.PlayClipAtPoint(entry.clip, position, entry.volume);
+        }
+
+        // Returns true if this clip was played within the min-interval window and should be skipped.
+        // Why: all SFX route through one shared AudioSource via PlayOneShot. Same-clip stacks within
+        // a frame sum amplitudes and produce audible clipping/comb-filter artifacts.
+        private bool IsGatedSfx(AudioClip clip)
+        {
+            if (sfxMinInterval <= 0f || clip == null) return false;
+            float now = Time.unscaledTime;
+            if (_sfxLastPlayTime.TryGetValue(clip, out float last) && now - last < sfxMinInterval)
+                return true;
+            _sfxLastPlayTime[clip] = now;
+            return false;
         }
 
         /// <summary>
@@ -661,7 +686,7 @@ namespace Sorolla
                 LogMixerParam(uiVolumeParam);
             }
 
-            var listeners = FindObjectsByType<AudioListener>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var listeners = FindObjectsByType<AudioListener>(FindObjectsInactive.Include);
             int enabledListeners = 0;
             foreach (var l in listeners) if (l.isActiveAndEnabled) enabledListeners++;
             Debug.Log($"[AudioManager] AudioListeners in scenes: total={listeners.Length}, enabled={enabledListeners}");

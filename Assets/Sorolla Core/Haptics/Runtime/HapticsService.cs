@@ -13,7 +13,9 @@ namespace Sorolla
     {
         private const string SaveFileName = "haptics";
 
-        private HapticsData _data;
+        // Initialized so IsEnabled is safe if read before Initialize() loads from disk
+        // (HapticsData defaults isEnabled = true).
+        private HapticsData _data = new HapticsData();
         private bool _isDirty;
 
 #if UNITY_IOS && !UNITY_EDITOR
@@ -61,7 +63,19 @@ namespace Sorolla
             Load();
             InitializePlatform();
             ServiceLocator.Instance.Register<IHapticsService>(this);
+            SpawnGlobalButtonHaptics();
             Debug.Log("[HapticsService] Initialized");
+        }
+
+        /// <summary>
+        /// Spawns the global button-haptics listener on a persistent object so every uGUI
+        /// Button gets selection haptics with zero per-button wiring (see GlobalButtonHaptics).
+        /// </summary>
+        private void SpawnGlobalButtonHaptics()
+        {
+            var go = new GameObject("GlobalButtonHaptics");
+            DontDestroyOnLoad(go);
+            go.AddComponent<GlobalButtonHaptics>().Initialize(this);
         }
 
         private void OnApplicationPause(bool pauseStatus)
@@ -115,7 +129,7 @@ namespace Sorolla
             };
             PlayAndroidHaptic(constant);
 #else
-            Debug.Log($"[HapticsService] PlayImpact({intensity})");
+            //Debug.Log($"[HapticsService] PlayImpact({intensity})");
 #endif
         }
 
@@ -128,7 +142,7 @@ namespace Sorolla
 #elif UNITY_ANDROID && !UNITY_EDITOR
             PlayAndroidHaptic(KEYBOARD_TAP);
 #else
-            Debug.Log("[HapticsService] PlaySelection()");
+            //Debug.Log("[HapticsService] PlaySelection()");
 #endif
         }
 
@@ -156,7 +170,7 @@ namespace Sorolla
             };
             PlayAndroidHaptic(notifConstant);
 #else
-            Debug.Log($"[HapticsService] PlayNotification({type})");
+            //Debug.Log($"[HapticsService] PlayNotification({type})");
 #endif
         }
 
@@ -196,7 +210,7 @@ namespace Sorolla
             }
             else
             {
-                Debug.LogError($"[HapticsService] Save failed: {result.ErrorMessage}");
+                //Debug.LogError($"[HapticsService] Save failed: {result.ErrorMessage}");
             }
         }
     }

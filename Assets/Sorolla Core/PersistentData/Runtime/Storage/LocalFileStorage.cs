@@ -39,7 +39,9 @@ namespace Sorolla.PersistentData
                 if (!Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
 
-                var tmpPath = filePath + ".tmp";
+                // Unique temp per write so concurrent saves to the same file don't collide
+                // on a shared temp path (Sharing violation / "file not found" during rename).
+                var tmpPath = filePath + ".tmp-" + Guid.NewGuid().ToString("N");
                 File.WriteAllText(tmpPath, json);
                 ReplaceFile(tmpPath, filePath);
                 return SaveResult.Ok(filePath);
@@ -61,7 +63,9 @@ namespace Sorolla.PersistentData
                 if (!Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
 
-                var tmpPath = filePath + ".tmp";
+                // Unique temp per write so concurrent saves to the same file don't collide
+                // on a shared temp path (Sharing violation / "file not found" during rename).
+                var tmpPath = filePath + ".tmp-" + Guid.NewGuid().ToString("N");
                 await UniTask.RunOnThreadPool(() =>
                 {
                     File.WriteAllText(tmpPath, json);
@@ -165,14 +169,35 @@ namespace Sorolla.PersistentData
         /// <summary>
         /// Replaces the target file with the source. Uses File.Replace when the
         /// target exists so a crash between operations cannot leave the user with
-        /// neither the old save nor the new one (delete-then-move would).
+        /// neither the old save nor the new one (delete-then-move would). Each writer
+        /// owns a unique source temp file, so concurrent writes don't fight over it;
+        /// if a concurrent write created the target between the check and the move,
+        /// fall back to File.Replace.
         /// </summary>
+        private static readonly object _renameLock = new object();
+
         private static void ReplaceFile(string sourcePath, string targetPath)
         {
-            if (File.Exists(targetPath))
-                File.Replace(sourcePath, targetPath, destinationBackupFileName: null);
-            else
-                File.Move(sourcePath, targetPath);
+            // Serialize the (fast) atomic rename so concurrent writers — each with its own
+            // unique temp — can't race the final replace. Contention is negligible.
+            lock (_renameLock)
+            {
+                if (File.Exists(targetPath))
+                {
+                    File.Replace(sourcePath, targetPath, destinationBackupFileName: null);
+                    return;
+                }
+
+                try
+                {
+                    File.Move(sourcePath, targetPath);
+                }
+                catch (IOException)
+                {
+                    // Target appeared concurrently (another process) between check and move.
+                    File.Replace(sourcePath, targetPath, destinationBackupFileName: null);
+                }
+            }
         }
     }
 }

@@ -150,7 +150,7 @@ namespace Sorolla.Tutorial
 
         public void BuildTutorial()
         {
-            var hiders = FindObjectsByType<TutorialObjectsHider>(FindObjectsSortMode.None);
+            var hiders = FindObjectsByType<TutorialObjectsHider>(FindObjectsInactive.Exclude);
             foreach (var hider in hiders)
             {
                 hider.Init();

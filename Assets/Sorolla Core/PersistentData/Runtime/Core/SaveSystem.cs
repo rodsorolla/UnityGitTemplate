@@ -55,7 +55,12 @@ namespace Sorolla.PersistentData
 
             _jsonSettings = new JsonSerializerSettings
             {
-                TypeNameHandling = TypeNameHandling.Auto,
+                // None (not Auto): save files live in persistentDataPath and are user-writable
+                // (cloud save, SaveDataEditorWindow, rooted devices). TypeNameHandling.Auto honors
+                // "$type" directives and would instantiate arbitrary types from a tampered file
+                // (Newtonsoft deserialization-gadget vector). All ISaveData types are concrete, so
+                // None is safe. Add a SerializationBinder whitelist if polymorphism is ever needed.
+                TypeNameHandling = TypeNameHandling.None,
                 Formatting = Application.isEditor ? Formatting.Indented : Formatting.None,
                 NullValueHandling = NullValueHandling.Include,
                 DefaultValueHandling = DefaultValueHandling.Include,
@@ -75,7 +80,12 @@ namespace Sorolla.PersistentData
 
             _jsonSettings = new JsonSerializerSettings
             {
-                TypeNameHandling = TypeNameHandling.Auto,
+                // None (not Auto): save files live in persistentDataPath and are user-writable
+                // (cloud save, SaveDataEditorWindow, rooted devices). TypeNameHandling.Auto honors
+                // "$type" directives and would instantiate arbitrary types from a tampered file
+                // (Newtonsoft deserialization-gadget vector). All ISaveData types are concrete, so
+                // None is safe. Add a SerializationBinder whitelist if polymorphism is ever needed.
+                TypeNameHandling = TypeNameHandling.None,
                 Formatting = Application.isEditor ? Formatting.Indented : Formatting.None,
                 NullValueHandling = NullValueHandling.Include,
                 DefaultValueHandling = DefaultValueHandling.Include,

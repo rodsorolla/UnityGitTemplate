@@ -656,7 +656,7 @@ namespace Sorolla
                 return preview; // Don't cache — Unity manages this texture's lifecycle
 
             // Preview still loading — show mini thumbnail and keep repainting
-            if (AssetPreview.IsLoadingAssetPreview(prefab.GetInstanceID()))
+            if (AssetPreview.IsLoadingAssetPreview(prefab.GetEntityId()))
                 Repaint();
 
             return AssetPreview.GetMiniThumbnail(prefab);

@@ -364,10 +364,11 @@ namespace Sorolla.PersistentData.Editor
                 switch (prop.Value.Type)
                 {
                     case JTokenType.Integer:
-                        var intVal = EditorGUILayout.IntField(prop.Value.Value<int>());
-                        if (intVal != prop.Value.Value<int>())
+                        // Read as long: JSON integers can exceed Int32 range.
+                        var longVal = EditorGUILayout.LongField(prop.Value.Value<long>());
+                        if (longVal != prop.Value.Value<long>())
                         {
-                            obj[prop.Name] = intVal;
+                            obj[prop.Name] = longVal;
                             changed = true;
                         }
                         break;
@@ -495,10 +496,11 @@ namespace Sorolla.PersistentData.Editor
                 else if (item.Type == JTokenType.Integer)
                 {
                     EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(30));
-                    var intVal = EditorGUILayout.IntField(item.Value<int>());
-                    if (intVal != item.Value<int>())
+                    // Read as long: JSON integers can exceed Int32 range.
+                    var longVal = EditorGUILayout.LongField(item.Value<long>());
+                    if (longVal != item.Value<long>())
                     {
-                        arr[i] = intVal;
+                        arr[i] = longVal;
                         changed = true;
                     }
                 }
@@ -605,10 +607,11 @@ namespace Sorolla.PersistentData.Editor
             switch (value.Type)
             {
                 case JTokenType.Integer:
-                    var intVal = EditorGUILayout.IntField(value.Value<int>());
-                    if (intVal != value.Value<int>())
+                    // Read as long: JSON integers (e.g. DateTime ticks) can exceed Int32 range.
+                    var longVal = EditorGUILayout.LongField(value.Value<long>());
+                    if (longVal != value.Value<long>())
                     {
-                        parent[name] = intVal;
+                        parent[name] = longVal;
                         changed = true;
                     }
                     break;

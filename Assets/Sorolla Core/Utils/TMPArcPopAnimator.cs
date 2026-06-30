@@ -61,6 +61,7 @@ public class TMPArcPopAnimator : MonoBehaviour
             totalDuration
         ).SetEase(Ease.Linear)
          .SetDelay(initialDelay)
+         .SetUpdate(true) // unscaled: title must still pop when shown over a paused game (e.g. BoosterOfferPanel)
          .SetTarget(this);
     }
 

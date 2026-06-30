@@ -5,17 +5,22 @@ using UnityEngine;
 namespace Sorolla.UI.Effects
 {
     /// <summary>
-    /// Standalone effect: when the attached TMP text content changes, plays a
-    /// punch-scale animation and/or a color flash. Event-driven via
-    /// <see cref="TMPro_EventManager.TEXT_CHANGED_EVENT"/> — no per-frame polling.
-    /// Animates <c>transform.localScale</c> and TMP vertex color only, so TMP
-    /// batching is preserved (no per-instance material is created).
+    /// Standalone effect: when a TMP text's content changes, plays a punch-scale
+    /// animation on this GameObject and/or a color flash on the source text.
+    /// Event-driven via <see cref="TMPro_EventManager.TEXT_CHANGED_EVENT"/> —
+    /// no per-frame polling. Animates <c>transform.localScale</c> and TMP vertex
+    /// color only, so TMP batching is preserved (no per-instance material is created).
     /// Works with both TextMeshPro (world-space) and TextMeshProUGUI.
+    /// The source text may live on a different GameObject — assign it via
+    /// <see cref="_sourceText"/>. If left null, falls back to a TMP_Text on this GO.
     /// </summary>
-    [RequireComponent(typeof(TMP_Text))]
     [DisallowMultipleComponent]
     public class TextChangeEffect : MonoBehaviour
     {
+        [Header("Source")]
+        [Tooltip("TMP text to watch. If null, uses a TMP_Text on this GameObject.")]
+        [SerializeField] private TMP_Text _sourceText;
+
         [Header("Scale Punch")]
         [SerializeField] private bool _playScale = true;
         [SerializeField] private float _punchScale = 1.2f;
@@ -55,10 +60,14 @@ namespace Sorolla.UI.Effects
 
         private void Awake()
         {
-            _text = GetComponent<TMP_Text>();
+            if (_sourceText == null) _sourceText = GetComponent<TMP_Text>();
+            _text = _sourceText;
             _baseScale = transform.localScale;
-            _baseColor = _text.color;
-            _lastText = _text.text;
+            if (_text != null)
+            {
+                _baseColor = _text.color;
+                _lastText = _text.text;
+            }
         }
 
         private void OnEnable()
@@ -154,7 +163,11 @@ namespace Sorolla.UI.Effects
         /// </summary>
         public Sequence BuildPreviewSequence(out Vector3 baseScale, out Color baseColor)
         {
-            if (_text == null) _text = GetComponent<TMP_Text>();
+            if (_text == null)
+            {
+                if (_sourceText == null) _sourceText = GetComponent<TMP_Text>();
+                _text = _sourceText;
+            }
             baseScale = transform.localScale;
             baseColor = _text != null ? _text.color : Color.white;
 

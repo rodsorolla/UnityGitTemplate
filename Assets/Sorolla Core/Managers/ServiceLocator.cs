@@ -95,6 +95,11 @@ namespace Sorolla
             _instance = null;
         }
 
+        // Clear the locator on play start so "Reload Domain = off" sessions don't
+        // carry stale (destroyed) service references from the previous play into the new one.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetOnPlay() => Reset();
+
         /// <summary>
         /// Logs all registered services to the console. Only runs in Editor and Development builds.
         /// </summary>

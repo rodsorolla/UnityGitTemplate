@@ -22,12 +22,23 @@ namespace Sorolla
         [Tooltip("Speed of rotation interpolation (only used if smoothRotation is true)")]
         [SerializeField] private float rotationSpeed = 10f;
 
+        [Tooltip("If true, locks the FULL world rotation (X, Y, Z) — not just Y. Enable when " +
+                 "the parent can pitch/roll (e.g. snake head tumbling into water). The Y-only " +
+                 "path leaves X/Z slaved to the parent and goes through eulerAngles, which " +
+                 "gimbal-locks when the child sits at X≈90° (the case for the flat level disc).")]
+        [SerializeField] private bool lockAllAxes = false;
+
+        // Captured at Start when lockAllAxes is enabled, so we can clamp via quaternion
+        // (avoids eulerAngles ambiguity around X = ±90° — the disc lies flat there).
+        private Quaternion _initialWorldRotation;
+
         private void Start()
         {
             if (useInitialRotation)
             {
                 targetWorldYRotation = transform.eulerAngles.y;
             }
+            _initialWorldRotation = transform.rotation;
         }
 
         /// <summary>
@@ -43,8 +54,17 @@ namespace Sorolla
         /// </summary>
         private void LockYRotation()
         {
+            if (lockAllAxes)
+            {
+                if (smoothRotation)
+                    transform.rotation = Quaternion.Slerp(transform.rotation, _initialWorldRotation, Time.deltaTime * rotationSpeed);
+                else
+                    transform.rotation = _initialWorldRotation;
+                return;
+            }
+
             Vector3 currentEuler = transform.eulerAngles;
-            
+
             if (smoothRotation)
             {
                 // Smoothly interpolate to target Y rotation

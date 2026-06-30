@@ -13,6 +13,16 @@ namespace Sorolla
         private static readonly List<SorollaTimer> _activeTimers = new List<SorollaTimer>();
         private static bool _updaterCreated;
 
+        // Clear on play start so "Reload Domain = off" sessions don't keep ticking timers
+        // (with callbacks into destroyed objects) from the previous play, and so the updater
+        // is recreated fresh (_updaterCreated would otherwise stay true after its object is gone).
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _activeTimers.Clear();
+            _updaterCreated = false;
+        }
+
         private float _duration;
         private float _elapsed;
         private bool _isRunning;

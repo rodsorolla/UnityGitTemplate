@@ -64,7 +64,7 @@ namespace Sorolla
                 {
                     // Important: include inactive objects to avoid creating temps
 #if UNITY_2023_1_OR_NEWER
-                    m_Instance = FindFirstObjectByType<T>(FindObjectsInactive.Include);
+                    m_Instance = FindAnyObjectByType<T>(FindObjectsInactive.Include);
 #else
                 // For older Unity versions
                 m_Instance = (T)FindObjectOfType(typeof(T), true);

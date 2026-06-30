@@ -11,7 +11,8 @@ namespace Sorolla.FTX
     {
         private const string SaveFileName = "ftx";
 
-        private FirstTimeExperienceData _data;
+        // Initialized so HasSeen/MarkAsSeen are safe if called before Initialize() loads from disk.
+        private FirstTimeExperienceData _data = new FirstTimeExperienceData();
         private bool _isDirty;
 
         protected override void Initialize()

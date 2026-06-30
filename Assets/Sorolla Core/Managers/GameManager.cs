@@ -52,6 +52,11 @@ namespace Sorolla
         /// </summary>
         public static event Action<bool> OnPauseStateChanged;
 
+        // Clear on play start so "Reload Domain = off" sessions don't leak pause
+        // subscribers from the previous play (base MonoSingleton reset only clears the instance).
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticEvents() => OnPauseStateChanged = null;
+
         /// <summary>
         /// Whether the game is currently paused.
         /// </summary>
@@ -181,7 +186,7 @@ namespace Sorolla
         /// </summary>
         protected virtual void InitializeSceneServices()
         {
-            var sceneManagers = FindObjectsByType<SorollaManager>(FindObjectsSortMode.None)
+            var sceneManagers = FindObjectsByType<SorollaManager>(FindObjectsInactive.Exclude)
                 .AsValueEnumerable()
                 .Where(m => m != null && !m.IsInitialized)
                 .ToArray();

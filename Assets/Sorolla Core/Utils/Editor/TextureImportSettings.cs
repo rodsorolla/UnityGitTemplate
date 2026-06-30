@@ -15,6 +15,7 @@ namespace Sorolla
                 var textureImporter = (TextureImporter)assetImporter;
                 textureImporter.textureType = TextureImporterType.Sprite;
                 textureImporter.spriteImportMode = SpriteImportMode.Single;
+                textureImporter.textureCompression = TextureImporterCompression.Uncompressed;
             }
         }
     }
