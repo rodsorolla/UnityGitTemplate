@@ -10,7 +10,7 @@ namespace Sorolla.Purchasing.EditorTools
         [MenuItem("Tools/Sorolla Core/Purchasing Debug Window")]
         public static void Open() => GetWindow<PurchasingDebugWindow>("Purchasing Debug");
 
-        private string _productIdInput = "com.sorolla.hungrysnake.noads";
+        private string _productIdInput = "com.sorolla.template.noads";
         private string _entitlementInput = "noads";
         private PurchaseFailureReason _selectedReason = PurchaseFailureReason.PaymentDeclined;
 

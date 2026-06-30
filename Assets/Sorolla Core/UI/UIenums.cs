@@ -33,27 +33,6 @@
         PowerUpUsed = 15,
         OutOfLives = 16,
         TournamentResults = 17,
-        // Game-specific panels (Hungry Snake): preserved across Sorolla Core updates
-        PreLevel = 113,
-        BonusUnlocked = 114,
-        BoosterTutorial = 115,
-        WorldUnlocked = 116,
-        BoosterOffer = 117,
-        PurchaseCompleted = 118,
-        NotEnoughCoins = 119,
-        TreasureHuntSteps = 120,
-        TreasureHuntInfo = 121,
-        WinStreakInfo = 122,
-        LoseStreak = 123,
-        DailyReward = 124,
-        StarterPackOffer = 125,
-        FirstAd = 126,
-        NoInternet = 127,
-        RateGame = 128,
-        Profile = 129,
-        TournamentReward = 130,
-        TournamentInfo = 131,
-        RVCoins = 132,
-        BuyAd = 133,
+        // Game-specific panels should start at 100
     }
 }

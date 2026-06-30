@@ -4,7 +4,6 @@
         "Sorolla.Core",
         "Sorolla.Runtime",
         "Sorolla.PersistentData",
-        "HungrySnake",
         "UniTask",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
