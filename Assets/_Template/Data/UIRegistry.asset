@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab8b94ac0f994b788cebef6e52241bf9, type: 3}
+  m_Name: UIRegistry
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.UI.UIRegistry
+  screens:
+  - id: 6
+    prefab: {fileID: 5277646341980720360, guid: b0e4b6e5c8f2542c8ba7246f0156beb6, type: 3}
+    addressablesKey: 
+  panels:
+  - id: 19
+    prefab: {fileID: 1247660602551288363, guid: 97ee2a7c8b1404b7ab2cc28f9dda53c7, type: 3}
+    addressablesKey: 
+  - id: 17
+    prefab: {fileID: 1247660602551288363, guid: 5f5980f5c4f454ac69ccb97f6c552a1c, type: 3}
+    addressablesKey: 
+  - id: 20
+    prefab: {fileID: 101808763086579277, guid: 0aaf2d1b7d534d8468bc9f0d30bf9edd, type: 3}
+    addressablesKey: 
+  - id: 21
+    prefab: {fileID: 5067395291251984315, guid: 4d466241dd6914015aae282b87a8a999, type: 3}
+    addressablesKey: 
