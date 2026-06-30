@@ -34,6 +34,9 @@
         OutOfLives = 16,
         TournamentResults = 17,
         NotEnoughCoins = 18,
+        TournamentInfo = 19,
+        TournamentReward = 20,
+        Profile = 21,
         // Game-specific panels should start at 100
     }
 }
