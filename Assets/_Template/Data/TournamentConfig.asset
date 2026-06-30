@@ -1,0 +1,1144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7dca77b12541a4e15a357df3b3b528d3, type: 3}
+  m_Name: TournamentConfig
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.TournamentConfig
+  tiers:
+  - name: Bronze League
+    iconId: 
+    groupSize: 100
+    botPaceMin: 5
+    botPaceMax: 25
+    promotePct: 0.2
+    demotePct: 0.2
+    podiumRank1:
+    - ItemType: coins
+      ItemId: 
+      Amount: 500
+    - ItemType: booster
+      ItemId: magnet
+      Amount: 1
+    podiumRank2:
+    - ItemType: coins
+      ItemId: 
+      Amount: 300
+    podiumRank3:
+    - ItemType: coins
+      ItemId: 
+      Amount: 200
+  - name: Silver League
+    iconId: 
+    groupSize: 100
+    botPaceMin: 15
+    botPaceMax: 40
+    promotePct: 0.2
+    demotePct: 0.2
+    podiumRank1:
+    - ItemType: coins
+      ItemId: 
+      Amount: 900
+    - ItemType: booster
+      ItemId: freeze
+      Amount: 1
+    podiumRank2:
+    - ItemType: coins
+      ItemId: 
+      Amount: 550
+    podiumRank3:
+    - ItemType: coins
+      ItemId: 
+      Amount: 350
+  - name: Gold League
+    iconId: 
+    groupSize: 100
+    botPaceMin: 30
+    botPaceMax: 60
+    promotePct: 0.2
+    demotePct: 0.2
+    podiumRank1:
+    - ItemType: coins
+      ItemId: 
+      Amount: 1500
+    - ItemType: booster
+      ItemId: start_big
+      Amount: 2
+    podiumRank2:
+    - ItemType: coins
+      ItemId: 
+      Amount: 900
+    - ItemType: booster
+      ItemId: magnet
+      Amount: 1
+    podiumRank3:
+    - ItemType: coins
+      ItemId: 
+      Amount: 600
+  - name: Sapphire League
+    iconId: 
+    groupSize: 100
+    botPaceMin: 50
+    botPaceMax: 90
+    promotePct: 0.2
+    demotePct: 0.2
+    podiumRank1:
+    - ItemType: coins
+      ItemId: 
+      Amount: 2500
+    - ItemType: booster
+      ItemId: levelUp
+      Amount: 2
+    - ItemType: infinite_lives
+      ItemId: 
+      Amount: 30
+    podiumRank2:
+    - ItemType: coins
+      ItemId: 
+      Amount: 1500
+    - ItemType: booster
+      ItemId: freeze
+      Amount: 1
+    podiumRank3:
+    - ItemType: coins
+      ItemId: 
+      Amount: 1000
+  - name: Ruby League
+    iconId: 
+    groupSize: 100
+    botPaceMin: 80
+    botPaceMax: 140
+    promotePct: 0.2
+    demotePct: 0.2
+    podiumRank1:
+    - ItemType: coins
+      ItemId: 
+      Amount: 4000
+    - ItemType: booster
+      ItemId: levelUp
+      Amount: 3
+    - ItemType: infinite_lives
+      ItemId: 
+      Amount: 60
+    podiumRank2:
+    - ItemType: coins
+      ItemId: 
+      Amount: 2500
+    - ItemType: booster
+      ItemId: start_big
+      Amount: 2
+    podiumRank3:
+    - ItemType: coins
+      ItemId: 
+      Amount: 1600
+    - ItemType: booster
+      ItemId: magnet
+      Amount: 1
+  botNames:
+  - Juan C.
+  - Mei L.
+  - Carlos R.
+  - Aisha K.
+  - Diego M.
+  - Yuki T.
+  - Liam O.
+  - Sofia P.
+  - Omar B.
+  - Nina V.
+  - Lucas F.
+  - Priya S.
+  - Mateo G.
+  - Hana W.
+  - Noah D.
+  - Elena Z.
+  - Ravi N.
+  - Clara H.
+  - Tariq A.
+  - Lena B.
+  - Pablo S.
+  - Ingrid L.
+  - Kenji M.
+  - Amara O.
+  - Bruno T.
+  - Zoe R.
+  - Hugo V.
+  - Maya K.
+  - Andre P.
+  - Lucia D.
+  - Sven J.
+  - Fatima Z.
+  - Marco B.
+  - Nadia H.
+  - Felix W.
+  - Sara M.
+  - Oscar L.
+  - Leila A.
+  - Victor G.
+  - Anya P.
+  - Dimitri K.
+  - Rosa M.
+  - Kwame B.
+  - Tania V.
+  - Igor S.
+  - Bianca R.
+  - Hassan D.
+  - Greta L.
+  - Pedro N.
+  - Mira T.
+  - ShadowFox
+  - Lucky7
+  - ProSnake
+  - NovaX
+  - PixelKing
+  - TurboJoe
+  - IcyMint
+  - RedViper
+  - SkyHawk
+  - MegaMia
+  - Blaze99
+  - FrostByte
+  - GoldRush
+  - NightOwl
+  - SnakeMaster
+  - QuickKat
+  - ZenMode
+  - DashDan
+  - EmberLi
+  - VoltAce
+  - Kai W.
+  - Rina S.
+  - Theo M.
+  - Jana P.
+  - Niko B.
+  - Aria L.
+  - Sam D.
+  - Tess V.
+  - Eli R.
+  - Cora H.
+  - Mohammed A.
+  - Ana C.
+  - Jin H.
+  - Lola M.
+  - Finn O.
+  - Eva K.
+  - Raj P.
+  - Mila T.
+  - Cole B.
+  - Isla R.
+  - Dario V.
+  - Suki L.
+  - Ben G.
+  - Nora D.
+  - Tom S.
+  - Lily W.
+  - Max P.
+  - Gia M.
+  - Leo K.
+  - Vera B.
+  - Juan A.
+  - Mei A.
+  - Carlos A.
+  - Aisha A.
+  - Diego A.
+  - Yuki A.
+  - Liam A.
+  - Sofia A.
+  - Omar A.
+  - Nina A.
+  - Lucas A.
+  - Priya A.
+  - Mateo A.
+  - Hana A.
+  - Noah A.
+  - Elena A.
+  - Ravi A.
+  - Clara A.
+  - Lena A.
+  - Pablo A.
+  - Ingrid A.
+  - Kenji A.
+  - Amara A.
+  - Bruno A.
+  - Sara A.
+  - Hugo A.
+  - Marco A.
+  - Yara A.
+  - Tom A.
+  - Anya A.
+  - Felix A.
+  - Maya A.
+  - Oscar A.
+  - Zara A.
+  - Ivan A.
+  - Lucia A.
+  - Sami A.
+  - Freya A.
+  - Dario A.
+  - Noor A.
+  - Pedro A.
+  - Ines A.
+  - Karim A.
+  - Vera A.
+  - Milan A.
+  - Greta A.
+  - Jody A.
+  - Rania A.
+  - Andre A.
+  - Talia A.
+  - Nikolai A.
+  - Esme A.
+  - Hassan A.
+  - Bianca A.
+  - Theo A.
+  - Suri A.
+  - Emir A.
+  - Daria A.
+  - Rafael A.
+  - Ayla A.
+  - Viktor A.
+  - Lara A.
+  - Cyrus A.
+  - Mila A.
+  - Ethan A.
+  - Saba A.
+  - Gael A.
+  - Iris A.
+  - Pavel A.
+  - Nadia A.
+  - Mason A.
+  - Ravna A.
+  - Bilal A.
+  - Cleo A.
+  - Adan A.
+  - Tess A.
+  - Niko A.
+  - Roxana A.
+  - Sven A.
+  - Indira A.
+  - Cole A.
+  - Mira A.
+  - Sana A.
+  - Arlo A.
+  - Petra A.
+  - Reza A.
+  - Lina A.
+  - Owen A.
+  - Anika A.
+  - Dmitri A.
+  - Elsa A.
+  - Faris A.
+  - Gia A.
+  - Hiro A.
+  - Juno A.
+  - Kai A.
+  - Luz A.
+  - Marek A.
+  - Nora A.
+  - Oren A.
+  - Paz A.
+  - Quinn A.
+  - Rhea A.
+  - Said A.
+  - Tia A.
+  - Umar A.
+  - Vlad A.
+  - Wade A.
+  - Ximena A.
+  - Yusuf A.
+  - Zoe A.
+  - Aldo A.
+  - Bea A.
+  - Caleb A.
+  - Dana A.
+  - Enzo A.
+  - Fern A.
+  - Gus A.
+  - Halle A.
+  - Ilya A.
+  - Jana A.
+  - Kobe A.
+  - Liv A.
+  - Mads A.
+  - Neel A.
+  - Otto A.
+  - Pia A.
+  - Remy A.
+  - Suki A.
+  - Toby A.
+  - Una A.
+  - Vince A.
+  - Wren A.
+  - Xander A.
+  - Yael A.
+  - Zane A.
+  - Alba A.
+  - Boris A.
+  - Cira A.
+  - Dilan A.
+  - Eva A.
+  - Finn A.
+  - Gabi A.
+  - Ivo A.
+  - Jude A.
+  - Kira A.
+  - Lev A.
+  - Mina A.
+  - Nils A.
+  - Ona A.
+  - Park A.
+  - Ruth A.
+  - Soren A.
+  - Uri A.
+  - Vida A.
+  - Will A.
+  - Xenia A.
+  - Yana A.
+  - Zeke A.
+  - Arda A.
+  - Bri A.
+  - Ciro A.
+  - Dora A.
+  - Elio A.
+  - Faye A.
+  - Gio A.
+  - Hedy A.
+  - Joss A.
+  - Kemal A.
+  - Lana A.
+  - Misha A.
+  - Nuri A.
+  - Olek A.
+  - Pim A.
+  - Juan B.
+  - Mei B.
+  - Carlos B.
+  - Aisha B.
+  - Diego B.
+  - Yuki B.
+  - Liam B.
+  - Sofia B.
+  - Nina B.
+  - Lucas B.
+  - Priya B.
+  - Mateo B.
+  - Hana B.
+  - Noah B.
+  - Elena B.
+  - Ravi B.
+  - Clara B.
+  - Tariq B.
+  - Pablo B.
+  - Ingrid B.
+  - Kenji B.
+  - Amara B.
+  - Bruno B.
+  - Sara B.
+  - Hugo B.
+  - Leila B.
+  - Yara B.
+  - Tom B.
+  - Anya B.
+  - Felix B.
+  - Maya B.
+  - Oscar B.
+  - Zara B.
+  - Ivan B.
+  - Lucia B.
+  - Sami B.
+  - Freya B.
+  - Dario B.
+  - Noor B.
+  - Pedro B.
+  - Ines B.
+  - Karim B.
+  - Milan B.
+  - Greta B.
+  - Jody B.
+  - Rania B.
+  - Andre B.
+  - Talia B.
+  - Nikolai B.
+  - Esme B.
+  - Hassan B.
+  - Bianca B.
+  - Theo B.
+  - Suri B.
+  - Emir B.
+  - Daria B.
+  - Rafael B.
+  - Ayla B.
+  - Viktor B.
+  - Lara B.
+  - Cyrus B.
+  - Mila B.
+  - Ethan B.
+  - Saba B.
+  - Gael B.
+  - Iris B.
+  - Pavel B.
+  - Nadia B.
+  - Mason B.
+  - Ravna B.
+  - Bilal B.
+  - Cleo B.
+  - Adan B.
+  - Tess B.
+  - Roxana B.
+  - Sven B.
+  - Indira B.
+  - Mira B.
+  - Sana B.
+  - Arlo B.
+  - Petra B.
+  - Reza B.
+  - Lina B.
+  - Owen B.
+  - Anika B.
+  - Dmitri B.
+  - Elsa B.
+  - Faris B.
+  - Gia B.
+  - Hiro B.
+  - Juno B.
+  - Kai B.
+  - Luz B.
+  - Marek B.
+  - Nora B.
+  - Oren B.
+  - Paz B.
+  - Quinn B.
+  - Rhea B.
+  - Said B.
+  - Tia B.
+  - Umar B.
+  - Vlad B.
+  - Wade B.
+  - Ximena B.
+  - Yusuf B.
+  - Zoe B.
+  - Aldo B.
+  - Bea B.
+  - Caleb B.
+  - Dana B.
+  - Enzo B.
+  - Fern B.
+  - Gus B.
+  - Halle B.
+  - Ilya B.
+  - Jana B.
+  - Kobe B.
+  - Liv B.
+  - Mads B.
+  - Neel B.
+  - Otto B.
+  - Pia B.
+  - Remy B.
+  - Suki B.
+  - Toby B.
+  - Una B.
+  - Vince B.
+  - Wren B.
+  - Xander B.
+  - Yael B.
+  - Zane B.
+  - Alba B.
+  - Boris B.
+  - Cira B.
+  - Dilan B.
+  - Eva B.
+  - Finn B.
+  - Gabi B.
+  - Ivo B.
+  - Jude B.
+  - Kira B.
+  - Lev B.
+  - Mina B.
+  - Nils B.
+  - Ona B.
+  - Park B.
+  - Ruth B.
+  - Soren B.
+  - Uri B.
+  - Vida B.
+  - Will B.
+  - Xenia B.
+  - Yana B.
+  - Zeke B.
+  - Arda B.
+  - Bri B.
+  - Ciro B.
+  - Dora B.
+  - Elio B.
+  - Faye B.
+  - Gio B.
+  - Hedy B.
+  - Joss B.
+  - Kemal B.
+  - Lana B.
+  - Misha B.
+  - Nuri B.
+  - Olek B.
+  - Pim B.
+  - Mei C.
+  - Carlos C.
+  - Aisha C.
+  - Diego C.
+  - Yuki C.
+  - Liam C.
+  - Sofia C.
+  - Omar C.
+  - Nina C.
+  - Lucas C.
+  - Priya C.
+  - Mateo C.
+  - Hana C.
+  - Noah C.
+  - Elena C.
+  - Ravi C.
+  - Clara C.
+  - Tariq C.
+  - Lena C.
+  - Pablo C.
+  - Ingrid C.
+  - Kenji C.
+  - Amara C.
+  - Bruno C.
+  - Sara C.
+  - Hugo C.
+  - Leila C.
+  - Marco C.
+  - Yara C.
+  - Tom C.
+  - Anya C.
+  - Felix C.
+  - Maya C.
+  - Oscar C.
+  - Zara C.
+  - Ivan C.
+  - Lucia C.
+  - Sami C.
+  - Freya C.
+  - Dario C.
+  - Noor C.
+  - Pedro C.
+  - Ines C.
+  - Karim C.
+  - Vera C.
+  - Milan C.
+  - Greta C.
+  - Jody C.
+  - Rania C.
+  - Andre C.
+  - Talia C.
+  - Nikolai C.
+  - Esme C.
+  - Hassan C.
+  - Bianca C.
+  - Theo C.
+  - Suri C.
+  - Emir C.
+  - Daria C.
+  - Rafael C.
+  - Ayla C.
+  - Viktor C.
+  - Lara C.
+  - Cyrus C.
+  - Mila C.
+  - Ethan C.
+  - Saba C.
+  - Gael C.
+  - Iris C.
+  - Pavel C.
+  - Nadia C.
+  - Mason C.
+  - Ravna C.
+  - Bilal C.
+  - Cleo C.
+  - Adan C.
+  - Tess C.
+  - Niko C.
+  - Roxana C.
+  - Sven C.
+  - Indira C.
+  - Cole C.
+  - Mira C.
+  - Sana C.
+  - Arlo C.
+  - Petra C.
+  - Reza C.
+  - Lina C.
+  - Owen C.
+  - Anika C.
+  - Dmitri C.
+  - Elsa C.
+  - Faris C.
+  - Gia C.
+  - Hiro C.
+  - Juno C.
+  - Kai C.
+  - Luz C.
+  - Marek C.
+  - Nora C.
+  - Oren C.
+  - Paz C.
+  - Quinn C.
+  - Rhea C.
+  - Said C.
+  - Tia C.
+  - Umar C.
+  - Vlad C.
+  - Wade C.
+  - Ximena C.
+  - Yusuf C.
+  - Zoe C.
+  - Aldo C.
+  - Bea C.
+  - Caleb C.
+  - Dana C.
+  - Enzo C.
+  - Fern C.
+  - Gus C.
+  - Halle C.
+  - Ilya C.
+  - Jana C.
+  - Kobe C.
+  - Liv C.
+  - Mads C.
+  - Neel C.
+  - Otto C.
+  - Pia C.
+  - Remy C.
+  - Suki C.
+  - Toby C.
+  - Una C.
+  - Vince C.
+  - Wren C.
+  - Xander C.
+  - Yael C.
+  - Zane C.
+  - Alba C.
+  - Boris C.
+  - Cira C.
+  - Dilan C.
+  - Eva C.
+  - Finn C.
+  - Gabi C.
+  - Ivo C.
+  - Jude C.
+  - Kira C.
+  - Lev C.
+  - Mina C.
+  - Nils C.
+  - Ona C.
+  - Park C.
+  - Ruth C.
+  - Soren C.
+  - Uri C.
+  - Vida C.
+  - Will C.
+  - Xenia C.
+  - Yana C.
+  - Zeke C.
+  - Arda C.
+  - Bri C.
+  - Ciro C.
+  - Dora C.
+  - Elio C.
+  - Faye C.
+  - Gio C.
+  - Hedy C.
+  - Joss C.
+  - Kemal C.
+  - Lana C.
+  - Misha C.
+  - Nuri C.
+  - Olek C.
+  - Pim C.
+  - Juan D.
+  - Mei D.
+  - Carlos D.
+  - Aisha D.
+  - Diego D.
+  - Yuki D.
+  - Liam D.
+  - Sofia D.
+  - Omar D.
+  - Nina D.
+  - Lucas D.
+  - Priya D.
+  - Mateo D.
+  - Hana D.
+  - Elena D.
+  - Ravi D.
+  - Clara D.
+  - Tariq D.
+  - Lena D.
+  - Pablo D.
+  - Ingrid D.
+  - Kenji D.
+  - Amara D.
+  - Bruno D.
+  - Sara D.
+  - Hugo D.
+  - Leila D.
+  - Marco D.
+  - Yara D.
+  - Tom D.
+  - Anya D.
+  - Felix D.
+  - Maya D.
+  - Oscar D.
+  - Zara D.
+  - Ivan D.
+  - Sami D.
+  - Freya D.
+  - Dario D.
+  - Noor D.
+  - Pedro D.
+  - Ines D.
+  - Karim D.
+  - Vera D.
+  - Milan D.
+  - Greta D.
+  - Jody D.
+  - Rania D.
+  - Andre D.
+  - Talia D.
+  - Nikolai D.
+  - Esme D.
+  - Bianca D.
+  - Theo D.
+  - Suri D.
+  - Emir D.
+  - Daria D.
+  - Rafael D.
+  - Ayla D.
+  - Viktor D.
+  - Lara D.
+  - Cyrus D.
+  - Mila D.
+  - Ethan D.
+  - Saba D.
+  - Gael D.
+  - Iris D.
+  - Pavel D.
+  - Nadia D.
+  - Mason D.
+  - Ravna D.
+  - Bilal D.
+  - Cleo D.
+  - Adan D.
+  - Tess D.
+  - Niko D.
+  - Roxana D.
+  - Sven D.
+  - Indira D.
+  - Cole D.
+  - Mira D.
+  - Sana D.
+  - Arlo D.
+  - Petra D.
+  - Reza D.
+  - Lina D.
+  - Owen D.
+  - Anika D.
+  - Dmitri D.
+  - Elsa D.
+  - Faris D.
+  - Gia D.
+  - Hiro D.
+  - Juno D.
+  - Kai D.
+  - Luz D.
+  - Marek D.
+  - Oren D.
+  - Paz D.
+  - Quinn D.
+  - Rhea D.
+  - Said D.
+  - Tia D.
+  - Umar D.
+  - Vlad D.
+  - Wade D.
+  - Ximena D.
+  - Yusuf D.
+  - Zoe D.
+  - Aldo D.
+  - Bea D.
+  - Caleb D.
+  - Dana D.
+  - Enzo D.
+  - Fern D.
+  - Gus D.
+  - Halle D.
+  - Ilya D.
+  - Jana D.
+  - Kobe D.
+  - Liv D.
+  - Mads D.
+  - Neel D.
+  - Otto D.
+  - Pia D.
+  - Remy D.
+  - Suki D.
+  - Toby D.
+  - Una D.
+  - Vince D.
+  - Wren D.
+  - Xander D.
+  - Yael D.
+  - Zane D.
+  - Alba D.
+  - Boris D.
+  - Cira D.
+  - Dilan D.
+  - Eva D.
+  - Finn D.
+  - Gabi D.
+  - Ivo D.
+  - Jude D.
+  - Kira D.
+  - Lev D.
+  - Mina D.
+  - Nils D.
+  - Ona D.
+  - Park D.
+  - Ruth D.
+  - Soren D.
+  - Uri D.
+  - Vida D.
+  - Will D.
+  - Xenia D.
+  - Yana D.
+  - Zeke D.
+  - Arda D.
+  - Bri D.
+  - Ciro D.
+  - Dora D.
+  - Elio D.
+  - Faye D.
+  - Gio D.
+  - Hedy D.
+  - Joss D.
+  - Kemal D.
+  - Lana D.
+  - Misha D.
+  - Nuri D.
+  - Olek D.
+  - Pim D.
+  - Juan E.
+  - Mei E.
+  - Carlos E.
+  - Aisha E.
+  - Diego E.
+  - Yuki E.
+  - Liam E.
+  - Sofia E.
+  - Omar E.
+  - Nina E.
+  - Lucas E.
+  - Priya E.
+  - Mateo E.
+  - Hana E.
+  - Noah E.
+  - Elena E.
+  - Ravi E.
+  - Clara E.
+  - Tariq E.
+  - Lena E.
+  - Pablo E.
+  - Ingrid E.
+  - Kenji E.
+  - Amara E.
+  - Bruno E.
+  - Sara E.
+  - Hugo E.
+  - Leila E.
+  - Marco E.
+  - Yara E.
+  - Tom E.
+  - Anya E.
+  - Felix E.
+  - Maya E.
+  - Oscar E.
+  - Zara E.
+  - Ivan E.
+  - Lucia E.
+  - Sami E.
+  - Freya E.
+  - Dario E.
+  - Noor E.
+  - Pedro E.
+  - Ines E.
+  - Karim E.
+  - Vera E.
+  - Milan E.
+  - Greta E.
+  - Jody E.
+  - Rania E.
+  - Andre E.
+  - Talia E.
+  - Nikolai E.
+  - Esme E.
+  - Hassan E.
+  - Bianca E.
+  - Theo E.
+  - Suri E.
+  - Emir E.
+  - Daria E.
+  - Rafael E.
+  - Ayla E.
+  - Viktor E.
+  - Lara E.
+  - Cyrus E.
+  - Mila E.
+  - Ethan E.
+  - Saba E.
+  - Gael E.
+  - Iris E.
+  - Pavel E.
+  - Nadia E.
+  - Mason E.
+  - Ravna E.
+  - Bilal E.
+  - Cleo E.
+  - Adan E.
+  - Tess E.
+  - Niko E.
+  - Roxana E.
+  - Sven E.
+  - Indira E.
+  - Cole E.
+  - Mira E.
+  - Sana E.
+  - Arlo E.
+  - Petra E.
+  - Reza E.
+  - Lina E.
+  - Owen E.
+  - Anika E.
+  - Dmitri E.
+  - Elsa E.
+  - Faris E.
+  - Gia E.
+  - Hiro E.
+  - Juno E.
+  - Kai E.
+  - Luz E.
+  - Marek E.
+  - Nora E.
+  - Oren E.
+  - Paz E.
+  - Quinn E.
+  - Rhea E.
+  - Said E.
+  - Tia E.
+  - Umar E.
+  - Vlad E.
+  - Wade E.
+  - Ximena E.
+  - Yusuf E.
+  - Zoe E.
+  - Aldo E.
+  - Bea E.
+  - Caleb E.
+  - Dana E.
+  - Enzo E.
+  - Fern E.
+  - Gus E.
+  - Halle E.
+  - Ilya E.
+  - Jana E.
+  - Kobe E.
+  - Liv E.
+  - Mads E.
+  - Neel E.
+  - Otto E.
+  - Pia E.
+  - Remy E.
+  - Suki E.
+  - Toby E.
+  - Una E.
+  - Vince E.
+  - Wren E.
+  - Xander E.
+  - Yael E.
+  - Zane E.
+  - Alba E.
+  - Boris E.
+  - Cira E.
+  - Dilan E.
+  - Eva E.
+  - Finn E.
+  - Gabi E.
+  - Ivo E.
+  - Jude E.
+  - Kira E.
+  - Lev E.
+  - Mina E.
+  - Nils E.
+  - Ona E.
+  - Park E.
+  - Ruth E.
+  - Soren E.
+  - Uri E.
+  - Vida E.
+  - Will E.
+  - Xenia E.
+  - Yana E.
+  - Zeke E.
+  - Arda E.
+  - Bri E.
+  - Ciro E.
+  - Dora E.
+  - Elio E.
+  - Faye E.
+  - Gio E.
+  - Hedy E.
+  - Joss E.
+  - Kemal E.
+  - Lana E.
+  - Misha E.
+  - Nuri E.
+  - Olek E.
+  - Pim E.
+  - Juan F.
+  - Mei F.
+  - Carlos F.
+  - Aisha F.
+  - Diego F.
+  - Yuki F.
+  - Liam F.
+  - Sofia F.
+  - Omar F.
+  - Nina F.
+  - Priya F.
+  - Mateo F.
+  - Hana F.
+  - Noah F.
+  - Elena F.
+  - Ravi F.
+  - Clara F.
+  - Tariq F.
+  - Lena F.
+  - Pablo F.
+  - Ingrid F.
+  - Kenji F.
+  - Amara F.
+  - Bruno F.
+  - Sara F.
+  - Hugo F.
+  - Leila F.
+  - Marco F.
+  - Yara F.
+  - Tom F.
+  - Anya F.
+  - Felix F.
+  - Maya F.

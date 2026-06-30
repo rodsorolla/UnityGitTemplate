@@ -1,0 +1,299 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d3cfc39143f451389ec784b56da7f1, type: 3}
+  m_Name: ProfileCatalog
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Profile.ProfileCatalog
+  avatars:
+  - id: 1
+    sprite: {fileID: 21300000, guid: 7b7666cfb3c3b4305954619f19c6f686, type: 3}
+    locked: 0
+  - id: 2
+    sprite: {fileID: 21300000, guid: ad570c8ad740942c1b46a0d711b5009e, type: 3}
+    locked: 0
+  - id: 3
+    sprite: {fileID: 21300000, guid: 71d74e4a2f04c41c88b4f278a3879af2, type: 3}
+    locked: 0
+  - id: 4
+    sprite: {fileID: 21300000, guid: e4e63416f1ba64ea781a4acaf4b32f98, type: 3}
+    locked: 0
+  - id: 5
+    sprite: {fileID: 21300000, guid: 014b3cd8944ef41b99c7cf3ffbe3f66b, type: 3}
+    locked: 0
+  - id: 6
+    sprite: {fileID: 21300000, guid: ec9ec1a6d8441481b8e4abf27b98833c, type: 3}
+    locked: 0
+  - id: 7
+    sprite: {fileID: 21300000, guid: 67605d4bfe34846f3826a216ad25e77c, type: 3}
+    locked: 0
+  - id: 8
+    sprite: {fileID: 21300000, guid: ca10b9046bed04fc59922dc9a053d5cf, type: 3}
+    locked: 0
+  - id: 9
+    sprite: {fileID: 21300000, guid: 86780db81b1e2485394945caeb7458dc, type: 3}
+    locked: 0
+  - id: 10
+    sprite: {fileID: 21300000, guid: 14f26e352789d43b0a3b9e7ee935da70, type: 3}
+    locked: 0
+  - id: 11
+    sprite: {fileID: 21300000, guid: 998008fa719344b95acd6d385df77714, type: 3}
+    locked: 0
+  - id: 12
+    sprite: {fileID: 21300000, guid: b55b7229575d24cb894e8f0c8502085a, type: 3}
+    locked: 0
+  - id: 13
+    sprite: {fileID: 21300000, guid: 1aef474ab6481464b970b575556fef64, type: 3}
+    locked: 0
+  - id: 14
+    sprite: {fileID: 21300000, guid: 4b67454c0e7c54777a933b61d087bde4, type: 3}
+    locked: 0
+  - id: 15
+    sprite: {fileID: 21300000, guid: d5c58366671df4953b40c25d0ca8ef5a, type: 3}
+    locked: 0
+  - id: 16
+    sprite: {fileID: 21300000, guid: 7832feb3398f64325b922b05e456b3c6, type: 3}
+    locked: 0
+  - id: 17
+    sprite: {fileID: 21300000, guid: cc908088f3656438682e5444c050d470, type: 3}
+    locked: 0
+  - id: 18
+    sprite: {fileID: 21300000, guid: 828982fd0709e4b14b1f557f601b136b, type: 3}
+    locked: 0
+  - id: 19
+    sprite: {fileID: 21300000, guid: 03654abbe415949a1a41a0c11a1db4e4, type: 3}
+    locked: 0
+  - id: 20
+    sprite: {fileID: 21300000, guid: 3d4c76286551f4cae8b4ae0a83bd9a85, type: 3}
+    locked: 0
+  - id: 21
+    sprite: {fileID: 21300000, guid: a6a763addfda14394a5d66671ca644ae, type: 3}
+    locked: 0
+  - id: 22
+    sprite: {fileID: 21300000, guid: f9f4cff6596f24a6c8d8021f1f93b124, type: 3}
+    locked: 0
+  - id: 23
+    sprite: {fileID: 21300000, guid: 6bb316570cf984f6794e8d4930539a2b, type: 3}
+    locked: 0
+  - id: 24
+    sprite: {fileID: 21300000, guid: fab262f2250114eb08b311b8b3adf612, type: 3}
+    locked: 0
+  - id: 25
+    sprite: {fileID: 21300000, guid: 79ce9a8e59d8e4577b110734beaca96b, type: 3}
+    locked: 0
+  - id: 26
+    sprite: {fileID: 21300000, guid: 7fd08eae355904eb6b617bd950d20ffe, type: 3}
+    locked: 0
+  - id: 27
+    sprite: {fileID: 21300000, guid: a41300494d50f47a4a0e0ee40f9f2768, type: 3}
+    locked: 0
+  flags:
+  - countryCode: AR
+    displayName: Argentina
+    sprite: {fileID: 21300000, guid: 80c8d652bac7f47a7abfaac2eafe58df, type: 3}
+    locked: 0
+  - countryCode: AU
+    displayName: Australia
+    sprite: {fileID: 21300000, guid: 653342714ae3d4911afb661cb20e2542, type: 3}
+    locked: 0
+  - countryCode: AT
+    displayName: Austria
+    sprite: {fileID: 21300000, guid: f98fc164dcdc3440ebcffdeb624d8c1f, type: 3}
+    locked: 0
+  - countryCode: BE
+    displayName: Belgium
+    sprite: {fileID: 21300000, guid: 856c45deacb5d4291955801cdd0ded58, type: 3}
+    locked: 0
+  - countryCode: BR
+    displayName: Brazil
+    sprite: {fileID: 21300000, guid: ab9876ec0681c40bfba7072f78e06575, type: 3}
+    locked: 0
+  - countryCode: CA
+    displayName: Canada
+    sprite: {fileID: 21300000, guid: bc90f08292556430596194586791ec38, type: 3}
+    locked: 0
+  - countryCode: CL
+    displayName: Chile
+    sprite: {fileID: 21300000, guid: 76dfde0d2bb0540f7bcaf436de1c5dbc, type: 3}
+    locked: 0
+  - countryCode: CN
+    displayName: China
+    sprite: {fileID: 21300000, guid: 4876e68d174dc41c489da61343b872c1, type: 3}
+    locked: 0
+  - countryCode: CO
+    displayName: Colombia
+    sprite: {fileID: 21300000, guid: 729af6c1241e7416faf3b3cc22e70b1c, type: 3}
+    locked: 0
+  - countryCode: CZ
+    displayName: Czech Republic
+    sprite: {fileID: 21300000, guid: e34df76d9028042c0ab45c5be6def16f, type: 3}
+    locked: 0
+  - countryCode: DK
+    displayName: Denmark
+    sprite: {fileID: 21300000, guid: 7792e3d973a944327aa952cab68f6c9b, type: 3}
+    locked: 0
+  - countryCode: EG
+    displayName: Egypt
+    sprite: {fileID: 21300000, guid: 83379f1ab11ed4339aa70cf21f1dbf30, type: 3}
+    locked: 0
+  - countryCode: FI
+    displayName: Finland
+    sprite: {fileID: 21300000, guid: 07782c50132e74b2480817130154a523, type: 3}
+    locked: 0
+  - countryCode: FR
+    displayName: France
+    sprite: {fileID: 21300000, guid: e52dff07b29db4a809b69cd4b7a29de2, type: 3}
+    locked: 0
+  - countryCode: DE
+    displayName: Germany
+    sprite: {fileID: 21300000, guid: 701965bd4b75746ed93b8bd4504aa35f, type: 3}
+    locked: 0
+  - countryCode: GR
+    displayName: Greece
+    sprite: {fileID: 21300000, guid: c79f8a777d6bb4349a0a2e45e9ef7cc8, type: 3}
+    locked: 0
+  - countryCode: HU
+    displayName: Hungary
+    sprite: {fileID: 21300000, guid: 8ff5701fb9e5341df8105612cd8da4d0, type: 3}
+    locked: 0
+  - countryCode: IN
+    displayName: India
+    sprite: {fileID: 21300000, guid: 1f18ce5a2c4ee4f04b2c4219e1ba093b, type: 3}
+    locked: 0
+  - countryCode: ID
+    displayName: Indonesia
+    sprite: {fileID: 21300000, guid: dcc4b6d68458342a698bd4604ae7256e, type: 3}
+    locked: 0
+  - countryCode: IE
+    displayName: Ireland
+    sprite: {fileID: 21300000, guid: fea659c50b03441d0bd2961e41728ecc, type: 3}
+    locked: 0
+  - countryCode: IT
+    displayName: Italy
+    sprite: {fileID: 21300000, guid: 95cf683270d6d49a1976e2be8fe1ee90, type: 3}
+    locked: 0
+  - countryCode: JP
+    displayName: Japan
+    sprite: {fileID: 21300000, guid: eb55f18b88c814439810252d489e8398, type: 3}
+    locked: 0
+  - countryCode: MY
+    displayName: Malaysia
+    sprite: {fileID: 21300000, guid: 1ea68555515e94f82ad85018d5e0a2b9, type: 3}
+    locked: 0
+  - countryCode: MX
+    displayName: Mexico
+    sprite: {fileID: 21300000, guid: ae16dcb8321124e6193476fa34dad52c, type: 3}
+    locked: 0
+  - countryCode: MA
+    displayName: Morocco
+    sprite: {fileID: 21300000, guid: cde95c33489d14c82ad9b712951f9b94, type: 3}
+    locked: 0
+  - countryCode: NL
+    displayName: Netherlands
+    sprite: {fileID: 21300000, guid: 70c979bdf74b645cab5324a8a057f518, type: 3}
+    locked: 0
+  - countryCode: NZ
+    displayName: New Zealand
+    sprite: {fileID: 21300000, guid: 553b05d378b3e4b93b736b9e9d86e16f, type: 3}
+    locked: 0
+  - countryCode: NG
+    displayName: Nigeria
+    sprite: {fileID: 21300000, guid: ef88a13f0bcfb4320bd20931b67855b0, type: 3}
+    locked: 0
+  - countryCode: NO
+    displayName: Norway
+    sprite: {fileID: 21300000, guid: 442c2f9814a534935abc64698c17346b, type: 3}
+    locked: 0
+  - countryCode: PE
+    displayName: Peru
+    sprite: {fileID: 21300000, guid: 82f652ea154894e6d9cf1b91f2e8daab, type: 3}
+    locked: 0
+  - countryCode: PH
+    displayName: Philippines
+    sprite: {fileID: 21300000, guid: 1dc3914942e9548659070dd81f044d37, type: 3}
+    locked: 0
+  - countryCode: PL
+    displayName: Poland
+    sprite: {fileID: 21300000, guid: 3b8958f403c7144229a6e432d2419a8a, type: 3}
+    locked: 0
+  - countryCode: PT
+    displayName: Portugal
+    sprite: {fileID: 21300000, guid: 5c60a6459e65d42d994eb6a1c81d045a, type: 3}
+    locked: 0
+  - countryCode: RO
+    displayName: Romania
+    sprite: {fileID: 21300000, guid: df1605d39b1274110badf9a802790bd3, type: 3}
+    locked: 0
+  - countryCode: RU
+    displayName: Russia
+    sprite: {fileID: 21300000, guid: 16a35a34b73614412b0e338c7a2236de, type: 3}
+    locked: 0
+  - countryCode: SA
+    displayName: Saudi Arabia
+    sprite: {fileID: 21300000, guid: ca323c7d98ff241b5b128225be6e8c2d, type: 3}
+    locked: 0
+  - countryCode: SG
+    displayName: Singapore
+    sprite: {fileID: 21300000, guid: 421bf5fd9d4d34ffaac953e2abfa4d5a, type: 3}
+    locked: 0
+  - countryCode: ZA
+    displayName: South Africa
+    sprite: {fileID: 21300000, guid: f6a845a6bcb454d0bbc3cf8a1ba874ae, type: 3}
+    locked: 0
+  - countryCode: KR
+    displayName: South Korea
+    sprite: {fileID: 21300000, guid: 08ea63135b0154429bc496604ddecc6c, type: 3}
+    locked: 0
+  - countryCode: ES
+    displayName: Spain
+    sprite: {fileID: 21300000, guid: c0e4b704ff477443fb71f0459dff9baf, type: 3}
+    locked: 0
+  - countryCode: SE
+    displayName: Sweden
+    sprite: {fileID: 21300000, guid: 8071c3108f9134a60b11f97e5165c5af, type: 3}
+    locked: 0
+  - countryCode: CH
+    displayName: Switzerland
+    sprite: {fileID: 21300000, guid: 8a4f7646f36bf4048b82ea38af6426fd, type: 3}
+    locked: 0
+  - countryCode: TH
+    displayName: Thailand
+    sprite: {fileID: 21300000, guid: d71d16c10ad104f35b2fa655b7986e6e, type: 3}
+    locked: 0
+  - countryCode: TR
+    displayName: Turkey
+    sprite: {fileID: 21300000, guid: ed84fb2039cf243de9556455f7ae821d, type: 3}
+    locked: 0
+  - countryCode: UA
+    displayName: Ukraine
+    sprite: {fileID: 21300000, guid: 410d25ce27b6149299f446ecb1af40cc, type: 3}
+    locked: 0
+  - countryCode: AE
+    displayName: United Arab Emirates
+    sprite: {fileID: 21300000, guid: 47fe5e94b64e246cabfd827c7632a9b7, type: 3}
+    locked: 0
+  - countryCode: GB
+    displayName: United Kingdom
+    sprite: {fileID: 21300000, guid: da2c39a76dbbf4ecf9d8daa8ac4984a0, type: 3}
+    locked: 0
+  - countryCode: US
+    displayName: United States
+    sprite: {fileID: 21300000, guid: fcbc97c33680c44b7a6f86c65275fa4a, type: 3}
+    locked: 0
+  - countryCode: VN
+    displayName: Vietnam
+    sprite: {fileID: 21300000, guid: fe0967174568d4b0aa967c0002e44a96, type: 3}
+    locked: 0
+  - countryCode: IL
+    displayName: Israel
+    sprite: {fileID: 21300000, guid: 9735545a1b5a246b5a0c1df75bd8f502, type: 3}
+    locked: 0
+  defaultCountryCode: US
+  nameBlocklist: []
