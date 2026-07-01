@@ -26,7 +26,8 @@ namespace Template
         private void OnPlay()
         {
             var session = Object.FindFirstObjectByType<LevelSessionController>();
-            session?.RequestStartLevel();
+            if (session == null) { Debug.LogWarning("[MainMenuScreen] No LevelSessionController in the scene; Play does nothing."); return; }
+            session.RequestStartLevel();
         }
 
         private void OnProfile()
@@ -37,7 +38,8 @@ namespace Template
         private void OnTournament()
         {
             var host = Object.FindFirstObjectByType<TemplateTournamentHost>(FindObjectsInactive.Include);
-            host?.Show();
+            if (host == null) { Debug.LogWarning("[MainMenuScreen] No TemplateTournamentHost in the scene; Tournament does nothing."); return; }
+            host.Show();
         }
     }
 }

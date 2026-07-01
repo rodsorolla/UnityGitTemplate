@@ -28,6 +28,10 @@ namespace Template
                 _flow.OnLevelStarted += HandleLevelStarted;
                 _flow.OnLevelEnded += HandleLevelEnded;
             }
+            else
+            {
+                Debug.LogWarning("[TemplatePlaceholderGameplay] No ILevelFlowManager registered; overlay is inert.");
+            }
             if (_winButton != null) _winButton.onClick.AddListener(() => _flow?.WinLevel(LevelEndReason.AllGoalsComplete));
             if (_loseButton != null) _loseButton.onClick.AddListener(() => _flow?.LoseLevel(LevelEndReason.TimeUp));
             if (_overlay != null) _overlay.SetActive(false);
