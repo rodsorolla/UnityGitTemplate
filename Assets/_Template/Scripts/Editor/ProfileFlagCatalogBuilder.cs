@@ -6,7 +6,7 @@ using Sorolla.Profile;
 using UnityEditor;
 using UnityEngine;
 
-namespace HungrySnake.Editor
+namespace Sorolla.Profile.Editor
 {
     /// <summary>
     /// Builds/refreshes the ProfileCatalog flag list from the imported flag sprites
