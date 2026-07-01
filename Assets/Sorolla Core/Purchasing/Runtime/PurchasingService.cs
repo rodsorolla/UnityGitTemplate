@@ -179,6 +179,9 @@ namespace Sorolla.Purchasing
                 return;
             }
 
+            if (product.OncePerInstall)
+                OncePerInstallStore.MarkPurchased(product.ProductId);
+
             if (product.Type == PurchaseProductType.NonConsumable)
                 _processed.MarkProcessed(product.ProductId);
 
