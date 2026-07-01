@@ -572,37 +572,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6309854031342292713, guid: ff7d438e66c7d43ca8c2a235834c26cc, type: 3}
   m_PrefabInstance: {fileID: 146428843}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &364689627
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 364689629}
-  m_Layer: 0
-  m_Name: TemplateUITester
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &364689629
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 364689627}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.38483, y: -0, z: 1.51064}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &417762454
 GameObject:
   m_ObjectHideFlags: 0
@@ -1444,7 +1413,6 @@ SceneRoots:
   - {fileID: 473445532}
   - {fileID: 745540224}
   - {fileID: 2117216597}
-  - {fileID: 364689629}
   - {fileID: 59390752}
   - {fileID: 325447153}
   - {fileID: 2038231297}

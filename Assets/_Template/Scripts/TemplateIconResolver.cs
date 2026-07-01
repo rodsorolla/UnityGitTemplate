@@ -8,7 +8,8 @@ namespace Template
     /// Template default <see cref="IIconResolver"/>: a serialized (itemType, itemId) → Sprite map
     /// for the sample reward/currency icons. Data-driven UI surfaces (Tournament rewards, etc.)
     /// resolve sprites through this instead of holding their own inline maps. Returns null for
-    /// unmapped pairs (per the interface contract). Register it via <see cref="TemplateBootstrap"/>.
+    /// unmapped pairs (per the interface contract). Registered as <see cref="IIconResolver"/> by
+    /// <see cref="TemplateGameManager"/> in the Init boot scene.
     /// </summary>
     public class TemplateIconResolver : MonoBehaviour, IIconResolver
     {
