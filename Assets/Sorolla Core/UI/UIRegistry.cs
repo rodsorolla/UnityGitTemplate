@@ -58,6 +58,18 @@ namespace Sorolla.UI
             }
         }
 
+        /// <summary>
+        /// Forces the internal lookup dictionaries to rebuild from the current
+        /// screens/panels lists. Call this after mutating the lists via script
+        /// (e.g. editor tooling) — direct list mutation does not trigger
+        /// OnValidate, so the cached lookup would otherwise remain stale for
+        /// the rest of the editor session.
+        /// </summary>
+        public void RefreshLookup()
+        {
+            RebuildMaps();
+        }
+
         public bool TryGetScreen(UIScreenId id, out ScreenEntry entry)
         {
             EnsureMapsInitialized();
