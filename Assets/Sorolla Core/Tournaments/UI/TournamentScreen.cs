@@ -141,6 +141,15 @@ namespace Sorolla.Tournaments.UI
                 _profile.OnProfileChanged -= HandleProfileChanged;
                 _profile.OnProfileChanged += HandleProfileChanged;
             }
+
+            // Rebuild the whole board when a week rolls over (real boundary or debug simulate) —
+            // the tier/countdown/rows all change, and this screen stays active behind the menu so
+            // OnEnable won't re-fire on its own.
+            if (_service != null)
+            {
+                _service.OnTournamentRolledOver -= HandleRolledOver;
+                _service.OnTournamentRolledOver += HandleRolledOver;
+            }
             RefreshProfileAvatar();
 
             Rebuild();
@@ -379,10 +388,16 @@ namespace Sorolla.Tournaments.UI
                 BindPlayerRow(_service.GetLeaderboard());
         }
 
+        // A week rolled over (real boundary or debug simulate): the tier, countdown and board all
+        // changed, so redraw everything.
+        private void HandleRolledOver() => Rebuild();
+
         private void OnDisable()
         {
             if (_profile != null)
                 _profile.OnProfileChanged -= HandleProfileChanged;
+            if (_service != null)
+                _service.OnTournamentRolledOver -= HandleRolledOver;
             if (_rewardBubble != null) _rewardBubble.Hide();
             if (_skinTip != null) _skinTip.Hide();
             ClearRows();

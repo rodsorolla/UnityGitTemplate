@@ -227,7 +227,10 @@ namespace Sorolla.Tournaments
                 return;
             }
             FinalizeActiveWeek();
-            _state.ActiveWeekIndex += 1;
+            // Pin to the real wall-clock week (mirrors SyncToCurrentWeek), NOT +1 — advancing the
+            // index into the future desyncs WeekEndUtc from real time (countdown shows >7 days) and
+            // RolloverPolicy.Hold makes it stick across relaunches.
+            _state.ActiveWeekIndex = TournamentWeek.WeekIndex(_clock.UtcNow);
             _state.PlayerTrophies = 0;
             Persist();
             OnTournamentRolledOver?.Invoke();
@@ -245,15 +248,23 @@ namespace Sorolla.Tournaments
             foreach (var b in bots) finalTrophies.Add(BotProgress.TrophiesAt(b.weeklyTarget, b.id, 1.0));
 
             var r = Standings.Compute(_state.PlayerTrophies, finalTrophies, tier.promotePct, tier.demotePct);
+
+            // Tie the announced outcome to whether the tier actually moved: at the lowest tier a
+            // bottom-band rank clamps to index 0 (can't be demoted out of Bronze) and at the top a
+            // top-band rank clamps to the last tier — in both cases no movement happened, so report
+            // Stayed instead of a promotion/demotion the player never got.
+            int nextTierIndex = TierTransition.Apply(_state.CurrentTierIndex, r.PlayerOutcome, _data.Tiers.Count);
+            var outcome = nextTierIndex == _state.CurrentTierIndex ? TournamentOutcome.Stayed : r.PlayerOutcome;
+
             _state.PendingResult = new PendingResult
             {
                 WeekIndex = _state.ActiveWeekIndex,
                 TierIndex = _state.CurrentTierIndex,
                 FinalRank = r.PlayerRank,
-                Outcome = r.PlayerOutcome,
+                Outcome = outcome,
                 Claimed = false
             };
-            _state.CurrentTierIndex = TierTransition.Apply(_state.CurrentTierIndex, r.PlayerOutcome, _data.Tiers.Count);
+            _state.CurrentTierIndex = nextTierIndex;
         }
 
         // All state writes go through here so the last-seen UTC stamp stays current for the
