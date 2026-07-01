@@ -2452,7 +2452,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 19bf798ed2d8a4f098b46c3c0a50009a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.ProfilePanel
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Profile.UI.ProfilePanel
   _currentAvatar: {fileID: 6178769905760943361}
   _currentFlag: {fileID: 223168271485408714}
   _nameInput: {fileID: 2553903532452760179}
@@ -3773,7 +3773,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 27c0423ea12c54b3d8a8aec53d39f8e9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.JuicyButton
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.UI.JuicyButton
 --- !u!224 &7842239226398782476 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4767246815857903892, guid: dfd846ec8a1f44e1ea059a94b9e3bf98, type: 3}

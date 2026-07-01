@@ -2917,7 +2917,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 277b8ec0a21f1447fa5ea7b28e9fb3ed, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.TournamentRowView
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.TournamentRowView
   _rank: {fileID: 0}
   _name: {fileID: 3404564025300613180}
   _trophies: {fileID: 6508582966274040475}
@@ -6688,7 +6688,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 277b8ec0a21f1447fa5ea7b28e9fb3ed, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.TournamentRowView
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.TournamentRowView
   _rank: {fileID: 0}
   _name: {fileID: 3472617059287235053}
   _trophies: {fileID: 8527743238124808188}
@@ -7239,7 +7239,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3042f779c859e43bcb19d895865f678b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.SkinTipView
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.SkinTipView
   _root: {fileID: 7543847313445894228}
   _skinIcon: {fileID: 1614431579541941312}
   _worldOffset: {x: 0, y: 0}
@@ -7525,7 +7525,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 610c8406f826a411f818f212ec6409bf, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.TournamentScreen
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.TournamentScreen
   _tierShines:
   - {fileID: 8771561530444502159}
   - {fileID: 462387097888666662}
@@ -9297,7 +9297,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 277b8ec0a21f1447fa5ea7b28e9fb3ed, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.TournamentRowView
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.TournamentRowView
   _rank: {fileID: 0}
   _name: {fileID: 6617670199975252945}
   _trophies: {fileID: 2214772652381943865}
@@ -12459,4 +12459,4 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 98460603c54174b809ec70bedf00cd5b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.ChestRewardBubble
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.ChestRewardBubble

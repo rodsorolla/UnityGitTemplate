@@ -184,7 +184,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8136c5d3b79c4170b5c377f1a405768, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.TournamentRewardPanel
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.TournamentRewardPanel
   _closedChest:
     image: {fileID: 6488236898904157022}
     tierSprites:
@@ -16836,7 +16836,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 27c0423ea12c54b3d8a8aec53d39f8e9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.JuicyButton
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.UI.JuicyButton
 --- !u!1001 &6614853638254391434
 PrefabInstance:
   m_ObjectHideFlags: 0

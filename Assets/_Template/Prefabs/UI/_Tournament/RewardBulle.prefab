@@ -339,7 +339,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e39e6ce6125044160a00c64120dd48d4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.RewardBulleView
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.RewardBulleView
   _icon: {fileID: 5433290451971297271}
   _amount: {fileID: 6373041209642815830}
 --- !u!1 &8256923555098298884

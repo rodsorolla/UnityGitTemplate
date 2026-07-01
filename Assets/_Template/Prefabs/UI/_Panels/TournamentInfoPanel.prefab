@@ -162,7 +162,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7b4398093689d4f3bb7c03ff03f35719, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.TournamentInfoPanel
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.TournamentInfoPanel
   _continueButton: {fileID: 7262042506134607480}
 --- !u!1 &1698297457070682034
 GameObject:

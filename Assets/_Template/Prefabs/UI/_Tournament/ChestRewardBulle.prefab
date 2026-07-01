@@ -469,7 +469,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 98460603c54174b809ec70bedf00cd5b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.ChestRewardBubble
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.ChestRewardBubble
   _root: {fileID: 6667183723835863544}
   _blocker: {fileID: 632018385997960587}
   _rewardBullePrefab: {fileID: -6223266214953884780, guid: f9a1e3a2e09fb45f1884a121690d6770, type: 3}

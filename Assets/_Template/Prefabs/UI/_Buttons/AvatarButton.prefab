@@ -256,7 +256,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 67ae14f7515a94f49880b73bf3c83d57, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.AvatarButton
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Profile.UI.AvatarButton
   _background: {fileID: 7890251742467255178}
   _backgroundPalette:
   - {r: 0.486, g: 0.647, b: 0.769, a: 1}

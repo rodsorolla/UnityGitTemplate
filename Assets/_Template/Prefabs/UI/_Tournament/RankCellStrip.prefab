@@ -6748,7 +6748,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 277b8ec0a21f1447fa5ea7b28e9fb3ed, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: HungrySnake::HungrySnake.UI.TournamentRowView
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Tournaments.UI.TournamentRowView
   _rank: {fileID: 1555214097678893735}
   _name: {fileID: 3935631222931236673}
   _trophies: {fileID: 969404174421668191}
