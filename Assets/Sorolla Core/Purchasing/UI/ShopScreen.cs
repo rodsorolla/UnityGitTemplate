@@ -91,10 +91,12 @@ namespace Sorolla.Purchasing
                 if (product == null || product.CardPrefab == null) continue;
                 var parent = ResolveParent(product.ShopSection);
                 if (parent == null) continue;
-                var card = Instantiate(product.CardPrefab, parent).GetComponent<ProductCard>();
+                var instance = Instantiate(product.CardPrefab, parent);
+                var card = instance.GetComponent<ProductCard>();
                 if (card == null)
                 {
                     Debug.LogWarning($"[ShopScreen] Card prefab for {product.ProductId} is missing a ProductCard component.");
+                    Destroy(instance);
                     continue;
                 }
                 card.Bind(product, _purchasing, _entitlements);

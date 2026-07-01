@@ -63,6 +63,7 @@ namespace Sorolla.Purchasing
 
         public static string BuildRewardSummary(ProductDefinition product)
         {
+            if (product == null) return string.Empty;
             var sb = new StringBuilder();
             foreach (var r in product.Rewards)
             {
