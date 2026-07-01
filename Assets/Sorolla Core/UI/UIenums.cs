@@ -13,6 +13,7 @@
         Settings = 4,
         Profile = 5,
         Tournament = 6,
+        Shop = 7,
         // Game-specific screens should start at 100
     }
 
@@ -37,6 +38,7 @@
         TournamentInfo = 19,
         TournamentReward = 20,
         Profile = 21,
+        PurchaseCompleted = 22,
         // Game-specific panels should start at 100
     }
 }
