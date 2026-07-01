@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using NaughtyAttributes;
 using Sorolla.Tournaments;
 using Sorolla.Tournaments.UI;
 using Sorolla.UI;
@@ -8,28 +9,71 @@ namespace Template
 {
     /// <summary>
     /// Play-mode test harness for the agnostic Profile/Tournament UI. Drop it on any GameObject in
-    /// the bootstrap scene, assign the refs, and drive the three surfaces from the inspector's
-    /// context menu (the "⋮" gear on the component header) or by hooking the public methods to
-    /// UI buttons. Requires <see cref="TemplateBootstrap"/> in the scene so the Core services resolve.
+    /// the bootstrap scene, assign the refs, then — in Play mode — pick a surface from the dropdown
+    /// and press <b>Open Selected UI</b> (styled with NaughtyAttributes, mirroring the UIManager
+    /// inspector). Requires <see cref="TemplateBootstrap"/> in the scene so the Core services resolve.
     /// </summary>
     public class TemplateUITester : MonoBehaviour
     {
-        [Header("Tournament screen")]
+        /// <summary>The UI surfaces this harness can drive.</summary>
+        private enum Surface
+        {
+            TournamentScreen,
+            ProfilePanel,
+            RankRevealStrip,
+        }
+
+        [BoxGroup("UI Tester")]
+        [InfoBox("Enter Play mode, pick a surface, then press Open.", EInfoBoxType.Normal)]
+        [Label("Surface")]
+        [SerializeField] private Surface _surface = Surface.TournamentScreen;
+
+        [Button("Open Selected UI", EButtonEnableMode.Playmode)]
+        private void OpenSelected()
+        {
+            switch (_surface)
+            {
+                case Surface.TournamentScreen: ShowTournamentScreen(); break;
+                case Surface.ProfilePanel:     OpenProfilePanel();     break;
+                case Surface.RankRevealStrip:  PlayStripReveal();      break;
+            }
+        }
+
+        [Button("Hide Selected UI", EButtonEnableMode.Playmode)]
+        private void HideSelected()
+        {
+            switch (_surface)
+            {
+                case Surface.TournamentScreen: HideTournamentScreen(); break;
+                case Surface.ProfilePanel:     HideProfilePanel();     break;
+                case Surface.RankRevealStrip:  HideStrip();            break;
+            }
+        }
+
+        [BoxGroup("References")]
         [Tooltip("The TournamentScreen prefab (Assets/_Template/Prefabs/UI/_Tournament).")]
         [SerializeField] private GameObject _tournamentScreenPrefab;
+
+        [BoxGroup("References")]
         [Tooltip("Canvas (or child) to parent the screen under. Defaults to the first Canvas found.")]
         [SerializeField] private Transform _uiRoot;
 
-        [Header("Rank-reveal strip")]
+        [BoxGroup("References")]
+        [ShowIf(nameof(_surface), Surface.RankRevealStrip)]
         [Tooltip("An instance of a strip prefab you authored (carries TournamentRankRevealStrip). " +
                  "Stays inert until assigned.")]
         [SerializeField] private TournamentRankRevealStrip _strip;
+
+        [BoxGroup("References")]
+        [ShowIf(nameof(_surface), Surface.RankRevealStrip)]
         [SerializeField] private int _oldRank = 50;
+
+        [BoxGroup("References")]
+        [ShowIf(nameof(_surface), Surface.RankRevealStrip)]
         [SerializeField] private int _newRank = 10;
 
         private GameObject _screenInstance;
 
-        [ContextMenu("Show Tournament Screen")]
         public void ShowTournamentScreen()
         {
             if (!EnsurePlaying()) return;
@@ -37,20 +81,29 @@ namespace Template
 
             if (_screenInstance == null)
             {
-                var parent = _uiRoot != null ? _uiRoot : FindFirstObjectByType<Canvas>()?.transform;
+                var parent = _uiRoot != null ? _uiRoot : FindAnyObjectByType<Canvas>()?.transform;
                 if (parent == null) { Debug.LogWarning("[Tester] No Canvas found; assign UI Root."); return; }
                 _screenInstance = Instantiate(_tournamentScreenPrefab, parent, false);
             }
             _screenInstance.SetActive(true);   // TournamentScreen rebuilds itself in OnEnable
         }
 
-        [ContextMenu("Hide Tournament Screen")]
         public void HideTournamentScreen()
         {
             if (_screenInstance != null) _screenInstance.SetActive(false);
         }
 
-        [ContextMenu("Open Profile Panel")]
+        public void HideProfilePanel()
+        {
+            if (UIManager.Instance == null) { Debug.LogWarning("[Tester] No UIManager in scene."); return; }
+            UIManager.Instance.ClosePanelsByIdAsync(UIPanelId.Profile).Forget();
+        }
+
+        public void HideStrip()
+        {
+            if (_strip != null) _strip.gameObject.SetActive(false);
+        }
+
         public void OpenProfilePanel()
         {
             if (!EnsurePlaying()) return;
@@ -58,7 +111,6 @@ namespace Template
             UIManager.Instance.OpenPanelAsync(UIPanelId.Profile).Forget();
         }
 
-        [ContextMenu("Play Strip Reveal")]
         public void PlayStripReveal()
         {
             if (!EnsurePlaying()) return;
