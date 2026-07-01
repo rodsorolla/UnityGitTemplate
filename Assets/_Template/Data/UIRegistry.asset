@@ -19,6 +19,9 @@ MonoBehaviour:
   - id: 2
     prefab: {fileID: 3227927817859474050, guid: 945d2263fae7746db9fed9a138b6787f, type: 3}
     addressablesKey: 
+  - id: 7
+    prefab: {fileID: 9137096946645819896, guid: acc95545bc48a464193f214e1a5f4368, type: 3}
+    addressablesKey: 
   panels:
   - id: 19
     prefab: {fileID: 1247660602551288363, guid: 97ee2a7c8b1404b7ab2cc28f9dda53c7, type: 3}
@@ -37,4 +40,7 @@ MonoBehaviour:
     addressablesKey: 
   - id: 5
     prefab: {fileID: 8043582802840418101, guid: 61511b688b8eb44d6afa0b9cb6be2c7e, type: 3}
+    addressablesKey: 
+  - id: 22
+    prefab: {fileID: 4303928223804436912, guid: 7ecb6deac84114d81b34dc90ea30265c, type: 3}
     addressablesKey: 

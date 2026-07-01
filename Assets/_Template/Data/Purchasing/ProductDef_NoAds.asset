@@ -19,7 +19,7 @@ MonoBehaviour:
   _rewards:
   - {fileID: 11400000, guid: b66f4f38ea19e4d4ebf05ed14bee22bf, type: 2}
   _shopSection: 1
-  _cardPrefab: {fileID: 0}
+  _cardPrefab: {fileID: 5731257018981817471, guid: 3336f1b79199e450eaadaaa09dd2eb56, type: 3}
   _displayTitleKey: Remove Ads
   _icon: {fileID: 0}
   _badgeText: 

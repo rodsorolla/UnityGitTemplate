@@ -19,7 +19,7 @@ MonoBehaviour:
   _rewards:
   - {fileID: 11400000, guid: 286ced286c436438394c3cf5fc48c7fd, type: 2}
   _shopSection: 2
-  _cardPrefab: {fileID: 0}
+  _cardPrefab: {fileID: 838761223880333355, guid: 7fbe0153d1de14ff5a88f8bd3dea8536, type: 3}
   _displayTitleKey: 10,000 Coins
   _icon: {fileID: 0}
   _badgeText: 
