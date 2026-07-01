@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorolla Template — Manual</title>
+<style>
+  :root {
+    --bg: #0f1117; --bg-2: #161a23; --bg-3: #1d2230; --panel: #141822;
+    --border: #262d3d; --text: #d6dbe6; --text-dim: #8b94a7; --text-faint: #5b6479;
+    --accent: #6ea8fe; --accent-soft: #1e3a5f; --code-bg: #0b0d13; --code-text: #c8d3e6;
+    --note: #2a3b52; --note-bd: #3d6ea8; --warn: #4a3320; --warn-bd: #b5832f;
+    --good: #1f3a2a; --good-bd: #3fae6b; --tag: #2a3142;
+  }
+  [data-theme="light"] {
+    --bg: #f6f7fa; --bg-2: #fff; --bg-3: #eef1f6; --panel: #ffffff;
+    --border: #dde1ea; --text: #1f2430; --text-dim: #5a6478; --text-faint: #909aae;
+    --accent: #2f6fe0; --accent-soft: #dce8fb; --code-bg: #f0f2f7; --code-text: #2b3242;
+    --note: #e4eefb; --note-bd: #5d92d6; --warn: #fbf0d8; --warn-bd: #c9962f;
+    --good: #e0f3e8; --good-bd: #3fae6b; --tag: #eef1f6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px; line-height: 1.65; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: "SF Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace; font-size: 0.88em; }
+
+  /* Layout */
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 290px; flex: 0 0 290px; background: var(--panel); border-right: 1px solid var(--border);
+    height: 100vh; position: sticky; top: 0; overflow-y: auto; padding: 0;
+  }
+  .content { flex: 1 1 auto; max-width: 920px; padding: 40px 56px 120px; margin: 0 auto; }
+
+  /* Sidebar header */
+  .brand { padding: 20px 20px 14px; border-bottom: 1px solid var(--border); }
+  .brand h1 { font-size: 17px; margin: 0; letter-spacing: .3px; }
+  .brand .sub { color: var(--text-faint); font-size: 12px; margin-top: 2px; }
+  .searchwrap { padding: 12px 16px; position: sticky; top: 0; background: var(--panel); z-index: 5; border-bottom: 1px solid var(--border); }
+  #search {
+    width: 100%; padding: 8px 10px; background: var(--bg-3); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text); font-size: 13px; outline: none;
+  }
+  #search:focus { border-color: var(--accent); }
+
+  /* Nav */
+  nav { padding: 8px 0 40px; }
+  .nav-group { margin: 2px 0; }
+  .nav-group > .grp-head {
+    display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
+    padding: 7px 16px; color: var(--text-dim); font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .8px;
+  }
+  .grp-head:hover { color: var(--text); }
+  .grp-head .arrow { transition: transform .15s ease; font-size: 9px; color: var(--text-faint); }
+  .nav-group.collapsed .grp-items { display: none; }
+  .nav-group.collapsed .arrow { transform: rotate(-90deg); }
+  .grp-items { padding-bottom: 6px; }
+  .grp-items a {
+    display: block; padding: 5px 16px 5px 30px; color: var(--text-dim); font-size: 13.5px;
+    border-left: 2px solid transparent;
+  }
+  .grp-items a:hover { color: var(--text); text-decoration: none; background: var(--bg-3); }
+  .grp-items a.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+  .nav-hidden { display: none !important; }
+
+  /* Content */
+  section { scroll-margin-top: 24px; padding-top: 8px; margin-bottom: 40px; }
+  section.search-hidden { display: none; }
+  h2 { font-size: 26px; margin: 12px 0 6px; padding-bottom: 0; letter-spacing: -.3px; }
+  h3 { font-size: 18px; margin: 28px 0 8px; color: var(--text); }
+  h4 { font-size: 15px; margin: 20px 0 6px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; }
+  .group-banner {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent); margin: 48px 0 4px; padding-top: 10px; border-top: 1px solid var(--border);
+  }
+  section:first-of-type .group-banner { margin-top: 0; border-top: none; padding-top: 0; }
+  p { margin: 10px 0; }
+  ul, ol { margin: 10px 0; padding-left: 24px; }
+  li { margin: 4px 0; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .lead { color: var(--text-dim); font-size: 16px; }
+  .pill { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px; background: var(--tag); color: var(--text-dim); margin-left: 8px; vertical-align: middle; font-weight: 600; }
+  .pill.editor { background: var(--warn); color: var(--warn-bd); }
+  .pill.runtime { background: var(--good); color: var(--good-bd); }
+  .pill.optional { background: var(--accent-soft); color: var(--accent); }
+
+  /* Code */
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; overflow-x: auto; margin: 12px 0; position: relative;
+  }
+  pre code { color: var(--code-text); font-size: 12.8px; line-height: 1.55; white-space: pre; }
+  p code, li code, td code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; color: var(--accent); border: 1px solid var(--border); }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px; background: var(--bg-3); border: 1px solid var(--border);
+    color: var(--text-dim); font-size: 11px; padding: 3px 8px; border-radius: 5px; cursor: pointer; opacity: 0; transition: opacity .15s;
+  }
+  pre:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { color: var(--text); }
+
+  /* Tables */
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 8px 11px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-3); font-weight: 600; }
+  tr:nth-child(even) td { background: var(--bg-2); }
+
+  /* Callouts */
+  .callout { border-radius: 8px; padding: 12px 16px; margin: 14px 0; border-left: 3px solid; font-size: 14px; }
+  .callout p { margin: 4px 0; }
+  .callout.note { background: var(--note); border-color: var(--note-bd); }
+  .callout.warn { background: var(--warn); border-color: var(--warn-bd); }
+  .callout.good { background: var(--good); border-color: var(--good-bd); }
+  .callout .ttl { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 3px; }
+
+  /* Top bar */
+  .topbar { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--border); display: none; padding: 10px 16px; align-items: center; gap: 12px; }
+  .theme-toggle {
+    position: fixed; bottom: 18px; right: 18px; z-index: 20; background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); border-radius: 50%; width: 42px; height: 42px; cursor: pointer; font-size: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.25);
+  }
+  .hamburger { display: none; }
+
+  .meta-foot { color: var(--text-faint); font-size: 12px; margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .no-results { color: var(--text-faint); font-style: italic; padding: 30px 16px; display: none; }
+
+  /* Responsive */
+  @media (max-width: 880px) {
+    .sidebar { position: fixed; left: 0; top: 0; z-index: 30; transform: translateX(-100%); transition: transform .2s; }
+    .sidebar.open { transform: translateX(0); }
+    .topbar { display: flex; }
+    .hamburger { display: inline-block; background: var(--bg-3); border: 1px solid var(--border); color: var(--text); border-radius: 7px; padding: 6px 11px; cursor: pointer; }
+    .content { padding: 24px 20px 100px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="hamburger" id="hamburger">☰ Menu</button>
+  <strong>Sorolla Template</strong>
+</div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <h1>Sorolla Template</h1>
+      <div class="sub">Empty project — Manual</div>
+    </div>
+    <div class="searchwrap">
+      <input type="text" id="search" placeholder="Search the manual…" autocomplete="off">
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main class="content" id="content">
+    <div class="no-results" id="noResults">No sections match your search.</div>
+
+    <!-- ============ GETTING STARTED ============ -->
+    <section id="overview" data-group="Getting Started">
+      <div class="group-banner">Getting Started</div>
+      <h2>What this is</h2>
+      <p class="lead">A runnable, empty Unity project built on <strong>Sorolla Core</strong>. Clone it, and you already have a booting app with a home menu, a Play → Win/Lose → End-panel loop, and every Core system (UI, persistence, live-ops, monetization, profile, tournaments) wired from the first frame. You add your gameplay; you don't build the plumbing.</p>
+      <p>The project splits cleanly into two layers. <strong>Sorolla Core</strong> (<code>Assets/Sorolla Core/</code>, namespace <code>Sorolla</code>) is the reusable framework and never references game code. <strong>The template app</strong> (<code>Assets/_Template/</code>, namespace <code>Template</code>) is the thin, game-agnostic shell that boots Core and stands in for a real game — it is the layer you edit and eventually replace with your own.</p>
+      <h3>Tech stack</h3>
+      <table>
+        <tr><th>Concern</th><th>Used</th></tr>
+        <tr><td>Engine</td><td>Unity 6.x</td></tr>
+        <tr><td>Async</td><td>UniTask</td></tr>
+        <tr><td>Animation</td><td>DOTween / DOTween Pro</td></tr>
+        <tr><td>Asset loading</td><td>Addressables</td></tr>
+        <tr><td>IAP</td><td>Unity Purchasing (wrapped)</td></tr>
+        <tr><td>Inspector</td><td>KBCore.Refs, NaughtyAttributes</td></tr>
+      </table>
+      <div class="callout note"><span class="ttl">Two layers, two namespaces</span><p>Framework code lives in the <code>Sorolla.Core</code> assembly (root namespace <code>Sorolla</code>). Everything under <code>Assets/_Template/</code> is the app layer (namespace <code>Template</code>) — the part you make yours.</p></div>
+    </section>
+
+    <section id="whats-ready" data-group="Getting Started">
+      <h2>What boots ready</h2>
+      <p>From the moment you press Play, the shell brings up the <strong>entire</strong> Core stack — not a stub. The Init scene hosts a <code>GameManager</code> whose <code>_gameManagers[]</code> array holds eight Core services, initialized in dependency order:</p>
+      <ol>
+        <li><code>PlayerProfileService</code> — local identity (name, flag, avatar)</li>
+        <li><code>TournamentService</code> — weekly client-side trophy ranking</li>
+        <li><code>LivesManager</code> — regenerating lives / energy</li>
+        <li><code>EventManager</code> — live-ops event framework</li>
+        <li><code>CurrencyService</code> — soft/hard currency wallet</li>
+        <li><code>PowerUpService</code> — power-up / booster inventory</li>
+        <li><code>EntitlementService</code> — durable entitlements (no-ads, etc.)</li>
+        <li><code>PurchasingService</code> — IAP with a mock backend in the editor</li>
+      </ol>
+      <p>Plus <code>UIManager</code>, <code>AudioManager</code>, <code>TutorialController</code>, the <code>SaveSystem</code>, and the Core <code>LevelFlowManager</code>. <code>TemplateGameManager</code> additionally registers an <code>IIconResolver</code> and an <code>ISkinService</code>. Every one of these is resolvable from the <a href="#servicelocator">ServiceLocator</a> before any Game-scene <code>Start()</code> runs.</p>
+      <div class="callout good"><span class="ttl">Wiring, not building</span><p>The value of the template is that this machinery is already assembled and load-order-correct. You wire your game onto it through interfaces — you never re-derive the boot sequence.</p></div>
+    </section>
+
+    <section id="project-structure" data-group="Getting Started">
+      <h2>Project structure</h2>
+      <pre><code>Assets/
+├── Sorolla Core/            # The framework (namespace Sorolla) — don't edit to make a game
+│   ├── UI/                  # UIManager, UIScreen/UIPanel, UIRegistry, UI enums
+│   ├── LevelFlow/           # ILevelFlowManager, LevelSessionController, LevelEndReason/State
+│   ├── Audio/               # AudioManager + AudioLibrary
+│   └── …                    # Events, Lives, Tournaments, Profile, Purchasing, PersistentData, …
+└── _Template/               # The app shell (namespace Template) — this is yours
+    ├── Scripts/             # TemplateGameManager, TemplateIconResolver
+    │   └── UI/              # MainMenuScreen, TemplateEndPanel, TemplatePlaceholderGameplay,
+    │                       #   TemplateTournamentHost
+    ├── Data/                # Inert configs: UIRegistry, ProfileCatalog, TournamentConfig,
+    │                       #   PowerUpRegistry, SkinCatalog, PurchasingCatalog, TutorialConfig
+    └── Prefabs/UI/_Menu/    # MainMenu / LevelComplete / GameOver prefabs</code></pre>
+      <h3>The three scenes</h3>
+      <p>The app boots through three scenes in build order — <code>PreInit</code> (0) → <code>Init</code> (1) → <code>Game</code> (2), all under <code>Assets/_Game/Scenes/</code>. They are covered in detail under <a href="#boot">The Template › 3-scene boot</a>.</p>
+      <div class="callout note"><span class="ttl">Configs are inert</span><p>The ScriptableObjects in <code>_Template/Data/</code> exist and are wired, but hold placeholder/empty data. Filling them with your content is one of the first steps in <a href="#walkthrough">Building Your Game</a>.</p></div>
+    </section>
+
+    <!-- ============ THE TEMPLATE ============ -->
+    <section id="boot" data-group="The Template">
+      <div class="group-banner">The Template</div>
+      <h2>3-scene boot</h2>
+      <p class="lead">The app initializes across three additive scenes so the loading screen, service init, and gameplay each own a clean stage. Build order: <code>PreInit</code> = 0, <code>Init</code> = 1, <code>Game</code> = 2.</p>
+      <h3>PreInit — show something instantly</h3>
+      <p>A Camera, a Canvas with a full-screen <code>LoadingScreen</code> image, and <code>Sorolla.PreInitLoader</code> (fields <code>_initSceneName = "Init"</code>, <code>_loadingScreen</code>). Its <code>Start()</code> loads Init additively; when init completes it hides the loading screen and unloads itself.</p>
+      <pre><code>PreInitLoader.Start()
+  → SceneManager.LoadSceneAsync("Init", Additive)
+// …later, once Init finishes booting:
+PreInitLoader.OnInitializationComplete()
+  → hide loading screen → unload PreInit</code></pre>
+      <h3>Init — bring up the framework</h3>
+      <p>Two GameObjects drive it:</p>
+      <ul>
+        <li><code>Initializer</code> → <code>Sorolla.GameInitializer</code> (<code>_gameSceneName = "Game"</code>, <code>_consentTimeoutSeconds = 10f</code>).</li>
+        <li><code>GameManager</code> → <code>Template.TemplateGameManager</code>, with all non-MonoSingleton managers <strong>and</strong> the EventSystem parented as its children (see the <a href="#persistence-rule">persistence rule</a>).</li>
+      </ul>
+      <pre><code>GameInitializer.Start()
+  → GameManager.Instance.InitializeAsync()          // SaveSystem, LevelFlow, Audio,
+  →                                                 //   Tutorial, then each _gameManagers[]
+  → SceneLoader.LoadSceneAdditiveAsync("Game")
+  → SetActiveScene(Game)
+  → GameInitializer.OnSceneLoaded (static, awaited)  // Game-scene systems hook here
+  → WaitForConsentAsync()                            // up to 10s Palette consent gate
+  → PreInitLoader.Instance.OnInitializationComplete()
+  → unload Init</code></pre>
+      <h3>Game — your playground</h3>
+      <p>A bare Camera + Light, the <code>LevelSessionController</code> (drives the <a href="#play-loop">play loop</a>), <code>TemplatePlaceholderGameplay</code> with its WIN/LOSE overlay canvas, and the tournament host. This is the scene you populate with real gameplay.</p>
+      <div class="callout note"><span class="ttl">One EventSystem, one AudioListener</span><p>The persistent set (under GameManager) owns the single EventSystem; the Game camera owns the single AudioListener. Adding a second of either produces Unity warnings — keep exactly one of each.</p></div>
+    </section>
+
+    <section id="game-manager" data-group="The Template">
+      <h2>TemplateGameManager <span class="pill runtime">runtime</span></h2>
+      <p class="lead">The single place a new game starts customizing service registration. It subclasses Core's <code>GameManager</code> and adds the two wirings the base can't do generically.</p>
+      <pre><code>public class TemplateGameManager : GameManager
+{
+    [SerializeField] private TemplateIconResolver _iconResolver;
+    [SerializeField] private SkinCatalog _skinCatalog;
+
+    protected override void Init()
+    {
+        base.Init();               // Core registers UI, audio, tutorial + each _gameManagers[]
+        RegisterIconResolver();    // ServiceLocator.Register&lt;IIconResolver&gt;(_iconResolver)
+        RegisterSkinService();     // builds a SkinService from _skinCatalog, persists to "cosmetics"
+    }
+}</code></pre>
+      <p>MonoBehaviour services are wired through the base <code>_gameManagers[]</code> array in the Init scene (in dependency order). Non-MonoBehaviour services — like <code>ISkinService</code>, built from a <code>SkinCatalog</code> and backed by <code>SaveSystem.Load/Save&lt;KVSaveData&gt;("cosmetics")</code> — are registered in code here, after <code>base.Init()</code>.</p>
+      <div class="callout good"><span class="ttl">Your first edit</span><p>When you build a real game, <code>TemplateGameManager</code> (or a subclass of it) is where you register <em>your</em> services. Mirror the IconResolver/SkinService pattern for non-MonoBehaviour services, and add MonoBehaviour services to <code>_gameManagers[]</code> in the scene.</p></div>
+    </section>
+
+    <section id="persistence-rule" data-group="The Template">
+      <h2>Manager persistence rule</h2>
+      <div class="callout warn"><span class="ttl">⚠️ Managers must be children of GameManager</span>
+        <p><code>MonoSingleton.Awake()</code> calls <code>DontDestroyOnLoad(transform.root)</code>. Only <code>UIManager</code> and <code>GameManager</code> are <code>MonoSingleton</code>s, so only <em>they</em> persist on their own. Every other manager is a plain <code>SorollaManager</code> (a MonoBehaviour) and <strong>must be a child of the GameManager GameObject</strong> — so <code>DontDestroyOnLoad</code> carries it through the Init-scene unload. A manager left at the scene root is destroyed when Init unloads, and its <code>ServiceLocator</code> registration silently becomes a fake-null reference.</p></div>
+      <p>This was a real bug during the shell's construction: managers registered fine, then vanished on the Init→Game transition. The fix was to reparent every non-MonoSingleton manager under GameManager. When you add your own managers, parent their GameObjects under GameManager too.</p>
+    </section>
+
+    <section id="play-loop" data-group="The Template">
+      <h2>Play loop — LevelSessionController <span class="pill runtime">runtime</span></h2>
+      <p class="lead">Orchestrates the whole session: <strong>MainMenu → Gameplay → EndPanel → MainMenu</strong>. It lives in the Game scene and is used as-is; games extend it for custom behavior.</p>
+      <pre><code>protected virtual async void Start()
+{
+    await UniTask.Yield();                        // let level systems subscribe first
+    _levelFlow = ServiceLocator.Instance.Resolve&lt;ILevelFlowManager&gt;();
+    _levelFlow.OnEndPanelDismissed += HandleEndPanelDismissed;
+    await ShowMainMenuAsync();                     // Push UIScreenId.MainMenu, clearStack
+}
+
+public virtual void RequestStartLevel()           // ← the Play button calls this
+{
+    // hide the top screen → ShowGameUI(true) → StartLevel(CurrentLevelIndex)
+}
+
+// win/lose auto-opens the end panel; dismissing it returns to the menu:
+private void HandleEndPanelDismissed() => _ = ShowMainMenuAsync();</code></pre>
+      <p>Overridable hooks: <code>GetMainMenuScreenId()</code> (defaults to <code>UIScreenId.MainMenu</code>), <code>OnMainMenuShown()</code>, and <code>OnLevelStarting(int)</code>. The loop closes itself: on win/lose the flow manager auto-shows the end panel, and dismissing it calls <code>ShowMainMenuAsync</code> again.</p>
+      <div class="callout warn"><span class="ttl">Register the end panels or the loop stalls</span><p>Win auto-opens <code>UIPanelId.LevelComplete</code>; lose auto-opens <code>UIPanelId.GameOver</code>. If those ids aren't registered in the <a href="#ui-system">UIRegistry</a>, <code>OpenPanelAsync</code> returns null and the session never returns to the menu.</p></div>
+    </section>
+
+    <section id="home-menu" data-group="The Template">
+      <h2>Home menu &amp; placeholder gameplay</h2>
+      <p>Four small <code>Template</code> scripts make the shell playable. Three are permanent scaffolding you restyle; one is a deliberate stand-in you delete.</p>
+      <table>
+        <tr><th>Script</th><th>Base</th><th>Role</th></tr>
+        <tr><td><code>MainMenuScreen</code></td><td><code>UIScreen</code></td><td>Play → <code>LevelSessionController.RequestStartLevel()</code>; Profile → <code>OpenPanelAsync(UIPanelId.Profile)</code>; Tournament → <code>TemplateTournamentHost.Show()</code>. Warns if a lookup is null.</td></tr>
+        <tr><td><code>TemplateEndPanel</code></td><td><code>UIPanel</code></td><td>One script, two prefabs (LevelComplete / GameOver). Sets a title; Continue → <code>ClosePanelAsync(this)</code>.</td></tr>
+        <tr><td><code>TemplateTournamentHost</code></td><td><code>MonoBehaviour</code></td><td>Toggles a scene-placed <code>TournamentScreen</code> via <code>SetActive</code>. <code>Show()</code>/<code>Hide()</code>; Back button hides.</td></tr>
+        <tr><td><code>TemplatePlaceholderGameplay</code></td><td><code>MonoBehaviour</code></td><td><strong>The only game-specific stand-in.</strong> A WIN/LOSE overlay wired to the level flow — a real game deletes it.</td></tr>
+      </table>
+      <p>The placeholder shows how a game talks to the flow: subscribe on <code>Start()</code>, unsubscribe on <code>OnDestroy()</code>, and drive win/lose from buttons.</p>
+      <pre><code>private void Start()
+{
+    _flow = ServiceLocator.Instance.TryResolve&lt;ILevelFlowManager&gt;();
+    _flow.OnLevelStarted += HandleLevelStarted;   // show overlay
+    _flow.OnLevelEnded   += HandleLevelEnded;     // hide overlay
+    _winButton.onClick.AddListener(()  =&gt; _flow?.WinLevel(LevelEndReason.AllGoalsComplete));
+    _loseButton.onClick.AddListener(() =&gt; _flow?.LoseLevel(LevelEndReason.TimeUp));
+}</code></pre>
+      <p>Prefabs live in <code>_Template/Prefabs/UI/_Menu/</code> and are registered as <code>MainMenu</code> (screen 2), <code>LevelComplete</code> (panel 4), and <code>GameOver</code> (panel 5).</p>
+    </section>
+
+    <section id="builtin-features" data-group="The Template">
+      <h2>Built-in features: Profile &amp; Tournament</h2>
+      <p>The shell wires two Core features end-to-end as worked examples of how a menu surfaces a system.</p>
+      <h4>Profile</h4>
+      <p><code>PlayerProfileService</code> boots in <code>_gameManagers[]</code> and exposes local identity through <code>IPlayerProfile</code>. The menu's Profile button opens <code>UIPanelId.Profile</code>; the panel edits name, country flag, and avatar (sourced from <code>ProfileCatalog</code>), persisted to the <code>profile</code> save file.</p>
+      <h4>Tournament</h4>
+      <p><code>TournamentService</code> runs a weekly, client-side trophy ranking against deterministic bots. Because <code>TournamentScreen</code> is a plain activation-driven <code>MonoBehaviour</code> (it rebuilds in <code>OnEnable</code>), it is <em>not</em> pushed through the screen stack — <code>TemplateTournamentHost</code> just toggles it active. Standings are seeded from <code>TournamentConfig</code> and persisted to the <code>tournament</code> save file.</p>
+      <div class="callout note"><span class="ttl">Activation-driven, not stack-driven</span><p>Treat <code>TournamentScreen</code> as a special case: toggle it with <code>SetActive</code> (via the host), never <code>PushScreenAsync</code>. Your own screens should generally go through the UIManager stack instead.</p></div>
+    </section>
+
+    <!-- ============ CORE REFERENCE ============ -->
+    <section id="principles" data-group="Core Reference">
+      <div class="group-banner">Core Reference</div>
+      <h2>Core Principles</h2>
+      <h3>1 — Agnostic design</h3>
+      <p>Sorolla Core <strong>never</strong> references game-specific code. All game functionality is reached through:</p>
+      <ul>
+        <li><strong>Interfaces</strong> defined in Core (e.g. <code>IGameplayUI</code>, <code>IPlayerProfile</code>, <code>ILevelFlowManager</code>)</li>
+        <li><strong>ServiceLocator</strong> for runtime dependency resolution</li>
+        <li><strong>Events</strong> for decoupled communication</li>
+      </ul>
+      <h3>2 — Interface-based coupling</h3>
+      <p>Your game implements Core interfaces and registers them via ServiceLocator:</p>
+      <pre><code>// Game registers its implementations
+ServiceLocator.Instance.Register&lt;IGameplayUI&gt;(myLevelUI);
+ServiceLocator.Instance.Register&lt;ILevelFlowManager&gt;(myLevelManager);
+
+// Core resolves them at runtime
+var gameplayUI = ServiceLocator.Instance.TryResolve&lt;IGameplayUI&gt;();
+gameplayUI?.ShowGameplayUI(true);</code></pre>
+      <h3>3 — Extensible enums</h3>
+      <p>UI and reason enum values are partitioned so games extend without editing Core:</p>
+      <ul>
+        <li><strong>0–99</strong> — reserved for Sorolla Core (generic screens/panels/reasons)</li>
+        <li><strong>100+</strong> — available for game-specific values</li>
+      </ul>
+    </section>
+
+    <section id="servicelocator" data-group="Core Reference">
+      <h2>ServiceLocator</h2>
+      <p class="lead">The single dependency-resolution mechanism. Game systems register implementations; anyone resolves them by interface or concrete type.</p>
+      <pre><code>// Register
+ServiceLocator.Instance.Register&lt;ILevelFlowManager&gt;(adapter);
+
+// Resolve (hard — logs an error if missing)
+var flow = ServiceLocator.Instance.Resolve&lt;ILevelFlowManager&gt;();
+
+// Resolve (soft — returns null if missing)
+var ui = ServiceLocator.Instance.TryResolve&lt;IGameplayUI&gt;();</code></pre>
+      <div class="callout warn"><span class="ttl">Registration timing</span>
+        <p>Resolve a service only after it has been registered. Register everything synchronously up front (in <code>Init()</code> / the boot pass) so anything resolved during a scene's <code>Start()</code> is already available. Registering inside an async init pass can let early resolvers get a null.</p></div>
+    </section>
+
+    <section id="managers" data-group="Core Reference">
+      <h2>Managers &amp; Lifecycle</h2>
+      <table>
+        <tr><th>Class</th><th>Role</th></tr>
+        <tr><td><code>GameManager</code></td><td>Main orchestrator (<code>MonoSingleton</code>, DontDestroyOnLoad). <code>Init()</code> registers Core services; <code>InitializeManagersAsync()</code> boots them in order: SaveSystem → LevelFlow → Audio → Tutorial → each <code>_gameManagers[]</code>.</td></tr>
+        <tr><td><code>GameInitializer</code></td><td>Lives in the Init scene; kicks off GameManager init, loads the Game scene, waits for consent, then unloads Init.</td></tr>
+        <tr><td><code>PreInitLoader</code></td><td>Lives in the PreInit scene; shows the loading screen, loads Init, and tears down when init completes.</td></tr>
+        <tr><td><code>SorollaManager</code></td><td>Base class for managers. Idempotent <code>Init()</code> lifecycle + pause/quit hooks. Must be parented under GameManager (see the <a href="#persistence-rule">persistence rule</a>).</td></tr>
+      </table>
+      <h3>Async init</h3>
+      <p>Managers needing asynchronous setup (remote config, IAP catalog, live config) implement <code>IAsyncInitializable</code> and are awaited by <code>GameManager</code>; the rest use the synchronous <code>SorollaManager.Init()</code>. Boot order is set by the <code>_gameManagers[]</code> array — list dependencies before their consumers.</p>
+    </section>
+
+    <section id="ui-system" data-group="Core Reference">
+      <h2>UI System <span class="pill runtime">runtime</span></h2>
+      <p class="lead">Central screen/panel management with async open/close. Screens and panels are registered in a ScriptableObject <code>UIRegistry</code> and addressed by enum id. Each instance is cached once — closing means <code>SetActive(false)</code>, never Destroy, so <code>Awake</code> listeners never accumulate.</p>
+      <pre><code>// Screens (full-screen, stacked)
+await UIManager.Instance.PushScreenAsync(UIScreenId.MainMenu, args, clearStack: true);
+await UIManager.Instance.PopScreenAsync();
+var top = UIManager.Instance.GetTopScreen();
+
+// Panels (overlays)
+await UIManager.Instance.OpenPanelAsync(UIPanelId.ConfirmDialog, args);
+await UIManager.Instance.ClosePanelAsync(panelInstance);</code></pre>
+      <table>
+        <tr><th>Type</th><th>Role</th></tr>
+        <tr><td><code>UIManager</code></td><td>Opens/closes screens &amp; panels, owns the screen stack, builds/shows the game UI (<code>BuildGameUI()</code> / <code>ShowGameUI(bool)</code>).</td></tr>
+        <tr><td><code>UIRegistry</code></td><td>ScriptableObject mapping ids → prefabs (or Addressables keys). Lookup rebuilds in <code>OnEnable</code>/<code>OnValidate</code>; call <code>RefreshLookup()</code> after mutating the lists from script.</td></tr>
+        <tr><td><code>UIScreen</code> / <code>UIPanel</code></td><td>Abstract bases. <code>ShowAsync(args)</code> = SetActive+enter transition+<code>OnOpened</code>; <code>HideAsync()</code> = exit transition+SetActive(false)+<code>OnClosed</code>. Prefab root = RectTransform + the component.</td></tr>
+      </table>
+      <h4>Enum ids (0–99 Core, 100+ game)</h4>
+      <table>
+        <tr><th>UIScreenId</th><th>UIPanelId</th></tr>
+        <tr><td>None=0, Splash=1, MainMenu=2, Gameplay=3, Settings=4, Profile=5, Tournament=6</td>
+            <td>None=0, Pause=1, ConfirmDialog=2, Toast=3, LevelComplete=4, GameOver=5, Continue=13, Settings=14, PowerUpUsed=15, OutOfLives=16, TournamentResults=17, NotEnoughCoins=18, TournamentInfo=19, TournamentReward=20, Profile=21</td></tr>
+      </table>
+    </section>
+
+    <section id="pooling" data-group="Core Reference">
+      <h2>Object Pooling</h2>
+      <p>Two layers work together:</p>
+      <ul>
+        <li><code>Pool</code> + <code>PoolManager</code> — the underlying pool data structure and a static registry of named pools.</li>
+        <li><code>FXPoolService</code> — a convenience singleton for VFX/particle pooling.</li>
+      </ul>
+      <pre><code>FXPoolService.Instance.EnsurePool(poolId, prefab);
+var ps = FXPoolService.Instance.GetPooledComponent&lt;ParticleSystem&gt;(poolId);</code></pre>
+      <div class="callout note"><span class="ttl">When to pool</span><p>Pool anything instantiated frequently — VFX, projectiles, floating numbers — to avoid per-spawn GC. iOS is especially sensitive to allocation spikes.</p></div>
+    </section>
+
+    <section id="ui-templates" data-group="Core Reference">
+      <h2>Prefab Templates</h2>
+      <p>Starter prefabs you duplicate and restyle, under <code>UI/Templates/</code>.</p>
+      <h3>BasePanel.prefab</h3>
+      <pre><code>BasePanel (RectTransform, CanvasGroup)
+├── Background (Image, Button)  — full-screen raycast blocker, dark overlay
+└── Window (RectTransform)
+    ├── Header (HorizontalLayoutGroup)
+    │   ├── Title (TextMeshProUGUI)
+    │   └── CloseButton (Button, Image)
+    └── Content (RectTransform)  — panel-specific content</code></pre>
+      <h3>ConfirmDialog.prefab</h3>
+      <pre><code>ConfirmDialog (RectTransform, ConfirmDialog, CanvasGroup)
+├── Background (Image)          — blocker
+└── Window (RectTransform)
+    ├── Title (TextMeshProUGUI)
+    ├── Message (TextMeshProUGUI)
+    └── ButtonContainer (HorizontalLayoutGroup)
+        ├── CancelButton (Button) └ Label
+        └── ConfirmButton (Button) └ Label</code></pre>
+      <h4>Workflow</h4>
+      <ol>
+        <li>Duplicate the template into your game's UI folder.</li>
+        <li>Customize visuals (colors, fonts, sprites).</li>
+        <li>Add to your <code>UIRegistry</code> ScriptableObject.</li>
+        <li>Open via <code>UIManager.OpenPanelAsync()</code>.</li>
+      </ol>
+    </section>
+
+    <section id="persistentdata" data-group="Core Reference">
+      <h2>Persistence &amp; Analytics <span class="pill runtime">runtime</span></h2>
+      <p class="lead">The single save story. JSON files written atomically to <code>Application.persistentDataPath</code>; each system owns its own file.</p>
+      <table>
+        <tr><th>Type</th><th>Role</th></tr>
+        <tr><td><code>SaveSystem</code></td><td>Static API: <code>Save(data, file)</code> / <code>Load&lt;T&gt;(file)</code> (and async variants). Newtonsoft-based with hardened settings.</td></tr>
+        <tr><td><code>LocalFileStorage</code></td><td>Atomic write via temp file + serialized rename.</td></tr>
+        <tr><td><code>BackupManager</code> / <code>SaveValidator</code></td><td>Timestamped backups; JSON sanity check before deserialize.</td></tr>
+      </table>
+      <div class="callout warn"><span class="ttl">One file, one writer, synchronously</span><p>Each system owns its save file and persists at discrete points. Do <strong>not</strong> fan out concurrent async saves to the same file — overlapping writes on the shared temp file corrupt or lose data. iOS is especially sensitive to per-frame disk I/O; batch saves at level end or behind dirty flags.</p></div>
+      <h3>Key-value routing</h3>
+      <p>The persistence adapter routes KV keys to save files by prefix, so subsystems share storage without name collisions (e.g. the <code>events</code> file is owned by EventManager; generic live-ops KV uses its own bucket; the template's cosmetics use <code>cosmetics</code>).</p>
+      <p>Analytics fan out through <code>Palette.*</code> only — no vendor SDK is referenced from game or Core modules.</p>
+    </section>
+
+    <section id="liveconfig" data-group="Core Reference">
+      <h2>Live Config <span class="pill optional">optional</span></h2>
+      <p class="lead">Push balance tweaks from a Google Sheet to every installed build on the next cold boot — without shipping a new binary.</p>
+      <h3>Two layers</h3>
+      <ol>
+        <li><strong>Content registry (SOs, ship with the build)</strong> — prefabs, sprites, VFX refs. Can't live in JSON; change only with a new binary.</li>
+        <li><strong>Tunables (JSON, live-updatable)</strong> — HP, damage, prices, magnitudes. Authored in SOs, serialized to JSON for transport.</li>
+      </ol>
+      <h3>Fallback chain (runtime)</h3>
+      <p>On cold boot <code>LiveConfigBootstrapper</code> tries each in order: <strong>1)</strong> fetch the Apps Script URL (8s timeout) → <strong>2)</strong> persistent cache from the last good fetch → <strong>3)</strong> baked <code>StreamingAssets/live_config.json</code>. A fresh install with no internet still boots with valid data.</p>
+      <div class="callout warn"><span class="ttl">The step that bites people</span><p>When adding a new live field/category, the server-side Apps Script must mirror the C# shape or the fetched JSON won't match the client. Redeploy via <em>Manage deployments → Edit → New version</em> to keep the URL stable, and clear the Apps Script cache so the 6h TTL doesn't delay propagation.</p></div>
+    </section>
+
+    <section id="datasheet" data-group="Core Reference">
+      <h2>DataSheet <span class="pill editor">editor-only</span></h2>
+      <p class="lead">Edit every asset of a <code>ScriptableObject</code> type as a spreadsheet. Each asset is a row, each serialized field a column — edited inline with real Unity drawers and full native Undo. Reusable, zero game dependencies.</p>
+      <p><strong>Open:</strong> <em>Tools → Sorolla → DataSheet</em></p>
+      <pre><code>┌─────────────────────────────────────────────────────────────────┐
+│ [Type (12) ▾] [search…] [Columns ▾] [+Create] [Export ▾] [Import]│
+├─────────────────────────────────────────────────────────────────┤
+│ Name      │ Hp │ Speed │ Weapon ▾ │ Icon        │ Tint           │
+│ IronSword │ 12 │ 1.0   │ Sword  ▾ │ [⊙ sword]   │ [██████]       │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+      <ul>
+        <li>Each cell is a real <code>PropertyField</code> — enums show dropdowns, object refs show pickers, colors show swatches; edits register native Undo.</li>
+        <li>Export/Import writes visible columns to CSV/JSON. Import matches rows by <strong>asset name</strong> and writes <strong>scalar fields only</strong> (object refs and arrays are never written from text), with a diff preview before applying.</li>
+      </ul>
+      <div class="callout note"><span class="ttl">Great for filling the inert configs</span><p>DataSheet is the fastest way to bulk-fill the placeholder <code>_Template/Data/</code> assets with your content once you start building your game.</p></div>
+    </section>
+
+    <section id="namespaces" data-group="Core Reference">
+      <h2>Namespaces</h2>
+      <table>
+        <tr><th>Namespace</th><th>Contents</th></tr>
+        <tr><td><code>Sorolla</code></td><td>Core infrastructure (GameManager, ServiceLocator, managers)</td></tr>
+        <tr><td><code>Sorolla.UI</code></td><td>UI system core (UIManager, UIScreen/UIPanel, UIRegistry, enums)</td></tr>
+        <tr><td><code>Sorolla.LevelFlow</code></td><td>ILevelFlowManager, LevelSessionController, LevelEndReason/State</td></tr>
+        <tr><td><code>Sorolla.Profile</code> / <code>.Tournaments</code> / <code>.Lives</code> / <code>.Events</code></td><td>LiveOps modules</td></tr>
+        <tr><td><code>Sorolla.Currency</code> / <code>.PowerUps</code> / <code>.Purchasing</code> / <code>.Cosmetics</code></td><td>Economy, boosters, IAP, skins</td></tr>
+        <tr><td><code>Sorolla.Tutorial</code> / <code>Sorolla.PersistentData</code></td><td>Tutorial framework; save system</td></tr>
+        <tr><td><code>Template</code></td><td>The app layer — your game starts here, then becomes <code>[YourGame]</code>.</td></tr>
+      </table>
+    </section>
+
+    <!-- ============ BUILDING YOUR GAME ============ -->
+    <section id="walkthrough" data-group="Building Your Game">
+      <div class="group-banner">Building Your Game</div>
+      <h2>Building your game — walkthrough</h2>
+      <p class="lead">A hands-on path from the empty shell to your first playable level. Each step is small and edits as little as possible; the plumbing already works.</p>
+
+      <h3>1 — Clone &amp; rename</h3>
+      <p>Clone the template repo and set your <strong>product name</strong> and <strong>bundle id</strong> in <em>Project Settings → Player</em>. Nothing else needs renaming to start.</p>
+
+      <h3>2 — Register your services</h3>
+      <p>Edit <code>TemplateGameManager</code> (or subclass it). Add your MonoBehaviour <code>SorollaManager</code> services to the scene GameManager's <code>_gameManagers[]</code> array <em>in dependency order</em>, and register non-MonoBehaviour services in the <code>Init()</code> override after <code>base.Init()</code> — mirror the IconResolver / SkinService pattern.</p>
+      <pre><code>protected override void Init()
+{
+    base.Init();
+    ServiceLocator.Instance.Register&lt;IMyService&gt;(new MyService(...));
+}</code></pre>
+      <div class="callout warn"><span class="ttl">Persistence rule</span><p>Any new manager GameObject must be parented <strong>under GameManager</strong>, or it's destroyed when Init unloads. See <a href="#persistence-rule">Manager persistence rule</a>.</p></div>
+
+      <h3>3 — Fill the inert configs</h3>
+      <p>Populate <code>Assets/_Template/Data/</code> with your data: <code>ProfileCatalog</code> (avatars/flags), <code>TournamentConfig</code> (tiers/bots), <code>PurchasingCatalog</code> (products), <code>PowerUpRegistry</code>, <code>SkinCatalog</code>, and the AudioLibrary. <a href="#datasheet">DataSheet</a> makes this quick.</p>
+
+      <h3>4 — Populate the Game scene</h3>
+      <p>Add your gameplay objects (board, characters, camera rig) to <code>Game.unity</code>. <strong>Keep <code>LevelSessionController</code></strong> — it drives the menu/loop.</p>
+
+      <h3>5 — Wire gameplay to the level flow</h3>
+      <p>Build level content when the flow asks, and report outcomes back to it:</p>
+      <pre><code>var flow = ServiceLocator.Instance.Resolve&lt;ILevelFlowManager&gt;();
+flow.OnLevelSetupRequested += level =&gt; BuildLevel(level);   // build/reset content
+// …from your gameplay:
+flow.WinLevel();                        // defaults to AllGoalsComplete
+flow.LoseLevel(LevelEndReason.TimeUp);  // or your own reason (100+)</code></pre>
+      <div class="callout warn"><span class="ttl">Delete the placeholder</span><p>Once your gameplay drives win/lose, delete <code>TemplatePlaceholderGameplay</code> and its WIN/LOSE overlay canvas from the Game scene — it exists only to make the empty shell clickable.</p></div>
+
+      <h3>6 — Style the menu &amp; end panels</h3>
+      <p>The <code>MainMenu</code>, <code>LevelComplete</code>, and <code>GameOver</code> prefabs are functional but plain. Restyle their art and layout — the logic (<code>MainMenuScreen</code>, <code>TemplateEndPanel</code>) is already wired, so this is visuals only.</p>
+
+      <h3>7 — Add your own screen or panel</h3>
+      <ol>
+        <li>Subclass <code>UIScreen</code> or <code>UIPanel</code>.</li>
+        <li>Build a prefab (root = RectTransform + your component).</li>
+        <li>Add a game enum id (<strong>≥100</strong>) to <code>UIScreenId</code>/<code>UIPanelId</code> (extensible-enums principle).</li>
+        <li>Register the prefab in <code>UIRegistry</code>.</li>
+        <li>Open via <code>UIManager.PushScreenAsync</code> / <code>OpenPanelAsync</code>.</li>
+      </ol>
+
+      <h3>8 — Remote-config-tunable values</h3>
+      <p>For values you want to balance without a rebuild, add a key and read it via <code>RemoteConfig.Get*</code> (see <a href="#liveconfig">Live Config</a> for the manifest/publish workflow and the fallback chain).</p>
+    </section>
+
+    <section id="checklist" data-group="Building Your Game">
+      <h2>Checklist &amp; gotchas</h2>
+      <div class="callout warn"><span class="ttl">Manager persistence</span><p>Every non-<code>MonoSingleton</code> manager must be a <strong>child of GameManager</strong>, or it dies on the Init-scene unload and its registration goes fake-null.</p></div>
+      <div class="callout warn"><span class="ttl">Register the end panels</span><p><code>LevelComplete</code> (4) and <code>GameOver</code> (5) must be in the UIRegistry, or win/lose can't open a panel and the loop stalls.</p></div>
+      <div class="callout note"><span class="ttl">Exactly one EventSystem &amp; one AudioListener</span><p>EventSystem lives in the persistent set (under GameManager); the AudioListener lives on the Game camera. Don't add a second of either.</p></div>
+      <div class="callout note"><span class="ttl">TournamentScreen is activation-driven</span><p>Toggle it with <code>SetActive</code> via <code>TemplateTournamentHost</code>, not <code>PushScreenAsync</code>.</p></div>
+      <div class="callout note"><span class="ttl">DOTween asmdef</span><p>Keep DOTween's <code>createASMDEF: 1</code> setting — regenerating without it deletes <code>DOTween.Modules.asmdef</code> and breaks the compile.</p></div>
+      <div class="callout good"><span class="ttl">Verifying a clean compile</span><p>The template Core compiles clean. In-editor, <code>check_compile_errors</code> is authoritative — the logs buffer can hold stale errors from before a recompile.</p></div>
+
+      <p class="meta-foot">Sorolla Template Manual · self-contained — open offline in any browser · adapted from the Sorolla Core manual for the empty-project template.</p>
+    </section>
+
+  </main>
+</div>
+
+<button class="theme-toggle" id="themeToggle" title="Toggle theme">◐</button>
+
+<script>
+(function () {
+  // ---- Build sidebar from sections ----
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section[data-group]'));
+  var nav = document.getElementById('nav');
+  var groups = [];
+  var groupMap = {};
+  sections.forEach(function (sec) {
+    var g = sec.getAttribute('data-group');
+    if (!groupMap[g]) { groupMap[g] = []; groups.push(g); }
+    var h2 = sec.querySelector('h2');
+    var title = h2 ? h2.textContent.replace(/\s+(runtime|editor-only|optional)\s*$/gi, '').trim() : sec.id;
+    groupMap[g].push({ id: sec.id, title: title });
+  });
+  groups.forEach(function (g) {
+    var grp = document.createElement('div');
+    grp.className = 'nav-group';
+    var head = document.createElement('div');
+    head.className = 'grp-head';
+    head.innerHTML = '<span class="arrow">▾</span><span>' + g + '</span>';
+    head.addEventListener('click', function () { grp.classList.toggle('collapsed'); });
+    grp.appendChild(head);
+    var items = document.createElement('div');
+    items.className = 'grp-items';
+    groupMap[g].forEach(function (it) {
+      var a = document.createElement('a');
+      a.href = '#' + it.id;
+      a.textContent = it.title;
+      a.setAttribute('data-target', it.id);
+      items.appendChild(a);
+    });
+    grp.appendChild(items);
+    nav.appendChild(grp);
+  });
+
+  var links = Array.prototype.slice.call(nav.querySelectorAll('a'));
+  var linkById = {};
+  links.forEach(function (a) { linkById[a.getAttribute('data-target')] = a; });
+
+  // ---- Scroll-spy ----
+  var spy = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = linkById[e.target.id];
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+  sections.forEach(function (s) { spy.observe(s); });
+
+  // ---- Search filter ----
+  var search = document.getElementById('search');
+  var noResults = document.getElementById('noResults');
+  search.addEventListener('input', function () {
+    var q = search.value.trim().toLowerCase();
+    var anyVisible = false;
+    sections.forEach(function (sec) {
+      var match = q === '' || sec.textContent.toLowerCase().indexOf(q) !== -1;
+      sec.classList.toggle('search-hidden', !match);
+      var link = linkById[sec.id];
+      if (link) link.parentElement.parentElement.classList.remove('nav-hidden');
+      if (link) link.classList.toggle('nav-hidden', !match);
+      if (match) anyVisible = true;
+    });
+    // hide empty groups in nav
+    Array.prototype.forEach.call(nav.querySelectorAll('.nav-group'), function (grp) {
+      var visible = grp.querySelectorAll('.grp-items a:not(.nav-hidden)').length;
+      grp.classList.toggle('nav-hidden', visible === 0);
+    });
+    noResults.style.display = anyVisible ? 'none' : 'block';
+  });
+
+  // ---- Copy buttons ----
+  Array.prototype.forEach.call(document.querySelectorAll('pre'), function (pre) {
+    var code = pre.querySelector('code');
+    if (!code) return;
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn'; btn.textContent = 'copy';
+    btn.addEventListener('click', function () {
+      navigator.clipboard.writeText(code.textContent).then(function () {
+        btn.textContent = 'copied'; setTimeout(function () { btn.textContent = 'copy'; }, 1200);
+      });
+    });
+    pre.appendChild(btn);
+  });
+
+  // ---- Theme toggle ----
+  var root = document.documentElement;
+  var saved = (function () { try { return localStorage.getItem('sc-theme'); } catch (e) { return null; } })();
+  if (saved) root.setAttribute('data-theme', saved);
+  document.getElementById('themeToggle').addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('sc-theme', next); } catch (e) {}
+  });
+
+  // ---- Mobile sidebar ----
+  var sidebar = document.getElementById('sidebar');
+  var hb = document.getElementById('hamburger');
+  if (hb) hb.addEventListener('click', function () { sidebar.classList.toggle('open'); });
+  nav.addEventListener('click', function (e) { if (e.target.tagName === 'A') sidebar.classList.remove('open'); });
+})();
+</script>
+</body>
+</html>
