@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3d01456a4dfb4876ac9f2ab21c5ce6b, type: 3}
   m_Name: PurchasingCatalog
   m_EditorClassIdentifier: Sorolla.Core::Sorolla.Purchasing.PurchasingCatalog
-  _products: []
+  _products:
+  - {fileID: 11400000, guid: 823b52dc53c194a9081c578edc4c573b, type: 2}
+  - {fileID: 11400000, guid: 0a3f5e346387c48a7a2ded25c1dc038c, type: 2}
+  - {fileID: 11400000, guid: 62fbe1b545cdc4a52884aea74b489d79, type: 2}

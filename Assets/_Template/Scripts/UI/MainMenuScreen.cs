@@ -15,12 +15,14 @@ namespace Template
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _profileButton;
         [SerializeField] private Button _tournamentButton;
+        [SerializeField] private Button _shopButton;
 
         private void Awake()
         {
             if (_playButton != null) _playButton.onClick.AddListener(OnPlay);
             if (_profileButton != null) _profileButton.onClick.AddListener(OnProfile);
             if (_tournamentButton != null) _tournamentButton.onClick.AddListener(OnTournament);
+            if (_shopButton != null) _shopButton.onClick.AddListener(OnShop);
         }
 
         private void OnPlay()
@@ -40,6 +42,11 @@ namespace Template
             var host = Object.FindFirstObjectByType<TemplateTournamentHost>(FindObjectsInactive.Include);
             if (host == null) { Debug.LogWarning("[MainMenuScreen] No TemplateTournamentHost in the scene; Tournament does nothing."); return; }
             host.Show();
+        }
+
+        private void OnShop()
+        {
+            UIManager.Instance.PushScreenAsync(UIScreenId.Shop).Forget();
         }
     }
 }

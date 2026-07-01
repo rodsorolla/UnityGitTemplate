@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2a5f6eac13334d378788b0fac566d71, type: 3}
+  m_Name: ProductDef_Coins_Small
+  m_EditorClassIdentifier: Sorolla.Core::Sorolla.Purchasing.ProductDefinition
+  _productId: coins_1000
+  _appleProductId: 
+  _googleProductId: 
+  _type: 0
+  _rewards:
+  - {fileID: 11400000, guid: b369de1cb62f14c64a7628c0f75ebce5, type: 2}
+  _shopSection: 2
+  _cardPrefab: {fileID: 0}
+  _displayTitleKey: 1,000 Coins
+  _icon: {fileID: 0}
+  _badgeText: 
+  _oncePerInstall: 0
