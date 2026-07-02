@@ -13,6 +13,8 @@ namespace Sorolla.Cosmetics
         [SerializeField] private string _id;
         [SerializeField] private string _displayName;
         [SerializeField] private Sprite _icon;
+        [Tooltip("Avatar sprite shown in the Competitive/Tournament UI when this skin is equipped. Optional; falls back to the profile avatar if unset.")]
+        [SerializeField] private Sprite _avatar;
         [SerializeField] private SkinUnlockType _unlockType = SkinUnlockType.Default;
         [SerializeField] private int _unlockValue;
         [SerializeField, TextArea] private string _lockedDescription;
@@ -22,6 +24,7 @@ namespace Sorolla.Cosmetics
         public string Id => _id;
         public string DisplayName => _displayName;
         public Sprite Icon => _icon;
+        public Sprite Avatar => _avatar;
         public SkinUnlockType UnlockType => _unlockType;
         public int UnlockValue => _unlockValue;
         public string LockedDescription => _lockedDescription;

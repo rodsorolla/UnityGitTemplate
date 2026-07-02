@@ -205,6 +205,19 @@ namespace Sorolla.UI
             OnPanelClosed?.Invoke(panel);
         }
 
+        /// <summary>
+        /// Removes a panel from tracking and destroys its instance instead of pooling it.
+        /// Use for panels that must start from a clean prefab state on every open (e.g. animated
+        /// one-shot panels). The panel should call this from its own HideAsync after base.HideAsync.
+        /// </summary>
+        public void ReleasePanel(UIPanel panel)
+        {
+            if (panel == null) return;
+            _panels.Remove(panel);
+            foreach (var list in _panelCache.Values) list.Remove(panel);
+            Object.Destroy(panel.gameObject);
+        }
+
         public async UniTask ClosePanelsByIdAsync(UIPanelId id)
         {
             if (_panelCache.TryGetValue(id, out var list))

@@ -54,6 +54,14 @@ namespace Sorolla.Cosmetics
             OnChanged?.Invoke();
         }
 
+        public void Relock(string id)
+        {
+            if (_defaultUnlocked.Contains(id)) return; // defaults are always owned
+            if (!_owned.Remove(id)) return;            // wasn't owned
+            SaveOwned();
+            OnChanged?.Invoke();
+        }
+
         public bool Select(string id)
         {
             if (!IsUnlocked(id)) return false;

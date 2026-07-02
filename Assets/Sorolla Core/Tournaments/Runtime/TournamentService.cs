@@ -193,16 +193,34 @@ namespace Sorolla.Tournaments
         {
             if (_state == null) return;
             if (tierIndex < 0) tierIndex = _state.CurrentTierIndex;
+
+            var tier = TierAt(tierIndex);
+            int group = tier != null ? tier.groupSize : Math.Max(1, finalRank);
+            if (group < 1) group = 1;
+            int rank = Mathf.Clamp(finalRank, 1, group);
+
+            // Synthesize final standings that place the player at exactly `rank`, then run the SAME
+            // Standings/TierTransition path as a real week finalize — so promotion/demotion (and the
+            // league change) match production instead of being hard-coded to "Stayed".
+            var botTrophies = new List<int>(group - 1);
+            for (int i = 0; i < group - 1; i++)
+                botTrophies.Add(i < rank - 1 ? 1_000_000 : 0);   // (rank-1) bots above the player, rest below
+
+            var r = Standings.Compute(1, botTrophies, tier?.promotePct ?? 0f, tier?.demotePct ?? 0f);
+            int nextTierIndex = TierTransition.Apply(tierIndex, r.PlayerOutcome, _data?.Tiers.Count ?? 0);
+            var outcome = nextTierIndex == tierIndex ? TournamentOutcome.Stayed : r.PlayerOutcome;
+
             _state.PendingResult = new PendingResult
             {
                 WeekIndex = _state.ActiveWeekIndex,
                 TierIndex = tierIndex,
-                FinalRank = finalRank,
-                Outcome = TournamentOutcome.Stayed,
+                FinalRank = r.PlayerRank,
+                Outcome = outcome,
                 Claimed = false
             };
+            _state.CurrentTierIndex = nextTierIndex;
             Persist();
-            Debug.Log($"[Tournaments][Debug] Forced pending result: rank={finalRank}, tier={tierIndex}");
+            Debug.Log($"[Tournaments][Debug] Forced pending result: rank={r.PlayerRank}, tier={tierIndex}→{nextTierIndex}, outcome={outcome}");
         }
 
         /// Debug-only: sets the player's current-week trophy count directly.
