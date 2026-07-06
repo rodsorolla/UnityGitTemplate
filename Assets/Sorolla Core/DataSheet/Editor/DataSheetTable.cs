@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,8 +8,9 @@ namespace Sorolla.DataSheet.Editor
 {
     /// <summary>
     /// Draws the spreadsheet grid for a page of rows and a set of visible columns.
-    /// Each cell is a PropertyField on the asset's SerializedProperty, giving real
-    /// drawers + native Undo. Scalar edits are captured into the supplied history.
+    /// Each cell draws the raw typed control for the asset's SerializedProperty (native
+    /// Undo, no field <c>[Header]</c>/<c>[Space]</c> decorators, so rows stay single-line).
+    /// Scalar edits are captured into the supplied history.
     /// </summary>
     public static class DataSheetTable
     {
@@ -87,7 +89,7 @@ namespace Sorolla.DataSheet.Editor
             string before = scalar ? DataSheetValues.ReadScalar(prop) : null;
 
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(prop, GUIContent.none, false, GUILayout.Width(CellWidth));
+            DrawFieldNoDecorators(prop);
             if (EditorGUI.EndChangeCheck())
             {
                 row.so.ApplyModifiedProperties(); // writes + registers native Undo
@@ -107,6 +109,49 @@ namespace Sorolla.DataSheet.Editor
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Draws the raw control for one scalar/object-reference property, bypassing
+        /// EditorGUILayout.PropertyField so field <c>[Header]</c>/<c>[Space]</c> decorators
+        /// never render — every cell stays a single aligned line.
+        /// </summary>
+        static void DrawFieldNoDecorators(SerializedProperty p)
+        {
+            var w = GUILayout.Width(CellWidth);
+            switch (p.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    p.intValue = EditorGUILayout.IntField(p.intValue, w); break;
+                case SerializedPropertyType.Boolean:
+                    p.boolValue = EditorGUILayout.Toggle(p.boolValue, w); break;
+                case SerializedPropertyType.Float:
+                    p.floatValue = EditorGUILayout.FloatField(p.floatValue, w); break;
+                case SerializedPropertyType.String:
+                    p.stringValue = EditorGUILayout.TextField(p.stringValue, w); break;
+                case SerializedPropertyType.Enum:
+                    p.enumValueIndex = EditorGUILayout.Popup(p.enumValueIndex, p.enumDisplayNames, w); break;
+                case SerializedPropertyType.Color:
+                    p.colorValue = EditorGUILayout.ColorField(GUIContent.none, p.colorValue, w); break;
+                case SerializedPropertyType.ObjectReference:
+                    p.objectReferenceValue = EditorGUILayout.ObjectField(
+                        p.objectReferenceValue, FieldTypeOf(p), false, w); break;
+                default:
+                    GUILayout.Label("—", w); break;
+            }
+        }
+
+        /// <summary>Reflected field type for an object-reference column (top-level path), so the
+        /// object picker stays type-constrained. Walks base types for inherited private fields.</summary>
+        static Type FieldTypeOf(SerializedProperty p)
+        {
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            for (Type t = p.serializedObject.targetObject.GetType(); t != null; t = t.BaseType)
+            {
+                var f = t.GetField(p.propertyPath, flags);
+                if (f != null) return f.FieldType;
+            }
+            return typeof(UnityEngine.Object);
         }
 
         /// <summary>Compact label for columns that can't be edited inline (arrays, nested structs).</summary>
