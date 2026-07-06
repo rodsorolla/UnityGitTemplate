@@ -36,7 +36,7 @@ namespace Sorolla.DataSheet.Editor
         readonly DataSheetHistory _history = new DataSheetHistory();
         bool _showHistory;
 
-        [MenuItem("Tools/Sorolla/DataSheet")]
+        [MenuItem("Tools/Sorolla Core/DataSheet")]
         public static void Open()
         {
             var w = GetWindow<DataSheetWindow>("DataSheet");
