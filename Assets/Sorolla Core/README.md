@@ -305,6 +305,17 @@ public class MyUnlockPanel : CelebrationPanel<MyUnlockData>
 FloatingTextManager.Instance.ShowNumber(100, worldPosition, "+{0}", Color.gold);
 ```
 
+### Animated Tab Bar
+
+`AnimatedTabBar` (namespace `Sorolla.UI.Effects`) animates a bottom tab bar built on a
+`HorizontalLayoutGroup`. The selected button tweens its `LayoutElement.flexibleWidth` to grow
+wider than the others; each tab may assign an optional child that scales up while selected.
+
+```csharp
+tabBar.OnTabSelected += index => Debug.Log($"Tab {index}");
+tabBar.Select(1); // re-selecting the current tab is a no-op
+```
+
 ### UI Prefab Templates
 
 Template prefabs in `UI/Templates/`. Duplicate and customize for your game.
