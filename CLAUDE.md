@@ -144,6 +144,62 @@ private static readonly int EatTrigger = Animator.StringToHash("Eat");
 - Commit format: `type: description` (e.g., `feat:`, `fix:`, `chore:`)
 - Recent focus areas: Tutorial system, collision handling, level flow
 
+## Sorolla Core (git submodule)
+
+`Packages/com.sorolla.core` is **not part of this repo** — it is a submodule pointing at
+[`sorolla-studio/sorolla-core`](https://github.com/sorolla-studio/sorolla-core). This repo only
+records *which commit* of Core to use, so Core never changes under you without an explicit bump.
+
+Dependency direction is one-way and must stay that way:
+`sorolla-palette (com.sorolla.sdk)` ← `sorolla-core` ← this game.
+Core may use Palette. **Palette must never reference Core.**
+
+### Cloning
+
+```bash
+git clone --recurse-submodules <repo-url>
+```
+
+Forgot the flag? `Packages/com.sorolla.core` will be empty and Unity will report hundreds of
+missing scripts. Fix with `git submodule update --init --recursive` — nothing is broken.
+
+### Changing Core while working on a game
+
+Core is editable in place. It needs **two commits, in this order**:
+
+```bash
+# 1. the actual change, inside the submodule
+cd Packages/com.sorolla.core
+git checkout main                 # only if detached
+git add -A && git commit -m "feat(lives): add streak bonus"
+git push                          # <- publishes it for every project
+
+# 2. the moved pointer, in the game repo
+cd ../..
+git add Packages/com.sorolla.core
+git commit -m "chore: bump sorolla-core"
+git push
+```
+
+Skipping step 1 pushes a pointer to a commit nobody else can fetch — the classic submodule
+failure. `git config submodule.recurse true` (already set locally) makes `git push` push the
+submodule too, as a safety net.
+
+### Pulling Core changes made elsewhere
+
+```bash
+git submodule update --remote Packages/com.sorolla.core
+git add Packages/com.sorolla.core && git commit -m "chore: bump sorolla-core"
+```
+
+### Rules
+
+- Game-specific code goes in `Assets/_Game/`, never in `Packages/com.sorolla.core/`.
+- A change belongs in Core only if a *different* game would want it too.
+- Core's tests stay visible via `"testables": ["com.sorolla.core"]` in `Packages/manifest.json`.
+- UPM does not resolve git URLs declared inside a package, so this project's `manifest.json`
+  must keep listing Core's git dependencies (palette, UniTask, NaughtyAttributes, …) itself.
+
 ## Dependencies
 
 ### Core (always use these)

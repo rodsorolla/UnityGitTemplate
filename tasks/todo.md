@@ -17,19 +17,19 @@
 ## Todo
 
 ### Phase 1 — extract Core into its own repo (done in the template first, so match10 inherits it)
-- [ ] 1.1 `git subtree split --prefix="Assets/Sorolla Core"` → branch with Core's real history
+- [x] 1.1 `git subtree split --prefix="Assets/Sorolla Core"` → branch with Core's real history
       (preserves authorship; better than a fresh `git init`)
-- [ ] 1.2 Create private `sorolla-studio/sorolla-core`, push that branch as `main`
-- [ ] 1.3 Add `package.json` (`com.sorolla.core`), `README.md`, `.gitignore`, `CHANGELOG.md`
+- [x] 1.2 Create private `sorolla-studio/sorolla-core`, push that branch as `main`
+- [x] 1.3 Add `package.json` (`com.sorolla.core`), `README.md`, `.gitignore`, `CHANGELOG.md`
       — keep the existing folder structure as-is; asmdefs already drive compilation, so no
       Runtime/Editor reshuffle is needed
-- [ ] 1.4 In the template: `git rm -r "Assets/Sorolla Core"`, add submodule at
+- [x] 1.4 In the template: `git rm -r "Assets/Sorolla Core"`, add submodule at
       `Packages/com.sorolla.core`. `.meta` files travel with the split → **GUIDs unchanged**,
       so scene/prefab references survive
-- [ ] 1.5 Add `"testables": ["com.sorolla.core"]` to `Packages/manifest.json` so Core's tests
+- [x] 1.5 Add `"testables": ["com.sorolla.core"]` to `Packages/manifest.json` so Core's tests
       still show in the Test Runner
-- [ ] 1.6 **Verify**: Unity batchmode compile + assert no missing script references, before committing
-- [ ] 1.7 Commit + push template
+- [x] 1.6 **Verify**: Unity batchmode compile + assert no missing script references, before committing
+- [x] 1.7 Commit + push template
 
 ### Phase 2 — create match10
 - [ ] 2.1 `git clone --recurse-submodules` this repo → `/Users/rodrigolaiz/Documents/Git/match10`
@@ -54,4 +54,21 @@
 - Everything is reversible up to 1.7; nothing is force-pushed and no existing repo is modified.
 
 ## Review
-_(filled in after execution)_
+
+### Phase 1 — complete (commit 4a194d8)
+- `sorolla-studio/sorolla-core` (private) holds Core with **47 commits of real history**
+  (subtree split, authorship intact). Tagged nothing yet; `main` is the branch.
+- Template now mounts it at `Packages/com.sorolla.core` as a submodule, checked out on `main`.
+- `submodule.recurse true` set locally so `git push` also pushes the submodule.
+- Safety tag `pre-core-extraction` (a69a1bb) marks the pre-move state.
+
+**Two things found during execution that were not in the plan:**
+1. `.claude/skills/sorolla-core` was a symlink into `Assets/Sorolla Core/` — dead after the move.
+   Removed; Claude Code auto-discovers the skill at the package location, so it is now redundant.
+2. Stale `Assets/Sorolla Core` paths in `SKILL.md` (x5), Core `README.md`, `CLAUDE.md` and
+   `unity-gameplay/SKILL.md` — all repointed.
+
+**Verification:** 29 Sorolla assemblies rebuilt post-move, no `error CS` or missing-script
+entries in `Editor.log`, UPM resolved `com.sorolla.core@file:` as an embedded package.
+(Batchmode run was not possible — the Editor held the project lock — so this was read from
+Unity's own build artifacts plus the user confirming a clean compile.)
