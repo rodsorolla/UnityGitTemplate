@@ -1,114 +1,57 @@
-# Package Audit & Integration
+# Plan: extract Sorolla Core to a shared package + spin up match10
 
-## Summary
-Audit all third-party packages, update CLAUDE.md with usage instructions, and migrate existing scripts to use UniTask (instead of System.Threading.Tasks) and ZLinq (instead of System.Linq).
+## Goal
+1. `Assets/Sorolla Core/` becomes its own repo (`sorolla-studio/sorolla-core`), mounted in every
+   project at `Packages/com.sorolla.core` as a **git submodule** (embedded = editable in place).
+2. `match10` is a new project cloned from this template, on `sorolla-studio/match10` (private).
+3. Editing Core inside match10 → push submodule → template and every other game pull it.
 
-## Packages Inventory
+## Facts established
+- Unity 6000.5.0f1 (installed locally → batchmode compile check is possible).
+- Core: 324 `.cs`, 23 asmdefs, 1 `.asset` (AudioLibrary), 10 prefabs, few png/wav/mp3/shaders. 20 MB.
+- **No `Resources/` or `StreamingAssets/` folders inside Core** → safe to move into `Packages/`.
+  (`LiveConfigSettings.cs` calls `Resources.Load`, but the *asset* lives outside Core — unaffected.)
+- gh: `rodsorolla`, **admin** on `sorolla-studio`. `match10` and `sorolla-core` names are free.
+- Template remote: `rodsorolla/UnityGitTemplate`, working tree clean.
 
-| Package | ID | Status |
-|---------|---|--------|
-| **UniTask** | `com.cysharp.unitask` | Installed, **NOT used** — all async code uses `System.Threading.Tasks` |
-| **ZLinq** | NuGet `ZLinq 1.5.4` | Installed, **NOT used** — all LINQ uses `System.Linq` |
-| **NaughtyAttributes** | `com.dbrizov.naughtyattributes` | Installed, used in TutorialStepBase |
-| **SceneRefAttribute** | `com.kylewbanks.scenerefattribute` | Installed, unused |
-| **Unity-Utils** | `com.gitamend.unityutils` | Installed, unused |
-| **ParticleEffectForUGUI** | `com.coffee.ui-particle` | Installed, unused (prefab reference only) |
-| **Newtonsoft.Json** | NuGet `13.0.4` | Installed, used in SaveSystem |
-| **DOTween** | Plugin folder | Active, used heavily for UI animations |
-| **Cinemachine** | `com.unity.cinemachine` 3.1.6 | Installed |
-| **Input System** | `com.unity.inputsystem` 1.18.0 | Installed |
-| **URP** | `com.unity.render-pipelines.universal` 17.3.0 | Installed |
-| **NuGetForUnity** | `com.github-glitchenzo.nugetforunity` | Package manager for NuGet |
+## Todo
 
-## Tasks
+### Phase 1 — extract Core into its own repo (done in the template first, so match10 inherits it)
+- [ ] 1.1 `git subtree split --prefix="Assets/Sorolla Core"` → branch with Core's real history
+      (preserves authorship; better than a fresh `git init`)
+- [ ] 1.2 Create private `sorolla-studio/sorolla-core`, push that branch as `main`
+- [ ] 1.3 Add `package.json` (`com.sorolla.core`), `README.md`, `.gitignore`, `CHANGELOG.md`
+      — keep the existing folder structure as-is; asmdefs already drive compilation, so no
+      Runtime/Editor reshuffle is needed
+- [ ] 1.4 In the template: `git rm -r "Assets/Sorolla Core"`, add submodule at
+      `Packages/com.sorolla.core`. `.meta` files travel with the split → **GUIDs unchanged**,
+      so scene/prefab references survive
+- [ ] 1.5 Add `"testables": ["com.sorolla.core"]` to `Packages/manifest.json` so Core's tests
+      still show in the Test Runner
+- [ ] 1.6 **Verify**: Unity batchmode compile + assert no missing script references, before committing
+- [ ] 1.7 Commit + push template
 
-### Phase 1: Migrate async Task → UniTask (20 files)
-- [x] 1. Update `IUITransition.cs` — interface returns `UniTask` instead of `Task`
-- [x] 2. Update `UIScreen.cs` + `UIPanel` — base classes return `UniTask`
-- [x] 3. Update `UITransitionBase.cs`, `FadeTransition.cs`, `ScaleTransition.cs`, `SlideTransition.cs` — replace `AsyncWaitForCompletion()` with direct `await` via UniTask DOTween integration
-- [x] 4. Update `UIOverlay.cs` — same DOTween migration
-- [x] 5. Update `UIManager.cs` — all async methods return `UniTask`, replace `System.Linq` with `ZLinq`
-- [x] 6. Update `AlertDialog.cs`, `ConfirmDialog.cs` — UniTask + DOTween await
-- [x] 7. Update `CelebrationPanel.cs` — UniTask + DOTween await
-- [x] 8. Update `ToastPanel.cs` — UniTask + `UniTask.Delay` instead of `Task.Delay`
-- [x] 9. Update `ConfigurablePanel.cs` — UniTask
-- [x] 10. Update `ContinuePanel.cs` — UniTask
-- [x] 11. Update `SaveSystem.cs` — `UniTask.RunOnThreadPool` instead of `Task.Run`
-- [x] 12. Update `LocalFileStorage.cs` + `IStorageProvider.cs` — UniTask
-- [x] 13. Update `GameDataServiceBase.cs` + `IGameDataService.cs` + `ExampleGameDataService.cs` — UniTask
-- [x] 14. Update `SceneLoader.cs` — UniTask + `UniTask.Yield` + `op.ToUniTask()`
-- [x] 15. Update `GameManager.cs` — UniTask + replace `System.Linq` with `ZLinq`
-- [x] 16. Update `LevelSessionController.cs` — UniTask
-- [x] 17. Update `LevelFlowManager.cs` — `UniTask.Delay` instead of `Task.Delay`
-- [x] 18. Update `GameInitializer.cs` — UniTask + `Func<UniTask>` event
-- [x] 19. Update `SettingsPanel.cs` — UniTask
+### Phase 2 — create match10
+- [ ] 2.1 `git clone --recurse-submodules` this repo → `/Users/rodrigolaiz/Documents/Git/match10`
+      (clone, not `cp -r`: keeps history and skips the 2.8 GB `Library/`)
+- [ ] 2.2 Rename: `productName` → `Match10`, `applicationIdentifier` → `com.sorolla.match10`,
+      update `CLAUDE.md` + `README.md` project name
+- [ ] 2.3 Create private `sorolla-studio/match10`, point `origin` at it, push
+- [ ] 2.4 Add a `template` remote pointing at UnityGitTemplate, for pulling future *non-core*
+      template improvements
+- [ ] 2.5 **Verify**: Unity batchmode compile of match10
 
-### Phase 2: Migrate System.Linq → ZLinq (4 files)
-- [x] 20. `GameManager.cs` — `.AsValueEnumerable().Where().ToArray()` → ZLinq
-- [x] 21. `UIManager.cs` — `.AsValueEnumerable().OrderByDescending()`, `.FirstOrDefault()`, `.ToList()` → ZLinq
-- [x] 22. `TutorialController.cs` — `.AsValueEnumerable().OrderBy()` → ZLinq
-- [x] 23. `BackupManager.cs` — `.AsValueEnumerable().OrderByDescending().ToArray()` → ZLinq
+### Phase 3 — document the workflow
+- [ ] 3.1 Short section in `CLAUDE.md`: how to edit Core from inside a game, push it, and pull it
+      into the template / other games
 
-### Phase 3: Documentation
-- [x] 24. Update `CLAUDE.md` with package info for future sessions
-- [x] 25. Update memory with package knowledge
-- [x] 26. Update Sorolla Core SKILL.md
-
----
-
-## Migration Cheat Sheet
-
-### UniTask replacements:
-- `using System.Threading.Tasks;` → `using Cysharp.Threading.Tasks;`
-- `async Task` → `async UniTask`
-- `async Task<T>` → `async UniTask<T>`
-- `Task.CompletedTask` → `UniTask.CompletedTask`
-- `Task.Delay(ms)` → `UniTask.Delay(ms)` or `UniTask.Delay(TimeSpan)`
-- `Task.Yield()` → `UniTask.Yield()`
-- `Task.Run(() => ...)` → `UniTask.RunOnThreadPool(() => ...)`
-- `TaskCompletionSource<T>` → `UniTaskCompletionSource<T>`
-- `.AsyncWaitForCompletion()` → just `await tween` (UniTask DOTween integration provides `GetAwaiter()`)
-- `.ContinueWith(...)` → use `try/catch` or `UniTask.Void()`
-
-### ZLinq replacements:
-- `using System.Linq;` → `using ZLinq;`
-- API is the same (`.Where()`, `.OrderBy()`, `.FirstOrDefault()`, etc.) but zero-allocation
-
----
+## Risks & open points
+- **Submodule friction** is the real cost: a submodule sits on a detached HEAD by default, and it
+  is easy to commit Core changes and forget to push them. Phase 3 doc + `git config
+  submodule.recurse true` mitigates this.
+- `com.sorolla.sdk` (sorolla-palette) already exists as a separate git package. Core and the SDK
+  overlapping in scope is a question worth answering later — not touching it here.
+- Everything is reversible up to 1.7; nothing is force-pushed and no existing repo is modified.
 
 ## Review
-
-### Changes Made
-
-**21 files migrated from `System.Threading.Tasks` → `Cysharp.Threading.Tasks` (UniTask):**
-- IUITransition.cs, UIScreen.cs (UIScreen + UIPanel), UITransitionBase.cs
-- FadeTransition.cs, ScaleTransition.cs, SlideTransition.cs, UIOverlay.cs
-- UIManager.cs, AlertDialog.cs, ConfirmDialog.cs, CelebrationPanel.cs
-- ToastPanel.cs, ConfigurablePanel.cs, ContinuePanel.cs, SettingsPanel.cs
-- SaveSystem.cs, LocalFileStorage.cs, IStorageProvider.cs
-- IGameDataService.cs, GameDataServiceBase.cs, ExampleGameDataService.cs
-- SceneLoader.cs, GameManager.cs, GameInitializer.cs
-- LevelSessionController.cs, LevelFlowManager.cs
-
-**4 files migrated from `System.Linq` → `ZLinq`:**
-- GameManager.cs, UIManager.cs, TutorialController.cs, BackupManager.cs
-
-**Key changes per pattern:**
-- `async Task` → `async UniTask`, `Task.CompletedTask` → `UniTask.CompletedTask`
-- `Task.Delay(ms)` → `UniTask.Delay(ms)`
-- `Task.Yield()` → `UniTask.Yield()`
-- `Task.Run(...)` → `UniTask.RunOnThreadPool(...)`
-- `TaskCompletionSource<T>` → `UniTaskCompletionSource<T>`
-- `.AsyncWaitForCompletion()` → direct `await` on tween (UniTask DOTween GetAwaiter)
-- `.ContinueWith(...)` → `.Forget()` (fire-and-forget in UIManager)
-- `TaskCompletionSource` for scene ops → `op.ToUniTask()` (SceneLoader)
-- `.Where(...)` → `.AsValueEnumerable().Where(...)` (ZLinq)
-
-**Documentation updated:**
-- CLAUDE.md: Tech Stack, Async/Await patterns, LINQ patterns, Dependencies sections
-- Sorolla Core SKILL.md: UIPanel and GameDataService code examples
-- Memory: Package audit saved for future sessions
-
-### Notes
-- Editor-only script `GradientColorEditor.cs` intentionally left with `System.Linq` (no runtime perf concern)
-- Could not verify compilation — Unity Editor not running. All changes are mechanical 1:1 replacements.
+_(filled in after execution)_
