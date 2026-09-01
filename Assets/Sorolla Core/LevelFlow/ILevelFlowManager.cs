@@ -39,6 +39,12 @@ namespace Sorolla.LevelFlow
         /// </summary>
         int GetActualLevelIndex(int progressiveLevelIndex);
 
+        /// <summary>
+        /// How many times the player has wrapped past the end of the level list.
+        /// 0 on the first pass, 1 on the second, and so on.
+        /// </summary>
+        int GetLoopIndex(int progressiveLevelIndex);
+
         #endregion
 
         #region World System

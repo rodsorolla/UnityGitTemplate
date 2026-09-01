@@ -216,7 +216,7 @@ namespace Sorolla.Tutorial
             Debug.Log($"[TutorialController] NotifyLevelPlay — progressive {progressiveLevelIndex} → actual {levelIndex}");
 
             bool hasSteps = _levelSteps.TryGetValue(levelIndex, out var steps) && steps.Count > 0;
-            bool alreadyCompleted = _completedLevels.Contains(levelIndex);
+            bool alreadyCompleted = IsLevelTutorialCompleted(levelIndex);
 
             // Always update current level and fire event (for TutorialObjectsHider).
             // If the level has no tutorial or it's already completed, treat the step as
@@ -262,7 +262,18 @@ namespace Sorolla.Tutorial
         /// <summary>
         /// Checks if the tutorial for a specific level has been completed.
         /// </summary>
-        public bool IsLevelTutorialCompleted(int levelIndex) => _completedLevels.Contains(levelIndex);
+        public bool IsLevelTutorialCompleted(int levelIndex)
+            => IsPastFirstLoop || _completedLevels.Contains(levelIndex);
+
+        /// <summary>
+        /// True once the player has wrapped past the end of the level list. Levels then
+        /// replay their content, and tutorials must not come back with them — including
+        /// one the player never finished (lost or quit mid-tutorial), which would
+        /// otherwise still be missing from <see cref="_completedLevels"/>.
+        /// </summary>
+        private bool IsPastFirstLoop =>
+            _levelFlowManager != null
+            && _levelFlowManager.GetLoopIndex(_levelFlowManager.CurrentLevelIndex) > 0;
 
         #endregion
 

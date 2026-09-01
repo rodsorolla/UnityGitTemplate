@@ -61,6 +61,17 @@ namespace Sorolla.LevelFlow
             return ((progressiveLevelIndex - 1) % total) + 1;
         }
 
+        /// <summary>
+        /// How many times the player has wrapped past the end of the level list.
+        /// Example: with 5 levels, progressive levels 1-5 return 0 and 6-10 return 1.
+        /// </summary>
+        public int GetLoopIndex(int progressiveLevelIndex)
+        {
+            int total = TotalLevelCount;
+            if (total <= 0 || progressiveLevelIndex < 1) return 0;
+            return (progressiveLevelIndex - 1) / total;
+        }
+
         #endregion
 
         #region World System
