@@ -32,6 +32,9 @@ namespace Sorolla.LevelFlow
         /// <summary>Lose: Player tapped a bomb.</summary>
         BombExploded = 25,
 
+        /// <summary>Lose: Live config data was unavailable (fetch + cache + baked all failed), so the level has no content to play. Degraded-mode guard; should only fire in catastrophically broken installs.</summary>
+        ConfigUnavailable = 26,
+
         // Game-specific reasons start at 100
         /// <summary>Game-specific reasons should use values >= 100.</summary>
         Custom = 100
