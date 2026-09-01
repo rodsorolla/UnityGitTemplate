@@ -4,6 +4,6 @@ namespace VoxelLabs.UltimatePreview
 {
     public class Constants : MonoBehaviour
     {
-        public static readonly string ULTIMATE_PREVIEW_VERSION_NUMBER = "v2.0.1";
+        public static readonly string ULTIMATE_PREVIEW_VERSION_NUMBER = "v2.0.3";
     }
 }

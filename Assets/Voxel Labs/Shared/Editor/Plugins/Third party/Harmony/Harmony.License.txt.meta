@@ -8,7 +8,7 @@ TextScriptImporter:
 AssetOrigin:
   serializedVersion: 1
   productId: 340974
-  packageName: "Ultimate Preview Window 2 \u2013 Pro Edition"
-  packageVersion: 2.0.1
+  packageName: "Ultimate Preview 2 \u2013 Pro Edition"
+  packageVersion: 2.0.3
   assetPath: Assets/Voxel Labs/Shared/Editor/Plugins/Third party/Harmony/Harmony.License.txt
-  uploadId: 905810
+  uploadId: 947272

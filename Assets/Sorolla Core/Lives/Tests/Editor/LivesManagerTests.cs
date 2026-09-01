@@ -399,6 +399,8 @@ namespace Sorolla.Lives.Tests
             public Sorolla.LevelFlow.LevelProgressData GetProgressData() => null;
             public void SetTotalLevelCount(int count) { }
             public int GetActualLevelIndex(int progressiveLevelIndex) => progressiveLevelIndex;
+            public int GetLoopIndex(int progressiveLevelIndex)
+                => progressiveLevelIndex < 1 ? 0 : (progressiveLevelIndex - 1) / TotalLevelCount;
             public int GetLevelIndexInWorld(int globalLevelIndex) => globalLevelIndex;
             public int GetWorldForLevel(int globalLevelIndex) => 1;
             public int GetFirstLevelOfWorld(int worldIndex) => 1;
