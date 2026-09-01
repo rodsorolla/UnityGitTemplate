@@ -114,9 +114,12 @@ To pull a palette change into any project:
 rm -rf Library/PackageCache/com.sorolla.sdk@*
 # reopen Unity; it re-resolves to master tip and rewrites the lock hash
 ```
-match10 done (commit `7d16fc7`, lock now `7c6800b`), verified by cold import with **no local
-patch**: 0 compile errors, 0 GUID conflicts, 29/29 Sorolla assemblies.
+Both projects are on the fixed palette, each verified by a cold import with **no local patch**:
 
-**STILL TO DO — the template.** Unity was open on it throughout, so it still carries the
-throwaway `Library/PackageCache` patch and a lock pinned to `e947c44`. Apply the three steps
-above once Unity is closed.
+| project | lock hash | commit | cold import |
+|---|---|---|---|
+| match10 | `7c6800b` | `7d16fc7` | 0 errors, 0 conflicts, 29/29 assemblies |
+| UnityGITTemplate | `7c6800b` | `1a4dc09` | 0 errors, 0 conflicts, 29/29 assemblies |
+
+The throwaway `Library/PackageCache` patches are gone from both — the GUID now comes from
+palette `master` itself.
