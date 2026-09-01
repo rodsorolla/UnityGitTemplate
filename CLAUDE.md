@@ -144,6 +144,39 @@ private static readonly int EatTrigger = Animator.StringToHash("Eat");
 - Commit format: `type: description` (e.g., `feat:`, `fix:`, `chore:`)
 - Recent focus areas: Tutorial system, collision handling, level flow
 
+## Starting a new project
+
+This repo is the seed for every new Sorolla game. Use the script — it does the clone, the
+rename, the GitHub repo and a cold-import verification in one pass:
+
+```bash
+./scripts/new-project.sh puzzlequest "Puzzle Quest"
+# -> ~/Documents/Git/puzzlequest, private repo sorolla-studio/puzzlequest
+# bundle id defaults to com.sorolla.<repo-name>; pass a third arg to override
+```
+
+What it does, in order:
+
+1. `git clone --recurse-submodules` the template, so `Packages/com.sorolla.core` comes with it
+2. Checks out `main` inside the submodule (a fresh submodule is on a detached HEAD) and sets
+   `submodule.recurse true`
+3. Rewrites `productName` and `applicationIdentifier` (Android, Standalone, iPhone — all three
+   are still Unity's URP-blank defaults in this template), the `CLAUDE.md` title, and resets
+   `tasks/todo.md`
+4. Creates the private repo under `sorolla-studio`, repoints `origin`, adds a `template` remote
+5. Commits, pushes, then runs a batchmode import and reports compile errors, GUID conflicts and
+   the Sorolla assembly count (expect `0 / 0 / 29`); exits non-zero if anything is off
+
+It refuses to start if the directory exists, the GitHub repo exists, the name is not lowercase,
+or `gh` is not authenticated. Nothing is created until every check passes.
+
+### The `template` remote
+
+New projects get a `template` remote pointing back here. `git merge template/main` pulls template
+improvements *and* whatever `Assets/_Game` content this repo holds, which conflicts once a game
+diverges — cherry-pick specific commits instead once you have real game code. Core changes never
+come through this path; they come through the submodule.
+
 ## Sorolla Core (git submodule)
 
 `Packages/com.sorolla.core` is **not part of this repo** — it is a submodule pointing at
