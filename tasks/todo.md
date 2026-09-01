@@ -32,17 +32,17 @@
 - [x] 1.7 Commit + push template
 
 ### Phase 2 — create match10
-- [ ] 2.1 `git clone --recurse-submodules` this repo → `/Users/rodrigolaiz/Documents/Git/match10`
+- [x] 2.1 `git clone --recurse-submodules` this repo → `/Users/rodrigolaiz/Documents/Git/match10`
       (clone, not `cp -r`: keeps history and skips the 2.8 GB `Library/`)
-- [ ] 2.2 Rename: `productName` → `Match10`, `applicationIdentifier` → `com.sorolla.match10`,
+- [x] 2.2 Rename: `productName` → `Match10`, `applicationIdentifier` → `com.sorolla.match10`,
       update `CLAUDE.md` + `README.md` project name
-- [ ] 2.3 Create private `sorolla-studio/match10`, point `origin` at it, push
-- [ ] 2.4 Add a `template` remote pointing at UnityGitTemplate, for pulling future *non-core*
+- [x] 2.3 Create private `sorolla-studio/match10`, point `origin` at it, push
+- [x] 2.4 Add a `template` remote pointing at UnityGitTemplate, for pulling future *non-core*
       template improvements
-- [ ] 2.5 **Verify**: Unity batchmode compile of match10
+- [x] 2.5 **Verify**: Unity batchmode compile of match10
 
 ### Phase 3 — document the workflow
-- [ ] 3.1 Short section in `CLAUDE.md`: how to edit Core from inside a game, push it, and pull it
+- [x] 3.1 Short section in `CLAUDE.md`: how to edit Core from inside a game, push it, and pull it
       into the template / other games
 
 ## Risks & open points
@@ -72,3 +72,22 @@
 entries in `Editor.log`, UPM resolved `com.sorolla.core@file:` as an embedded package.
 (Batchmode run was not possible — the Editor held the project lock — so this was read from
 Unity's own build artifacts plus the user confirming a clean compile.)
+
+### Phase 2 + 3 — complete
+- `sorolla-studio/match10` (private) created from the template, `origin` repointed, pushed.
+  `template` remote → `rodsorolla/UnityGitTemplate` for future non-core template pulls.
+- Renamed: `productName` → `Match10`, `applicationIdentifier` → `com.sorolla.match10` on
+  Android/Standalone/iPhone (all three were still Unity's URP-blank defaults).
+- Submodule workflow documented in `CLAUDE.md` in **both** repos (template commit `ea37e90`).
+
+**Verification (cold batchmode import, no `Library/`):**
+`0 compile errors, 0 GUID conflicts, 0 missing scripts, 29/29 Sorolla assemblies, exit 0`.
+
+**Known issue, NOT fixed — `sorolla-palette` placeholder GUID.**
+The first cold import of match10 failed with the `AndroidDeviceInfoBuilder` CS0103 errors:
+`com.sorolla.sdk`'s `Runtime/SorollaBootstrapper.cs.meta` carries a hand-typed GUID
+`a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6` that collides with Unity Purchasing. Patched locally in
+each project's `Library/PackageCache` (template + match10) to unblock, but **that patch is
+per-machine and evaporates on any cache wipe — every new project will hit this.**
+Root fix is one line in `sorolla-studio/sorolla-palette`; not done, awaiting the go-ahead,
+and the repo should be swept for other placeholder GUIDs at the same time.
