@@ -1,12 +1,5 @@
 fileFormatVersion: 2
 guid: 2c09625b983ac4c9b88a491f3beb9f08
-AssetOrigin:
-  serializedVersion: 1
-  productId: 295013
-  packageName: MOST IN ONE
-  packageVersion: 3.1.0
-  assetPath: Assets/Most In One/Controls/Materials/Textures/shadow.png
-  uploadId: 835226
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}

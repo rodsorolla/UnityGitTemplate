@@ -1,12 +1,5 @@
 fileFormatVersion: 2
 guid: 6d9520357c9c6410685369c2b59dabfd
-AssetOrigin:
-  serializedVersion: 1
-  productId: 295013
-  packageName: MOST IN ONE
-  packageVersion: 3.1.0
-  assetPath: Assets/Most In One/Common/Textures/UI/SlicedCircle.png
-  uploadId: 835226
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}

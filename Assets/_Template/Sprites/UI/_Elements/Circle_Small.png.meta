@@ -1,12 +1,5 @@
 fileFormatVersion: 2
 guid: a3a662c0bb9364af79272904a56ef34e
-AssetOrigin:
-  serializedVersion: 1
-  productId: 295013
-  packageName: MOST IN ONE
-  packageVersion: 3.1.0
-  assetPath: Assets/Most In One/Common/Textures/UI/Circle_Small.png
-  uploadId: 835226
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
