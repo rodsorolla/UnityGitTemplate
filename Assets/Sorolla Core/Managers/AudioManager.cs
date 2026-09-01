@@ -35,8 +35,10 @@ namespace Sorolla
         [SerializeField] private AudioSource uiSource;
 
         [Header("Settings")]
-        [Tooltip("If true, audio settings are flushed to disk on application pause/quit. Disable to take full manual control via SaveSettings().")]
+        [Tooltip("Deprecated — all changes now flag dirty and flush on pause/quit. Kept for prefab back-compat.")]
+#pragma warning disable CS0414
         [SerializeField] private bool autoSave = true;
+#pragma warning restore CS0414
 
         [Tooltip("Minimum seconds between consecutive plays of the same SFX clip. Prevents amplitude stacking and audible artifacts when the same sound triggers many times per frame. Set to 0 to disable.")]
         [SerializeField, Min(0f)] private float sfxMinInterval = 0.03f;
@@ -706,7 +708,7 @@ namespace Sorolla
 
         private void OnApplicationPause(bool pauseStatus)
         {
-            if (pauseStatus && autoSave && _isDirty)
+            if (pauseStatus && _isDirty)
             {
                 SaveSettings();
             }
@@ -714,7 +716,7 @@ namespace Sorolla
 
         private void OnApplicationQuit()
         {
-            if (autoSave && _isDirty)
+            if (_isDirty)
             {
                 SaveSettings();
             }
