@@ -83,7 +83,7 @@ Unity's own build artifacts plus the user confirming a clean compile.)
 **Verification (cold batchmode import, no `Library/`):**
 `0 compile errors, 0 GUID conflicts, 0 missing scripts, 29/29 Sorolla assemblies, exit 0`.
 
-**Known issue, NOT fixed — `sorolla-palette` placeholder GUID.**
+**RESOLVED — `sorolla-palette` placeholder GUID** (PR #9, merged as `7c6800b` on `master`).
 The first cold import of match10 failed with the `AndroidDeviceInfoBuilder` CS0103 errors:
 `com.sorolla.sdk`'s `Runtime/SorollaBootstrapper.cs.meta` carries a hand-typed GUID
 `a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6` that collides with Unity Purchasing. Patched locally in
@@ -91,3 +91,32 @@ each project's `Library/PackageCache` (template + match10) to unblock, but **tha
 per-machine and evaporates on any cache wipe — every new project will hit this.**
 Root fix is one line in `sorolla-studio/sorolla-palette`; not done, awaiting the go-ahead,
 and the repo should be swept for other placeholder GUIDs at the same time.
+
+
+### Palette GUID fix — resolved
+`sorolla-palette` `Runtime/SorollaBootstrapper.cs.meta` carried a hand-typed GUID
+`a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6` colliding with Unity Purchasing's
+`AndroidDeviceInfoBuilder.cs.meta`. Replaced with a generated UUID4
+(`462116220a2245be8e3333ecd8347fc3`) via PR #9, squashed to `master` as `7c6800b` after CI passed.
+Swept the repo first: 198 metas, all 32-hex, no duplicates, no other placeholders. Verified no
+scene/prefab in either project referenced the old GUID before changing it.
+
+**Important gotcha found while verifying — a merged fix does NOT auto-propagate.**
+`Packages/packages-lock.json` pins the resolved git commit even when the manifest URL carries no
+ref, so palette stayed on `e947c44` and the collision persisted after deleting the PackageCache.
+Note the collision is not deterministic about its victim: on that run Unity dropped the *palette*
+asset instead of the purchasing one, producing four `CS0234: 'Palette' does not exist in the
+namespace 'Sorolla'` errors in Core rather than the usual purchasing `CS0103`s.
+
+To pull a palette change into any project:
+```bash
+# remove the com.sorolla.sdk entry from Packages/packages-lock.json
+rm -rf Library/PackageCache/com.sorolla.sdk@*
+# reopen Unity; it re-resolves to master tip and rewrites the lock hash
+```
+match10 done (commit `7d16fc7`, lock now `7c6800b`), verified by cold import with **no local
+patch**: 0 compile errors, 0 GUID conflicts, 29/29 Sorolla assemblies.
+
+**STILL TO DO — the template.** Unity was open on it throughout, so it still carries the
+throwaway `Library/PackageCache` patch and a lock pinned to `e947c44`. Apply the three steps
+above once Unity is closed.
