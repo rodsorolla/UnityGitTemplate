@@ -114,6 +114,23 @@
       },
       "hash": "41f5d8a9228e6ebeb5384f7e397375adcefe6f67"
     },
+    "com.sorolla.core": {
+      "version": "file:com.sorolla.core",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.ugui": "2.5.0",
+        "com.unity.test-framework": "1.7.0",
+        "com.unity.modules.animation": "1.0.0",
+        "com.unity.modules.audio": "1.0.0",
+        "com.unity.modules.jsonserialize": "1.0.0",
+        "com.unity.modules.particlesystem": "1.0.0",
+        "com.unity.modules.physics2d": "1.0.0",
+        "com.unity.modules.ui": "1.0.0",
+        "com.unity.modules.uielements": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0"
+      }
+    },
     "com.sorolla.sdk": {
       "version": "https://github.com/sorolla-studio/sorolla-palette.git",
       "depth": 0,

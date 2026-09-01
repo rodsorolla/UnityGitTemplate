@@ -27,12 +27,12 @@ Hungry Snake is a 3D Unity game using:
 - `LevelFactory`: Creates and configures level instances
 
 ### Tutorial System
-- Framework: `Assets/Sorolla Core/Tutorial/`
+- Framework: `Packages/com.sorolla.core/Tutorial/`
 - Game-specific: `Assets/_Game/Scripts/Tutorial/`
 - `TutorialController`: Main tutorial orchestrator
 - `TutorialStepBase`: Base class for tutorial steps
 
-### UI System (`Assets/Sorolla Core/UI/`)
+### UI System (`Packages/com.sorolla.core/UI/`)
 - `UIManager`: Central UI panel management
 - `UIRegistry`: ScriptableObject-based UI panel registry
 - `UIScreen`: Base class for UI screens

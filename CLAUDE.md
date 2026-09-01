@@ -109,7 +109,7 @@ private static readonly int EatTrigger = Animator.StringToHash("Eat");
 4. Use `UIManager.OpenPanelAsync()` to show
 
 ### Adding a Level End Reason
-1. Core enum lives at `Assets/Sorolla Core/LevelFlow/LevelEndReason.cs` with values 0–99 reserved for Sorolla Core. Game-specific reasons must use values **>= 100** — either extend the enum in a partial file under `_Game/` or define a parallel game enum that maps onto `LevelEndReason.Custom`.
+1. Core enum lives at `Packages/com.sorolla.core/LevelFlow/LevelEndReason.cs` with values 0–99 reserved for Sorolla Core. Game-specific reasons must use values **>= 100** — either extend the enum in a partial file under `_Game/` or define a parallel game enum that maps onto `LevelEndReason.Custom`.
 2. Update `LevelTransitionController` logic if needed
 3. Add configuration to `EndGamePanelConfig` ScriptableObject:
    - For win scenarios: add to Level Complete Configurations

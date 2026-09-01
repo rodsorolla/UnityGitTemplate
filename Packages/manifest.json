@@ -59,9 +59,17 @@
     "com.google.firebase.crashlytics": "https://github.com/LaCreArthur/unity-firebase-app.git?path=FirebaseCrashlytics#13.7.0",
     "com.google.firebase.remote-config": "https://github.com/LaCreArthur/unity-firebase-app.git?path=FirebaseRemoteConfig#13.7.0"
   },
-  "scopedRegistries": [ {
-    "name": "package.openupm.com",
-    "url": "https://package.openupm.com",
-    "scopes": [ "com.google.external-dependency-manager", "com.gameanalytics" ]
-  } ]
+  "scopedRegistries": [
+    {
+      "name": "package.openupm.com",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.google.external-dependency-manager",
+        "com.gameanalytics"
+      ]
+    }
+  ],
+  "testables": [
+    "com.sorolla.core"
+  ]
 }
