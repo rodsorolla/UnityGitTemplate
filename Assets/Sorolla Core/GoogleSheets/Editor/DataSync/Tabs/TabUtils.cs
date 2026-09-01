@@ -8,7 +8,7 @@ namespace Sorolla.GoogleSheets.Tabs
     /// <summary>
     /// Shared helpers for tab mappers.
     /// </summary>
-    internal static class TabUtils
+    public static class TabUtils
     {
         /// <summary>Find all assets of type T in the project (or under a folder).</summary>
         public static List<T> FindAllAssets<T>(string folder = null) where T : Object

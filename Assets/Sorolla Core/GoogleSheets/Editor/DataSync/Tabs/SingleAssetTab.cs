@@ -46,11 +46,13 @@ namespace Sorolla.GoogleSheets.Tabs
             {
                 if (!dict.TryGetValue(c.Name, out var cell)) continue;
                 var before = SheetSchema.ToCell(c.Field.GetValue(asset));
-                if (before != cell)
+                // Canonical compare — matches WriteToAssets' skip-if-equal logic exactly.
+                var after = SheetSchema.Canonicalize(cell, c.Field.FieldType);
+                if (before != after)
                 {
                     if (report.Modifies.Count == 0)
                         report.Modifies.Add(new DiffReport.ModifiedRow { RowId = asset.name });
-                    report.Modifies[0].FieldChanges.Add((c.Name, before, cell));
+                    report.Modifies[0].FieldChanges.Add((c.Name, before, after));
                 }
             }
             return report;

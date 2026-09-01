@@ -24,28 +24,33 @@ namespace Sorolla.GoogleSheets
     public static class SheetsAuth
     {
         private const string TokenEndpoint = "https://oauth2.googleapis.com/token";
-        private const string Scope = "https://www.googleapis.com/auth/spreadsheets";
+        public const string SheetsScope = "https://www.googleapis.com/auth/spreadsheets";
         private const string JwtBearerGrantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
 
         private static string _cachedToken;
         private static DateTime _cachedExpiresUtc;
         private static string _cachedCredentialsPath;
+        private static string _cachedScope;
 
         public static void InvalidateCache()
         {
             _cachedToken = null;
             _cachedExpiresUtc = default;
             _cachedCredentialsPath = null;
+            _cachedScope = null;
         }
 
         /// <summary>
         /// Returns a valid bearer token. Loads/refreshes as needed.
         /// Throws if the credentials file is missing or malformed.
+        /// Defaults to the Sheets scope; pass another Google OAuth scope to reuse the
+        /// same service account for other APIs (e.g. Firebase Remote Config publishing).
         /// </summary>
-        public static async UniTask<string> GetAccessTokenAsync(string credentialsPath)
+        public static async UniTask<string> GetAccessTokenAsync(string credentialsPath, string scope = SheetsScope)
         {
             if (_cachedToken != null
                 && _cachedCredentialsPath == credentialsPath
+                && _cachedScope == scope
                 && DateTime.UtcNow < _cachedExpiresUtc.AddSeconds(-60))
             {
                 return _cachedToken;
@@ -59,7 +64,7 @@ namespace Sorolla.GoogleSheets
             if (creds == null || string.IsNullOrEmpty(creds.ClientEmail) || string.IsNullOrEmpty(creds.PrivateKey))
                 throw new InvalidDataException("credentials.json is missing client_email or private_key.");
 
-            var jwt = BuildSignedJwt(creds);
+            var jwt = BuildSignedJwt(creds, scope);
 
             var body = $"grant_type={UnityWebRequest.EscapeURL(JwtBearerGrantType)}&assertion={UnityWebRequest.EscapeURL(jwt)}";
             using var req = new UnityWebRequest(TokenEndpoint, UnityWebRequest.kHttpVerbPOST);
@@ -81,17 +86,18 @@ namespace Sorolla.GoogleSheets
             _cachedToken = token;
             _cachedExpiresUtc = DateTime.UtcNow.AddSeconds(expiresIn);
             _cachedCredentialsPath = credentialsPath;
+            _cachedScope = scope;
             return token;
         }
 
-        private static string BuildSignedJwt(ServiceAccountJson creds)
+        private static string BuildSignedJwt(ServiceAccountJson creds, string scope)
         {
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var header = "{\"alg\":\"RS256\",\"typ\":\"JWT\"}";
             var claim = JsonConvert.SerializeObject(new
             {
                 iss = creds.ClientEmail,
-                scope = Scope,
+                scope,
                 aud = TokenEndpoint,
                 exp = now + 3600,
                 iat = now

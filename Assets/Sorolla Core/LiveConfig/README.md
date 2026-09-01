@@ -134,10 +134,16 @@ Apps Script → Unity content → seed the sheet → bake**.
    }
    ```
 
-4. **Tab registration** — `_Game/Scripts/Editor/Sheets/Tabs/EnemiesTab.cs`:
-   add `typeof(JumperEnemyData)` to the `ConcreteTypes` array. This teaches
-   Pull how to create new Jumper assets and merges the new columns into the
-   tab schema.
+4. **Tab registration** — *nothing to do.* `CollectionTab.ConcreteTypes`
+   discovers every non-abstract subclass of the tab's base type by reflection,
+   so `JumperEnemyData` joins the schema (and becomes creatable on Pull) as
+   soon as it compiles.
+
+   This step used to require hand-adding `typeof(JumperEnemyData)` to a
+   `ConcreteTypes` array. Such lists drift badly, and the failure is silent:
+   the base-type columns are all present, so the tab looks complete while
+   every subclass-specific parameter is dropped from Push and ignored on
+   Pull. Override `ConcreteTypes` only to deliberately *exclude* a type.
 5. **Apps Script** — `tools/AppsScript/LiveConfig.gs`:
    - Add an entry to `ENEMY_FLAGS` for the new subclass (e.g.
      `'JumperEnemyData': { isRanged: false, isFlying: false }`). If you skip
@@ -164,9 +170,9 @@ Apps Script → Unity content → seed the sheet → bake**.
 After that, every Jumper tuning change — including `JumpHeight` — is sheet-only,
 cold-boot-to-device, no new build required.
 
-The defender equivalent is the same shape: new subclass of `DefenderData`,
-registered in `DefendersTab.ConcreteTypes`, new field on `DefenderConfigData`,
-and mirrored in the Apps Script's `readDefenders_`.
+The defender equivalent is the same shape: new subclass of `DefenderData`
+(auto-discovered by `DefendersTab`), new field on `DefenderConfigData`, and
+mirrored in the Apps Script's `readDefenders_`.
 
 ### Add a new category of live-updatable config (new SO type)
 

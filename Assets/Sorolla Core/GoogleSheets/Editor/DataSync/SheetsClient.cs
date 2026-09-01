@@ -34,7 +34,9 @@ namespace Sorolla.GoogleSheets
         public async UniTask<List<List<string>>> ReadRangeAsync(string range)
         {
             var token = await SheetsAuth.GetAccessTokenAsync(_credentialsPath);
-            var url = $"https://sheets.googleapis.com/v4/spreadsheets/{_spreadsheetId}/values/{UnityWebRequest.EscapeURL(range)}";
+            // UNFORMATTED_VALUE: return underlying cell values, not locale/display-formatted text
+            // ("2.50" displays as-is but the value is 2.5) — display formatting must never reach the diff.
+            var url = $"https://sheets.googleapis.com/v4/spreadsheets/{_spreadsheetId}/values/{UnityWebRequest.EscapeURL(range)}?valueRenderOption=UNFORMATTED_VALUE";
             using var req = UnityWebRequest.Get(url);
             req.SetRequestHeader("Authorization", $"Bearer {token}");
             await req.SendWebRequest().ToUniTask();
@@ -47,7 +49,10 @@ namespace Sorolla.GoogleSheets
             foreach (var row in values)
             {
                 var cells = new List<string>();
-                foreach (var cell in (JArray)row) cells.Add(cell?.ToString() ?? string.Empty);
+                // JValue.ToString() uses the current culture — force invariant so numbers
+                // never come back as "0,5" on comma-decimal machines.
+                foreach (var cell in (JArray)row)
+                    cells.Add(cell is JValue v ? v.ToString(System.Globalization.CultureInfo.InvariantCulture) : cell?.ToString() ?? string.Empty);
                 rows.Add(cells);
             }
             return rows;

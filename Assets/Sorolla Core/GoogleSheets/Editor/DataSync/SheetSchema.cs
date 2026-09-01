@@ -88,7 +88,9 @@ namespace Sorolla.GoogleSheets
                 if (!rowByColumn.TryGetValue(c.Name, out var cell)) continue;
 
                 var before = ToCell(c.Field.GetValue(asset));
-                if (before == cell) continue;
+                // Compare canonically: the sheet cell goes through the same parse→serialize
+                // round-trip the write below uses, so formatting-only differences never dirty assets.
+                if (before == Canonicalize(cell, c.Field.FieldType)) continue;
 
                 var prop = so.FindProperty(c.Field.Name);
                 if (prop == null)
@@ -140,20 +142,39 @@ namespace Sorolla.GoogleSheets
             return value.ToString();
         }
 
+        /// <summary>
+        /// Round-trip a sheet cell through the same parse→serialize conversion a Pull uses,
+        /// yielding the canonical string the asset would produce after that Pull. Comparing
+        /// canonical values (instead of raw cell text) is what makes Pull → Diff report clean:
+        /// "2.50" vs "2.5", "" vs "0", "true" vs "TRUE" and enum-case differences all vanish.
+        /// Types <see cref="FromCell"/> can't convert (object references) compare trimmed-raw.
+        /// </summary>
+        public static string Canonicalize(string cell, Type t)
+        {
+            cell ??= string.Empty;
+            if (t == null || t == typeof(string)) return cell;
+            var parsed = FromCell(cell, t);
+            return parsed == null ? cell.Trim() : ToCell(parsed);
+        }
+
         public static object FromCell(string cell, Type t)
         {
             cell ??= string.Empty;
             if (t == typeof(string)) return cell;
             if (t == typeof(bool)) return ParseBool(cell);
-            if (t == typeof(int)) return int.TryParse(cell, NumberStyles.Integer, INV, out var i) ? i : 0;
-            if (t == typeof(long)) return long.TryParse(cell, NumberStyles.Integer, INV, out var l) ? l : 0L;
-            if (t == typeof(float)) return float.TryParse(cell, NumberStyles.Float, INV, out var f) ? f : 0f;
-            if (t == typeof(double)) return double.TryParse(cell, NumberStyles.Float, INV, out var d) ? d : 0d;
+            if (t == typeof(int)) return int.TryParse(cell, NumberStyles.Integer, INV, out var i) ? i : WarnParse<int>(cell, t);
+            if (t == typeof(long)) return long.TryParse(cell, NumberStyles.Integer, INV, out var l) ? l : WarnParse<long>(cell, t);
+            if (t == typeof(float)) return float.TryParse(cell, NumberStyles.Float, INV, out var f) ? f : WarnParse<float>(cell, t);
+            if (t == typeof(double)) return double.TryParse(cell, NumberStyles.Float, INV, out var d) ? d : WarnParse<double>(cell, t);
             if (t.IsEnum)
             {
                 if (string.IsNullOrWhiteSpace(cell)) return Activator.CreateInstance(t);
                 try { return Enum.Parse(t, cell, ignoreCase: true); }
-                catch { return Activator.CreateInstance(t); }
+                catch
+                {
+                    Debug.LogWarning($"[SheetSchema] Cannot parse '{cell}' as {t.Name} — using default '{Activator.CreateInstance(t)}'.");
+                    return Activator.CreateInstance(t);
+                }
             }
             if (t == typeof(Vector2))
             {
@@ -201,6 +222,14 @@ namespace Sorolla.GoogleSheets
                 default:
                     return false;
             }
+        }
+
+        /// <summary>Warn (only for non-empty cells — empty means "use default" by design) and return default.</summary>
+        private static T WarnParse<T>(string cell, Type t)
+        {
+            if (!string.IsNullOrWhiteSpace(cell))
+                Debug.LogWarning($"[SheetSchema] Cannot parse '{cell}' as {t.Name} — using default.");
+            return default;
         }
 
         private static bool ParseBool(string s)

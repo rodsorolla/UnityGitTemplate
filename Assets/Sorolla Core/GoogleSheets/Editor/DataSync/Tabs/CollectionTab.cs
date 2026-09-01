@@ -21,8 +21,55 @@ namespace Sorolla.GoogleSheets.Tabs
         /// <summary>Folder under which new assets are created on Pull (e.g. "Assets/_Game/Data/Enemies").</summary>
         protected abstract string NewAssetFolder { get; }
 
-        /// <summary>Allowed concrete types for the "Subclass" column. Rows with other subclasses are skipped.</summary>
-        protected abstract IReadOnlyList<Type> ConcreteTypes { get; }
+        /// <summary>
+        /// Allowed concrete types for the "Subclass" column. Rows with other subclasses are skipped.
+        ///
+        /// Defaults to every non-abstract subclass of <typeparamref name="TBase"/> in the loaded
+        /// assemblies, so a newly added subclass reaches the sheet without anyone remembering to
+        /// register it. Override only to deliberately exclude types — a hand-written list silently
+        /// drops the columns of anything missing from it, and the sheet still *looks* complete
+        /// because the base-type columns are all present.
+        /// </summary>
+        protected virtual IReadOnlyList<Type> ConcreteTypes => _discoveredTypes ??= DiscoverConcreteTypes();
+
+        private static IReadOnlyList<Type> _discoveredTypes;
+
+        private static IReadOnlyList<Type> DiscoverConcreteTypes()
+        {
+            var list = new List<Type>();
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                Type[] types;
+                // A partially-loadable assembly still yields its resolvable types; skipping the
+                // whole assembly here would silently drop real subclasses.
+                try { types = asm.GetTypes(); }
+                catch (System.Reflection.ReflectionTypeLoadException e) { types = e.Types; }
+
+                foreach (var t in types)
+                {
+                    if (t == null || t.IsAbstract) continue;
+                    if (!typeof(TBase).IsAssignableFrom(t)) continue;
+                    list.Add(t);
+                }
+            }
+
+            // Column order IS the sheet's header order, so it must not vary between machines or
+            // runs — reflection order alone guarantees neither. Shallowest-first puts the shared
+            // base columns in the leftmost slots; name breaks ties for reproducibility.
+            list.Sort((a, b) =>
+            {
+                int da = DepthFromBase(a), db = DepthFromBase(b);
+                return da != db ? da.CompareTo(db) : string.CompareOrdinal(a.Name, b.Name);
+            });
+            return list;
+        }
+
+        private static int DepthFromBase(Type t)
+        {
+            int depth = 0;
+            for (var c = t; c != null && c != typeof(TBase); c = c.BaseType) depth++;
+            return depth;
+        }
 
         private List<string> _columnsCached;
         public IReadOnlyList<string> Columns
@@ -92,7 +139,10 @@ namespace Sorolla.GoogleSheets.Tabs
                 {
                     if (!dict.TryGetValue(c.Name, out var cell)) continue;
                     var before = SheetSchema.ToCell(c.Field.GetValue(asset));
-                    if (before != cell) mods.FieldChanges.Add((c.Name, before, cell));
+                    // Canonical compare + report — shows what a Pull would actually store,
+                    // and formatting-only differences don't produce phantom modifies.
+                    var after = SheetSchema.Canonicalize(cell, c.Field.FieldType);
+                    if (before != after) mods.FieldChanges.Add((c.Name, before, after));
                 }
                 if (mods.FieldChanges.Count > 0) report.Modifies.Add(mods);
             }
