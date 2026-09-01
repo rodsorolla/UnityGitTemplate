@@ -187,8 +187,8 @@ var loop = audio?.PlayLoopingSFX("Engine");
 audio?.StopLoopingSFX(loop);
 audio?.StopAllLoopingSFX();
 ```
-Settings flush to SaveSystem on pause/quit (deferred). Slider drags don't hit
-disk per event — iOS-friendly. `autoSave` field on the prefab gates this.
+Settings flush to SaveSystem on pause/quit (deferred, always). Slider drags
+don't hit disk per event — iOS-friendly. Call `SaveSettings()` to flush early.
 
 ### Tutorial (`Sorolla.Tutorial` / `Sorolla.Tutorial.Highlight`)
 ```csharp

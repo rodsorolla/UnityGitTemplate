@@ -697,8 +697,9 @@ Channels: `Master`, `Music`, `SFX`, `UI`.
 
 **Persistence (iOS-friendly):** volume / enable changes flag a dirty bit and
 flush to `SaveSystem` on `OnApplicationPause` and `OnApplicationQuit` — slider
-drags do **not** hit disk per event. Disable the inspector `autoSave` flag to
-take full manual control via your own `SaveSettings` call.
+drags do **not** hit disk per event. Call `SaveSettings()` to flush earlier.
+The legacy `autoSave` inspector flag is deprecated and no longer gates the
+flush: gating it lost changes whenever the app was backgrounded or killed.
 
 Setup: Create `AudioLibrary` ScriptableObject, map string keys to AudioClips.
 
@@ -897,7 +898,10 @@ Setup: Canvas (overlay, sort 999) > Image with hand sprite > `FakeTouchCursor` c
 
 ### SorollaDebugMenu
 
-Tap 4x on screen to open. Provides level selection for testing.
+Secret open gesture: tap the hidden button 3+ times, press and hold it for 2s,
+then tap once. Pausing >6s between presses restarts the sequence. Once opened,
+the unlock is persisted per device and a single tap suffices from then on.
+Provides level selection for testing.
 
 ### Editor Tools
 
