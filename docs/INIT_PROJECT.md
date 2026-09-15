@@ -6,7 +6,7 @@ Close the template's Unity editor so files are consistent. Copy the complete
 folder, including hidden `.git` contents and `Library` if desired. Rename the
 copy and open that folder as the agent's working project. Say, for example:
 
-> Init this project as Marble Garden: a portrait mobile puzzle where the player
+> Init Marble Garden game using this template: a portrait mobile puzzle where the player
 > drags colored marbles into matching pots. Build a playable prototype with a
 > short tutorial, level completion, restart, and saved progression.
 
@@ -83,13 +83,26 @@ record each completed initialization step so interrupted work can resume safely.
 
 ## 4. Implement the requested game
 
-Reuse Core persistence, UI, tutorials, and level flow where they fit. Implement
-the actual game in `Assets/_Game/`, wire scene and prefab references, configure
-registries and data assets, and make the existing entry scene reach gameplay.
+Always build the architecture on Sorolla Core, using its persistent data, level
+manager, tools, utilities, and other relevant systems. Inspect the installed SDK
+before implementing features and extend existing systems instead of creating
+competing implementations. Follow the authoring rules in `AGENTS.md` and
+`docs/SOROLLA_GUIDE.md`.
+
+Implement the actual game in `Assets/_Game/`. Author reusable gameplay objects and
+UI as editable prefabs, and instantiate configured prefabs for runtime spawning.
+Do not construct entire gameplay objects or UI hierarchies in code when they could
+be authored and edited in Unity. Expose balancing values through serialized fields
+or ScriptableObjects. Use meaningful names, organized hierarchies, intentional
+prefab overrides, and Inspector references instead of runtime object searches.
+
+Wire scene and prefab references, configure registries and data assets, and make
+the starting scene reach gameplay when the user presses Play. Include the
+appropriate start, play, result, and restart flow in the first prototype.
 Read the real build scene order instead of assuming README example scene names.
-Deliver the requested scope; for a broad concept, first establish a complete
-playable loop, then continue through the agreed features. Avoid adding unrelated
-monetization or live-service systems to a prototype.
+Build the smallest complete playable version first, then continue through the
+requested scope. Avoid speculative systems, unnecessary dependencies, and unrelated
+monetization or live-service systems.
 
 ## 5. Verify and leave a usable handoff
 
@@ -98,6 +111,8 @@ monetization or live-service systems to a prototype.
 - Check compilation/import, missing scripts/references, and the entry-to-game flow.
   Exercise controls, tutorial, win/lose where applicable, restart, and persistence
   across a restart. Run relevant existing tests for changed systems.
+- Inspect the authored prefabs and their scene instances: references are assigned,
+  balancing values are editable, and runtime spawning uses configured prefabs.
 - Treat editor process failures and runtime exceptions as failures, not merely
   an absence of `error CS` messages. If Unity execution is unavailable, document
   exact checks still needed and do not claim the game was played or validated.

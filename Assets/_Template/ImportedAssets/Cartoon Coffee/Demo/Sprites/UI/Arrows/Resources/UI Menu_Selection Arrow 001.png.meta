@@ -5,11 +5,13 @@ AssetOrigin:
   productId: 192070
   packageName: Cartoon VFX Deluxe
   packageVersion: 3.6.5
-  assetPath: Assets/Cartoon Coffee/Demo/Sprites/UI/Arrows/Resources/UI Menu_Selection
-    Arrow 001.png
+  assetPath: Assets/Cartoon Coffee/Demo/Sprites/UI/Arrows/Resources/UI Menu_Selection Arrow 001.png
   uploadId: 647443
 TextureImporter:
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      213: 5013506485480180220
+    second: UI Menu_Selection Arrow 001_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -61,7 +63,9 @@ TextureImporter:
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
+  spriteTessellationMethod: 0
   spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
@@ -155,7 +159,29 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: UI Menu_Selection Arrow 001_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf9c92af59d839540800000000000000
+      internalID: 5013506485480180220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []

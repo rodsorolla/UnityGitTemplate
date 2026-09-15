@@ -32,6 +32,12 @@ version numbers from historical task notes or upgrade dependencies during game i
 
 ## Architecture and common tasks
 
+Always use Sorolla Core as the architectural foundation: persistent data, level
+management, tools, utilities, and other relevant SDK systems. Inspect the installed
+SDK for each feature and extend its existing systems instead of building competing
+implementations. Keep game-specific behavior in `Assets/_Game/`; reusable Core
+improvements must preserve existing API contracts and unrelated work.
+
 - Inspect `GameInitializer`, `GameManager`, `SorollaManager`, and service registration
   before adding boot work. `IAsyncInitializable` supports awaited boot tasks;
   check the current initialization ordering and avoid double initialization.
@@ -46,6 +52,22 @@ version numbers from historical task notes or upgrade dependencies during game i
   game reasons. C# enums cannot be extended with partial declarations.
 - Treat scene wiring, ScriptableObjects, UI references, and `.meta` files as part
   of implementing a feature. C# files alone do not complete a Unity feature.
+
+## Prefabs and Editor authoring
+
+- Author reusable gameplay objects and UI as editable prefabs with serialized
+  references and clear Inspector settings. Keep scene composition easy to inspect
+  and adjust in Unity.
+- Runtime spawning must instantiate configured prefabs. Do not construct entire
+  gameplay objects or UI hierarchies in code when they could be authored and
+  edited in Unity.
+- Expose balancing values through serialized fields or ScriptableObjects rather
+  than hardcoding them in gameplay code.
+- Use meaningful object names, organized hierarchies, and intentional prefab
+  overrides. Prefer Inspector references over runtime object searches.
+- Deliver a wired starting scene that reaches gameplay on Play. Establish the
+  smallest complete loop with appropriate start, play, result, and restart flow
+  before expanding the game. Avoid speculative systems and unnecessary dependencies.
 
 ## Core changes across games
 
