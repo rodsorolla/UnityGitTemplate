@@ -95,6 +95,11 @@ Do not construct entire gameplay objects or UI hierarchies in code when they cou
 be authored and edited in Unity. Expose balancing values through serialized fields
 or ScriptableObjects. Use meaningful names, organized hierarchies, intentional
 prefab overrides, and Inspector references instead of runtime object searches.
+Inspect the existing `_Game` folders first and reuse their organization; create
+missing folders under the appropriate existing parent. Reuse built-in and
+installed components, use DOTween for tweens, and use standard Unity anchors and
+layout components for Canvas UI. Prefer one configurable prefab for shared
+structure and behavior instead of proliferating duplicates or variants.
 
 Wire scene and prefab references, configure registries and data assets, and make
 the starting scene reach gameplay when the user presses Play. Include the
@@ -106,16 +111,22 @@ monetization or live-service systems.
 
 ## 5. Verify and leave a usable handoff
 
-- Use the Unity version declared in `ProjectVersion.txt`. Do not open a second
-  editor process on an already-open project. Use the active editor where possible.
-- Check compilation/import, missing scripts/references, and the entry-to-game flow.
-  Exercise controls, tutorial, win/lose where applicable, restart, and persistence
-  across a restart. Run relevant existing tests for changed systems.
-- Inspect the authored prefabs and their scene instances: references are assigned,
-  balancing values are editable, and runtime spawning uses configured prefabs.
-- Treat editor process failures and runtime exceptions as failures, not merely
-  an absence of `error CS` messages. If Unity execution is unavailable, document
-  exact checks still needed and do not claim the game was played or validated.
+- Default to static source, serialized asset, reference, and diff checks. Never
+  test in the Unity Editor unless the user explicitly requests testing in the
+  task prompt. Do not enter Play Mode, run Edit Mode/Play Mode tests, or launch
+  Unity (including batch mode) for compilation/import or gameplay verification
+  without that request. Editor authoring and wiring are still allowed.
+- Review prefab and scene asset files: references are assigned, balancing values
+  are editable, layouts use standard Unity components where possible, and runtime
+  spawning uses configured prefabs. Static review is not gameplay validation.
+- Only when testing is explicitly requested: use the declared Unity version and
+  the active editor where possible; do not open a second editor on the project.
+  Check compilation/import and missing scripts/references, exercise the relevant
+  entry flow, controls, tutorial, win/lose, restart, and persistence, and run
+  relevant existing tests within the requested scope. Treat editor process
+  failures and runtime exceptions as failures, not merely an absence of `error CS`.
+- Document checks not performed, whether testing was not requested or Unity was
+  unavailable. Do not claim the game was played or validated without evidence.
 - Inspect the parent and Core diffs separately. Verify initialization did not
   unexpectedly change dependencies or Core revision. Do not commit `Library`.
 - Update project state with completed identity changes, working features, Core

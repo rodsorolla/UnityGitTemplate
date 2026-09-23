@@ -15,8 +15,12 @@ Sorolla Core remains a separate submodule; other games adopt updates explicitly.
 
 The shared instructions require Sorolla Core architecture, editable prefabs for
 gameplay and UI, prefab-based runtime spawning, Inspector-editable balancing,
-organized scenes, a complete playable loop, and actual Unity verification when
-available. Design decisions and progress are recorded for the next session.
+organized scenes, and a complete playable loop. Reuse existing components and
+`_Game` folders, use DOTween for tweens and standard Unity anchors/layout tools
+for Canvas UI, and prefer one configurable prefab for shared structure and
+behavior. Unity Editor testing runs only when explicitly requested in the task
+prompt; static checks are the default. Design decisions and progress are
+recorded for the next session.
 
 - [Initialization workflow](docs/INIT_PROJECT.md)
 - [Game brief](docs/GAME_BRIEF.md)

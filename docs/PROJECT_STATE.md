@@ -23,10 +23,21 @@ The initialization trigger includes “init X game using this template”. Share
 instructions require Sorolla Core architecture, editable gameplay/UI prefabs,
 configured prefabs for runtime spawning, editable balancing values, organized
 hierarchies, and a wired first playable with the appropriate game loop. They also
-require focused scope, preserved Core API contracts, gameplay verification, and
-durable design/progress notes.
+require focused scope, preserved Core API contracts, and durable design/progress
+notes. Reuse built-in and installed components, DOTween for tweens, standard Unity
+anchors/layout components for Canvas UI, and the existing `_Game` folders. Prefer
+one configurable prefab for shared structure and behavior, with focused Inspector
+settings; reserve variants or separate prefabs for meaningful differences.
+Editor testing requires an explicit request in the task prompt. Static checks
+are the default; Editor authoring and wiring remain part of implementation.
 
 ## Verification
+
+The 2026-09-22 template instruction update aligns `AGENTS.md`, the engineering
+guide, initialization workflow, and README on component/prefab reuse, UI layout,
+folder reuse, and opt-in Editor testing. Documentation diffs were reviewed and
+`git diff --check` passed. No Unity Editor testing was requested or performed;
+no game code, assets, or Core files were changed.
 
 Instruction setup only; no Unity import or gameplay validation claimed.
 The 2026-09-15 instruction update was reviewed for consistency across `AGENTS.md`,
@@ -61,3 +72,7 @@ existing `Library`, rename the copy, open it as the working project, and request
 - Initialize and build locally without requiring a hosted repository.
 - Always use Sorolla Core as the game's architectural foundation and prioritize
   assets that can be edited directly in the Unity Editor.
+- Reuse existing tools, components, prefab structure, and folder organization
+  before introducing custom equivalents or duplicates.
+- Never test in the Unity Editor unless explicitly requested in the task prompt;
+  report skipped compilation and gameplay checks without claiming validation.
