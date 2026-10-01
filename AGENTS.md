@@ -63,6 +63,25 @@ stop after renaming settings, writing a plan, or generating scripts without scen
   unresolved issues, and next steps. Update the brief when design decisions change.
   Store durable context in files instead of relying on prior conversations.
 
+## Unity Editor access
+
+- Drive the open Editor with the **Unity CLI** first (`com.unity.pipeline` is in
+  the manifest). Run `unity status` to confirm a `ready` instance, and pass
+  `--project-path "$PWD"` when several Editors are open. Discover commands with
+  `unity command --query <term>`; use `unity command eval '<C#>'` (or `eval_file`)
+  for anything without a built-in command, batching related edits into one call.
+- Do not hand-edit `.unity`, `.prefab`, or `.asset` YAML while an Editor is
+  reachable. If the CLI cannot connect, check `unity pipeline list` for Safe Mode
+  (compile errors) before falling back to file edits, and say so when you do.
+- Use **Coplay MCP** only for what the CLI does not cover well: screenshots of
+  scene objects or UI canvases (`capture_scene_object`, `capture_ui_canvas`),
+  profiler frame analysis (`get_worst_cpu_frames`, `get_worst_gc_frames`),
+  Animator/Input System asset editing, and generated assets (3D models, SFX,
+  music, TTS, images). Generation spends Coplay credits; look in the shared
+  `UnityAssets` project first.
+- Editor access is for authoring. The Play Mode and testing restriction in
+  Boundaries still applies.
+
 ## Boundaries
 
 - Game-specific code and assets belong in `Assets/_Game/`.
