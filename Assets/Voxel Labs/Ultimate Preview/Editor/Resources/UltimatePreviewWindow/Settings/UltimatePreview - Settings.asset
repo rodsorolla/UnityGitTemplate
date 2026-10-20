@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 861622789, guid: 45d153d84c4152048b869c7027c90a5f, type: 3}
+  m_Script: {fileID: 861622789, guid: 029c9486e419f394cb6d2867a773a371, type: 3}
   m_Name: UltimatePreview - Settings
   m_EditorClassIdentifier: VoxelLabs.UltimatePreview.Core.dll::VoxelLabs.UltimatePreview.Core.UltimatePreviewSettingsData
-  "\u2002\u2053": 1
+  "\u2002\u205F": 1
   ultimateAnimationPreviewSettings:
     isEnable: 1
     disablePlayModeColorTint: 1
@@ -50,6 +50,8 @@ MonoBehaviour:
       floorTexture: {fileID: 0}
       floorTiling: {x: 50, y: 50}
       floorColor: {r: 1, g: 1, b: 1, a: 0.7}
+    screenshotSettings:
+      outputResolution: {x: 2000, y: 2000}
     defaultAvatarGameobject: {fileID: 0}
     autoPlayAnimations: 1
     resetPlaybackSpeed: 0
@@ -59,7 +61,7 @@ MonoBehaviour:
     previewToolbarSettings:
       buttonSize: 30
       showPreviewToggle: 1
-      showSkyboxToggle: 0
+      showSkyboxToggle: 1
       showBGColorPicker: 1
       showLightToggle: 1
       showLockCameraToggle: 1
@@ -68,6 +70,7 @@ MonoBehaviour:
       showCameraRotateYBtn: 1
       showSettingsBtn: 0
       showAnimationAutoPlayToggle: 0
+      showFindSuitableAvatarButton: 1
       showFloorToggle: 0
       showPlayNextAnimBtn: 1
       showPlayPrevAnimBtn: 1
@@ -102,6 +105,8 @@ MonoBehaviour:
         intensity: 0.5
         color: {r: 1, g: 1, b: 1, a: 1}
         rotation: {x: 90, y: 0}
+    screenshotSettings:
+      outputResolution: {x: 2000, y: 2000}
     sceneGameobjectPreviewSettings:
       isSceneGameobjectPreviewEnable: 1
       autoReloadScenePreview: 1
@@ -138,7 +143,7 @@ MonoBehaviour:
     previewToolbarSettings:
       buttonSize: 30
       showPreviewToggle: 1
-      showSkyboxToggle: 0
+      showSkyboxToggle: 1
       showBGColorPicker: 1
       showLightToggle: 1
       showLockCameraToggle: 1
